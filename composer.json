@@ -1,0 +1,37 @@
+{
+	"name":"erdiko/users",
+    "description": "User model standard",
+    "keywords": ["user", "erdiko", "erdiko-user"],
+    "homepage": "http://erdiko.org",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Arroyo Labs",
+            "email": "info@arroyolabs.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Erdiko/authorize"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Erdiko/authenticate"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "erdiko/authenticate": "@dev",
+        "erdiko/authorize": "@dev",
+        "erdiko/doctrine": "^0.1.1"
+    },
+    "config": {
+        "minimum-stability": "dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "erdiko\\users\\": "src/"
+        }
+    }
+}
