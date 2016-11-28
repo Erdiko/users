@@ -6,6 +6,8 @@ A users package to add user functionality to your application.  It will allow yo
 
 Erdiko users leverages our authenticate and authorization packages.
 
+**@note do not use in production yet, under heavy development**
+
 
 Installation
 ------------

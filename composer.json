@@ -12,26 +12,8 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "erdiko/authenticate": "@dev",
-        "erdiko/authorize": "@dev",
         "erdiko/doctrine": "^0.1.1"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../authenticate",
-            "options": {
-                "symlink": true
-            }
-        },
-        {
-            "type": "path",
-            "url": "../authorize",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
     "config": {
         "minimum-stability": "dev"
     },
