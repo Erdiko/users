@@ -15,7 +15,7 @@ namespace erdiko\users\controllers;
 use erdiko\authenticate\BasicAuth;
 use erdiko\authenticate\iErdikoUser;
 use erdiko\authorize\Authorizer;
-use erdiko\users\app\models\User;
+use erdiko\users\models\User;
 
 class Api extends \erdiko\core\AjaxController
 {

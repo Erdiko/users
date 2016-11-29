@@ -3,7 +3,7 @@
  * User API test cases
  *
  * @category   UnitTests
- * @package    app
+ * @package    tests
  * @copyright  Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  *
  * @author     Leo Daidone, leo@arroyolabs.com
