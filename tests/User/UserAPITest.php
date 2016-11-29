@@ -13,7 +13,7 @@ require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 class UserAPITest extends \tests\ErdikoTestCase
 {
-	const url = "http://docker.local:8088/api/user/";
+	const url = "http://docker.local:8088/api/users/";
 
 	protected $userData;
 	protected $userDataUpdate;

@@ -40,16 +40,14 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
-	 * @expectedException \Exception
+	 * @expectedException TypeError
 	 */
 	public function testSetEntityFail()
 	{
 		try {
 			$obj   = (object) array();
 			$this->model->setEntity( $obj );
-		} catch (\Exception $e) {
-			throw new Exception($e->getMessage());
-		}
+		} catch (\Exception $e) {}
 	}
 
 	public function testSetEntity()
