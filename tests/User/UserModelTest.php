@@ -3,7 +3,7 @@
  * User entity test cases
  *
  * @category   UnitTests
- * @package    app
+ * @package    tests
  * @copyright  Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  *
  * @author     John Arroyo, john@arroyolabs.com
@@ -36,7 +36,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 			"role"=>"admin",
 			"name"=>"Test 2",
 		);
-		$this->model = new \erdiko\users\app\models\User();
+		$this->model = new \erdiko\users\models\User();
 	}
 
 	/**
@@ -54,7 +54,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 	public function testSetEntity()
 	{
-		$entity = new \erdiko\users\app\entities\User();
+		$entity = new \erdiko\users\entities\User();
 		$entity->setId( 0 );
 		$entity->setRole( 'anonymous' );
 		$entity->setName( 'anonymous' );
@@ -69,7 +69,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	{
 		$entity = $this->model->getEntity();
 
-		$this->assertInstanceOf('\erdiko\users\app\entities\User', $entity);
+		$this->assertInstanceOf('\erdiko\users\entities\User', $entity);
 		$this->assertEquals('anonymous', $entity->getName());
 		$this->assertEquals('anonymous', $entity->getRole());
 		$this->assertEquals('anonymous', $entity->getEmail());
@@ -110,7 +110,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 		);
 		$out = $this->model->unmarshall(json_encode($object));
 
-		$this->assertInstanceOf('\erdiko\users\app\models\User', $out);
+		$this->assertInstanceOf('\erdiko\users\models\User', $out);
 		$this->assertNotEmpty($this->model->getEntity());
 	}
 
@@ -118,7 +118,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	{
 		$password = "asdf1234";
 		$salted = $this->model->getSalted($password);
-		$expect = $password . \erdiko\users\app\models\User::PASSWORDSALT;
+		$expect = $password . \erdiko\users\models\User::PASSWORDSALT;
 		$this->assertEquals($expect, $salted);
 	}
 
@@ -187,7 +187,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$result = $this->model->authenticate($email, $password);
 
 		$this->assertNotEmpty($result);
-		$this->assertInstanceOf('\erdiko\users\app\models\User', $result);
+		$this->assertInstanceOf('\erdiko\users\models\User', $result);
 
 		// double check
 		$logged = $this->model->isLoggedIn();
