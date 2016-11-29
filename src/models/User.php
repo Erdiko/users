@@ -8,9 +8,9 @@
  * @author      Leo Daidone, leo@arroyolabs.com
  */
 
-namespace erdiko\users\app\models;
+namespace erdiko\users\models;
 
-use \erdiko\users\app\entities\User as entity;
+use \erdiko\users\entities\User as entity;
 use \erdiko\authenticate\iErdikoUser;
 
 class User implements iErdikoUser
@@ -158,7 +158,7 @@ class User implements iErdikoUser
 		$pwd = md5( $pass );
 
 		// @todo: repository could change...
-		$repo   = $this->getRepository( '\erdiko\users\app\entities\User' );
+		$repo   = $this->getRepository( '\erdiko\users\entities\User' );
 		$result = $repo->findOneBy( array( 'email' => $email, 'password' => $pwd ) );
 
 		if (!empty($result)) {
@@ -186,7 +186,7 @@ class User implements iErdikoUser
 	 * returns true if provided email was not found in the user table
 	 */
 	public function isEmailUnique( $email ) {
-		$repo   = $this->getRepository( 'erdiko\users\app\entities\User' );
+		$repo   = $this->getRepository( 'erdiko\users\entities\User' );
 		$result = $repo->findBy( array( 'email' => $email ) );
 
 		if ( empty( $result ) ) {
@@ -243,7 +243,7 @@ class User implements iErdikoUser
 	 *
 	 */
 	public function getUsers() {
-		$repo   = $this->getRepository( 'erdiko\users\app\entities\User' );
+		$repo   = $this->getRepository( 'erdiko\users\entities\User' );
 		$result = $repo->findAll();
 
 		return $result;
@@ -256,7 +256,7 @@ class User implements iErdikoUser
 	 */
 	public function deleteUser( $id ) {
 		try {
-			$_user = $this->_em->getRepository( 'erdiko\users\app\entities\User' )->findOneBy(array('id'=>$id));
+			$_user = $this->_em->getRepository( 'erdiko\users\entities\User' )->findOneBy(array('id'=>$id));
 
 			if ( ! is_null( $_user ) ) {
 				$this->_em->remove($_user);
@@ -324,7 +324,7 @@ class User implements iErdikoUser
 	 *
 	 */
 	public function getById( $id ) {
-		$repo   = $this->getRepository( 'erdiko\users\app\entities\User' );
+		$repo   = $this->getRepository( 'erdiko\users\entities\User' );
 		$result = $repo->findOneBy( array( 'id' => $id ) );
 
 		return $result;
@@ -342,7 +342,7 @@ class User implements iErdikoUser
 	{
 		try {
 			//validate
-			$obj    = new \erdiko\users\app\entities\User();
+			$obj    = new \erdiko\users\entities\User();
 			$params = (array) $params;
 			$filter = array();
 			foreach ( $params as $key => $value ) {
@@ -351,7 +351,7 @@ class User implements iErdikoUser
 					$filter[ $key ] = $value;
 				}
 			}
-			$repo   = $this->getRepository( 'erdiko\users\app\entities\User' );
+			$repo   = $this->getRepository( 'erdiko\users\entities\User' );
 			$result = empty($filter)
 				? $this->getUsers()
 				: $repo->findBy( $filter );
