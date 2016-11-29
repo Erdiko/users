@@ -8,9 +8,9 @@
  * @author      Leo Daidone, leo@arroyolabs.com
  */
 
-namespace erdiko\users\app\models;
+namespace erdiko\users\models;
 
-use \erdiko\users\app\entities\User as entity;
+use \erdiko\users\entities\User as entity;
 use \erdiko\authenticate\iErdikoUser;
 
 class User implements iErdikoUser

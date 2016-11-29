@@ -10,7 +10,7 @@
  * @author      Leo Daidone, leo@arroyolabs.com
  */
 
-namespace erdiko\users\app\controllers;
+namespace erdiko\users\controllers;
 
 use erdiko\authenticate\BasicAuth;
 use erdiko\authenticate\iErdikoUser;
