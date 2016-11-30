@@ -9,6 +9,8 @@
  * @author     John Arroyo, john@arroyolabs.com
  * @author     Leo Daidone, leo@arroyolabs.com
  */
+namespace tests\phpunit;
+
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 
@@ -35,7 +37,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
      */
     function testCreateFailNoEmail()
     {
-        $userEntity = new erdiko\users\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setEmail($this->userArray['email']);
 
         // Save
@@ -48,7 +50,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
      */
     function testCreateFailNoPass()
     {
-        $userEntity = new erdiko\users\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setPassword($this->userArray['password']);
 
         // Save
@@ -58,7 +60,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
 
     function testCreate()
     {
-        $userEntity = new erdiko\users\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setEmail($this->userArray['email']);
         $userEntity->setPassword($this->userArray['password']);
         $userEntity->setName($this->userArray['name']);

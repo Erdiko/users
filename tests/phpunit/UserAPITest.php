@@ -8,6 +8,8 @@
  *
  * @author     Leo Daidone, leo@arroyolabs.com
  */
+namespace tests\phpunit;
+
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 

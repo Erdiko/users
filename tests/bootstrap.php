@@ -8,7 +8,7 @@ $bootstrap = dirname(dirname(dirname(dirname(__DIR__)))).'/app/bootstrap.php';
 if(!file_exists($bootstrap))
 	$bootstrap = '/code/app/bootstrap.php';
 
-// This is for relative local dev
+// This is for relative local dev (user-admin project)
 if(!file_exists($bootstrap))
 	$bootstrap = dirname(dirname(__DIR__)).'/user-admin/app/bootstrap.php';
 
