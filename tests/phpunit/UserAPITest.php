@@ -3,17 +3,19 @@
  * User API test cases
  *
  * @category   UnitTests
- * @package    app
+ * @package    tests
  * @copyright  Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  *
  * @author     Leo Daidone, leo@arroyolabs.com
  */
+namespace tests\phpunit;
+
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 
 class UserAPITest extends \tests\ErdikoTestCase
 {
-	const url = "http://docker.local:8088/api/user/";
+	const url = "http://docker.local:8088/api/users/";
 
 	protected $userData;
 	protected $userDataUpdate;

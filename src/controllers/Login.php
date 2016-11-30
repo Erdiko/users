@@ -9,10 +9,10 @@
  * @author      Leo Daidone, leo@arroyolabs.com
  */
 
-namespace erdiko\users\app\controllers;
+namespace erdiko\users\controllers;
 
 use erdiko\authenticate\BasicAuth;
-use erdiko\users\app\models\User;
+use erdiko\users\models\User;
 
 class Login extends \erdiko\core\Controller
 {

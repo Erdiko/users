@@ -3,12 +3,14 @@
  * User entity test cases
  *
  * @category   UnitTests
- * @package    app
+ * @package    tests
  * @copyright  Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  *
  * @author     John Arroyo, john@arroyolabs.com
  * @author     Leo Daidone, leo@arroyolabs.com
  */
+namespace tests\phpunit;
+
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 
@@ -35,7 +37,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
      */
     function testCreateFailNoEmail()
     {
-        $userEntity = new erdiko\users\app\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setEmail($this->userArray['email']);
 
         // Save
@@ -48,7 +50,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
      */
     function testCreateFailNoPass()
     {
-        $userEntity = new erdiko\users\app\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setPassword($this->userArray['password']);
 
         // Save
@@ -58,7 +60,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
 
     function testCreate()
     {
-        $userEntity = new erdiko\users\app\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setEmail($this->userArray['email']);
         $userEntity->setPassword($this->userArray['password']);
         $userEntity->setName($this->userArray['name']);
@@ -81,7 +83,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
      */
     public function testRead($id)
     {
-        $entity = $this->entityManager->getRepository('erdiko\users\app\entities\User')
+        $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
             ->find($id);
         $this->assertEquals($entity->getEmail(), $this->userArray['email']);
         $this->assertEquals($entity->getPassword(), md5($this->userArray['password']));
@@ -101,7 +103,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
      */
     public function testUpdate($id)
     {
-        $entity = $this->entityManager->getRepository('erdiko\users\app\entities\User')
+        $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
             ->find($id);
         $updates = array(
             'email' => 'user+'.time().'@update.com',
@@ -122,7 +124,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
         $this->entityManager->flush();
 
         // get entity
-        $entity = $this->entityManager->getRepository('erdiko\users\app\entities\User')
+        $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
             ->find($id);
 
         $this->assertEquals($entity->getEmail(), $updates['email']);
@@ -140,7 +142,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
      */
     public function testDelete($id)
     {
-        $entity = $this->entityManager->getRepository('erdiko\users\app\entities\User')
+        $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
             ->find($id);
 
         // Delete
@@ -151,7 +153,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
 
         // Attempt to read recently deleted record
         $entity = $this->entityManager
-            ->getRepository('erdiko\users\app\entities\User')
+            ->getRepository('erdiko\users\entities\User')
             ->find($id);
 
         $this->assertEmpty($entity);
