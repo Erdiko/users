@@ -140,12 +140,12 @@ class Api extends \erdiko\core\AjaxController
 	/**
 	 * User CRUD actions
 	 */
-	public function postCreate()
+	public function postCreateUser()
 	{
 		$response = array(
-			"action" => "create",
+			"action" => "createuser",
 			"success" => false,
-			"body" => "",
+			"user" => "",
 			"error_code" => 0,
 			"error_message" => ""
 		);
@@ -162,10 +162,18 @@ class Api extends \erdiko\core\AjaxController
 				throw new \Exception("role is required.");
 			}
 
-			$user = new User();
-			$uid = $user->save($params);
+			$userModel = new User();
+			$user = $userModel->save($params);
+            $output = array('id'       => $user->getId(),
+                            'email'    => $user->getEmail(),
+                            'password' => $user->getPassword(),
+                            'role'     => $user->getRole(),
+                            'name'     => $user->getName(),
+                            'last_login' => $user->getLastLogin(),
+                            'gateway_customer_id'=> $user->getGatewayCustomerId()
+            );
 
-			$response['body'] = $uid;
+			$response['user'] = $output;
 			$response['success'] = true;
 			$this->setStatusCode(200);
 		} catch (\Exception $e) {
@@ -221,12 +229,90 @@ class Api extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
+	public function getUsers(){
+        $response = array(
+            "method" => "users",
+            "success" => false,
+            "users" => "",
+            "error_code" => 0,
+            "error_message" => ""
+        );
+
+
+        try {
+            $userModel = new User();
+            $users = $userModel->getUsers();
+            $output = array();
+            foreach ($users as $user){
+                $output[] = array('id'       => $user->getId(),
+                                  'email'    => $user->getEmail(),
+                                  'password' => $user->getPassword(),
+                                  'role'     => $user->getRole(),
+                                  'name'     => $user->getName(),
+                                  'last_login' => $user->getLastLogin(),
+                                  'gateway_customer_id'=> $user->getGatewayCustomerId()
+                );
+            }
+            $response['success'] = true;
+            $response['users'] = $output;
+            $this->setStatusCode(200);
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+
+        $this->setContent($response);
+
+    }
+
+    public function getUser(){
+        $response = array(
+            "method" => "user",
+            "success" => false,
+            "user" => "",
+            "error_code" => 0,
+            "error_message" => ""
+        );
+
+        try {
+            $params = (object) $_REQUEST;
+            // Check required fields
+            if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
+                throw new \Exception("ID is required.");
+            } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
+                $params->id = $this->id;
+            }
+
+            $userModel = new User();
+            $user = $userModel->getById($params->id);
+            if(empty($user)){
+                throw new \Exception('User not found.');
+            }
+            $output[] = array('id'       => $user->getId(),
+                              'email'    => $user->getEmail(),
+                              'password' => $user->getPassword(),
+                              'role'     => $user->getRole(),
+                              'name'     => $user->getName(),
+                              'last_login' => $user->getLastLogin(),
+                              'gateway_customer_id'=> $user->getGatewayCustomerId()
+            );
+            $response['success'] = true;
+            $response['user'] = $output;
+            $this->setStatusCode(200);
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+
+        $this->setContent($response);
+    }
+
 	public function postUpdate()
 	{
 		$response = array(
-			"action" => "update",
+			"action" => "updateuser",
 			"success" => false,
-			"body" => "",
+			"user" => "",
 			"error_code" => 0,
 			"error_message" => ""
 		);
@@ -241,11 +327,21 @@ class Api extends \erdiko\core\AjaxController
 				$params->id = $this->id;
 			}
 
-			$user = new User();
-			$uid = $user->save($params);
-
+			$userModel = new User();
+			$result = $userModel->save($params);
+            if(empty($user)){
+                throw new \Exception('User not found.');
+            }
+            $output = array('id'       => $user->getId(),
+                            'email'    => $user->getEmail(),
+                            'password' => $user->getPassword(),
+                            'role'     => $user->getRole(),
+                            'name'     => $user->getName(),
+                            'last_login' => $user->getLastLogin(),
+                            'gateway_customer_id'=> $user->getGatewayCustomerId()
+            );
 			$response['success'] = true;
-			$response['body'] = $uid;
+			$response['user'] = $output;
 			$this->setStatusCode(200);
 		} catch (\Exception $e) {
 			$response['error_message'] = $e->getMessage();
@@ -255,26 +351,34 @@ class Api extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getDelete()
+	public function getDeleteUser()
 	{
 		$response = array(
-			"action" => "delete",
+			"action" => "deleteuser",
 			"success" => false,
-			"body" => "",
+			"user" => "",
 			"error_code" => 0,
 			"error_message" => ""
 		);
 
 		try {
 
-			if(empty($this->id) || ($this->id < 1)){
-				throw new \Exception("User ID is required.");
-			}
+            $params = (object) $_REQUEST;
+            // Check required fields
+            if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
+                throw new \Exception("ID is required.");
+            } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
+                $params->id = $this->id;
+            }
 
-			$user = new User();
-			$user->deleteUser($this->id);
+			$userModel = new User();
+			$result = $userModel->deleteUser($params->id);
 
-			$response['body'] = "User {$this->id} successfully deleted.";
+            if(false == $result){
+                throw new \Exception('User could not be deleted.');
+            }
+
+			$response['user'] = array('id' => $params->id);
 			$response['success'] = true;
 
 			$this->setStatusCode(200);
@@ -285,4 +389,182 @@ class Api extends \erdiko\core\AjaxController
 
 		$this->setContent($response);
 	}
+
+
+    /**
+     *
+     * return a role with their users.
+     */
+    public function getRole(){
+        $response = (object)array(
+            'method'        => 'role',
+            'success'       => false,
+            'status'        => 200,
+            'error_code'    => 0,
+            'error_message' => ''
+        );
+
+        $data = (object) $_REQUEST;
+        try {
+            if(empty($data->id)){
+                throw new \Exception('Role Id is required.');
+            }
+            $roleModel    = new \app\models\Role();
+            if(empty($data->id)){
+                throw new \Exception('Role Id is required.');
+            }
+            else{
+                $id = $_REQUEST['id'];
+            }
+            $users = $roleModel->getUsersForRole($id);
+            $responseRole = array();
+            foreach ($users as $user){
+                $responseRole[] = array('id'   => $user->getId(),
+                    'name' => $user->getName(),
+                    'email'=> $user->getEmail()
+                );
+            }
+            $response->success = true;
+            $response->users = $responseRole;
+            unset($response->error_code);
+            unset($response->error_message);
+        } catch (\Exception $e) {
+            $response->success = false;
+            $response->error_code = $e->getCode();
+            $response->error_message = $e->getMessage();
+        }
+        $this->setContent($response);
+    }
+
+    /**
+     * Create a new role
+     */
+    public function postCreateRole(){
+        $response = (object)array(
+            'method'        => 'createrole',
+            'success'       => false,
+            'status'        => 200,
+            'error_code'    => 0,
+            'error_message' => ''
+        );
+        // decode json data
+        $json = file_get_contents('php://input');
+        $data = json_decode(trim($json));
+        $requiredParams = array('name', 'active');
+        try {
+            $data = (array) $data;
+            foreach ($requiredParams as $param){
+                if(empty($data[$param])){
+                    throw new \Exception($param .' is required.');
+                }
+            }
+            $data[] = array('active' => $data['active'],
+                'name'   => strtolower($data['name'])
+            );
+
+            $roleModel    = new \app\models\Role();
+            $roleId = $roleModel->create($data);
+            if($roleId === 0){
+                throw new \Exception('Could not create Role.');
+            }
+            $role = $roleModel->findById($roleId);
+            $responseRole = array('id' => $role->getId(),
+                'active' => (boolean) $role->getActive(),
+                'name'   => $role->getName()
+            );
+            $response->success = true;
+            $response->role = $responseRole;
+            unset($response->error_code);
+            unset($response->error_message);
+        } catch (\Exception $e) {
+            $response->success = false;
+            $response->error_code = $e->getCode();
+            $response->error_message = $e->getMessage();
+        }
+        $this->setContent($response);
+    }
+
+    /**
+     * update a given role
+     */
+    public function postUpdateRole(){
+        $response = (object)array(
+            'method'        => 'updaterole',
+            'success'       => false,
+            'status'        => 200,
+            'error_code'    => 0,
+            'error_message' => ''
+        );
+        // decode json data
+        $json = file_get_contents('php://input');
+        $data = json_decode(trim($json));
+        $requiredParams = array('id', 'name', 'active');
+        try {
+            $data = (array) $data;
+            foreach ($requiredParams as $param){
+                if(empty($data[$param])){
+                    throw new \Exception($param .' is required.');
+                }
+            }
+            $data[] = array('id' => $data['id'],
+                'active' => $data['active'],
+                'name'   => strtolower($data['name'])
+            );
+
+            $roleModel    = new \app\models\Role();
+            $roleId = $roleModel->save($data);
+            $role = $roleModel->findById($roleId);
+            $responseRole = array('id' => $role->getId(),
+                'active' => (boolean) $role->getActive(),
+                'name'   => $role->getName()
+            );
+            $response->success = true;
+            $response->role = $responseRole;
+            unset($response->error_code);
+            unset($response->error_message);
+        } catch (\Exception $e) {
+            $response->success = false;
+            $response->error_code = $e->getCode();
+            $response->error_message = $e->getMessage();
+        }
+        $this->setContent($response);
+    }
+
+    /**
+     * delete a given role
+     */
+    public function postDeleteRole(){
+        $response = (object)array(
+            'method'        => 'deleterole',
+            'success'       => false,
+            'status'        => 200,
+            'error_code'    => 0,
+            'error_message' => ''
+        );
+        // decode json data
+        $json = file_get_contents('php://input');
+        $data = json_decode(trim($json));
+        $requiredParams = array('id');
+        try {
+            $data = (array) $data;
+            foreach ($requiredParams as $param){
+                if(empty($data[$param])){
+                    throw new \Exception($param .' is required.');
+                }
+            }
+
+            $roleModel    = new \app\models\Role();
+            $roleId = $roleModel->delete($data['id']);
+            $responseRoleId = array('id' => $roleId);
+            $response->success = true;
+            $response->role = $responseRoleId;
+            unset($response->error_code);
+            unset($response->error_message);
+        } catch (\Exception $e) {
+            $response->success = false;
+            $response->error_code = $e->getCode();
+            $response->error_message = $e->getMessage();
+        }
+        $this->setContent($response);
+    }
 }
