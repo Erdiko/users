@@ -171,7 +171,6 @@ class UserAPITest extends \tests\ErdikoTestCase
 		curl_setopt_array($curl, $opts);
 
 		$response = curl_exec($curl);
-        var_dump($response);die();
 		$err = curl_error($curl);
 
 		curl_close($curl);
