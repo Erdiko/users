@@ -307,7 +307,7 @@ class Api extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
-	public function postUpdate()
+	public function postUpdateUser()
 	{
 		$response = array(
 			"action" => "updateuser",
@@ -329,9 +329,10 @@ class Api extends \erdiko\core\AjaxController
 
 			$userModel = new User();
 			$result = $userModel->save($params);
-            if(empty($user)){
+            if(empty($result)){
                 throw new \Exception('User not found.');
             }
+            $user = $userModel->getById($result);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
                             'password' => $user->getPassword(),

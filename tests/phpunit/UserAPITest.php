@@ -65,6 +65,19 @@ class UserAPITest extends \tests\ErdikoTestCase
 	    self::$uid = $result->body->body;
     }
 
+    public function testUserNotFound()
+    {
+        $url = self::url.'user?id=99999';
+        $json = $this->_call($url,null,'GET');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->errors);
+        $this->assertEquals($result->body->method, 'user');
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "User not found.");
+
+    }
+
     public function testUsers()
     {
 	    $url = self::url.'users/'.self::$uid;
