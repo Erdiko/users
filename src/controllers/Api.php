@@ -413,7 +413,7 @@ class Api extends \erdiko\core\AjaxController
                 $responseRoles[] = array('id'     => $role->getId(),
                     'active' =>(bool) $role->getActive(),
                     'name'   => $role->getName(),
-                    'users'  => $roleModel->getCountByRole($role->getName()),
+                    'users'  => $roleModel->getCountByRole($role->getId()),
                 );
             }
             $response->success = true;

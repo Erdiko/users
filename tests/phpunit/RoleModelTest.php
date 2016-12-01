@@ -27,13 +27,13 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->modelArray = array(
             'id'=>0,
             'active' => 1,
-            'name' => 'ROLE_NAME'.time(),
+            'name' => 1,
         );
         $this->userArray = array(
             'email' => 'user+'.time().'@email.com',
             'password' => 'booyah_'.time(),
             'name' => 'user+'.time(),
-            'role' => 'default',
+            'role' => 1,
             'gateway_customer_id' => time()
         );
         $this->roleModel = new \erdiko\users\models\Role();
@@ -87,7 +87,7 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->entityManager->flush();
         $this->entityManager->refresh($userEntity);
         $this->userId = $userEntity->getId();
-        $count = $this->roleModel->getCountByRole($userEntity->getRole());
+        $count = $this->roleModel->getCountByRole($this->userArray['role']);
         $this->assertGreaterThan(0,$count);
     }
 

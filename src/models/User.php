@@ -68,9 +68,15 @@ class User implements iErdikoUser
 
 	protected static function createAnonymous()
 	{
+	    $roleModel = new \erdiko\users\models\Role();
+        $roleAnonymous = $roleModel->findByName('anonymous');
+        if(empty($roleAnonymous)){
+            throw  new \Exception('Error, role anonymous not found.');
+        }
+
 		$entity = new entity();
 		$entity->setId( 0 );
-		$entity->setRole( 'anonymous' );
+		$entity->setRole( $roleAnonymous->getId() );
 		$entity->setName( 'anonymous' );
 		$entity->setEmail( 'anonymous' );
 		return $entity;
@@ -116,7 +122,12 @@ class User implements iErdikoUser
 		try {
 
 			if ( empty( $data['role'] ) ) {
-				$data['role'] = "anonymous";
+                $roleModel = new \erdiko\users\models\Role();
+                $roleAnonymous = $roleModel->findByName('anonymous');
+                if(empty($roleAnonymous)){
+                    throw  new \Exception('Error, role anonymous not found.');
+                }
+				$data['role'] = $roleAnonymous->getId();
 			}
 
 			$password = $this->getSalted($data['password']);
@@ -177,7 +188,13 @@ class User implements iErdikoUser
 	 * returns true if the user is logged in
 	 */
 	public function isLoggedIn() {
-		return ( ( $this->_user->getId() > 0 ) && ( $this->_user->getRole() !== 'anonymous' ) );
+        $roleModel = new \erdiko\users\models\Role();
+        $roleAnonymous = $roleModel->findByName('anonymous');
+        if(empty($roleAnonymous)){
+            throw  new \Exception('Error, role anonymous not found.');
+        }
+
+		return ( ( $this->_user->getId() > 0 ) && ( $this->_user->getRole() !== $roleAnonymous->getId() ) );
 	}
 
 	/**
@@ -211,7 +228,7 @@ class User implements iErdikoUser
 	 * returns true if current user's role is admin
 	 */
 	public function isAdmin() {
-		return $this->hasRole('admin');
+        return $this->hasRole('admin');
 	}
 
 	/**
@@ -234,8 +251,20 @@ class User implements iErdikoUser
 	 */
 	public function hasRole($role="anonymous")
 	{
-		return ( strtolower( $this->_user->getRole() ) == $role );
+        $roleModel = new \erdiko\users\models\Role();
+        $roleEntity = $roleModel->findByName($role);
+        if(empty($roleEntity)){
+            throw  new \Exception('Error, role anonymous not found.');
+        }
+        $result = $this->_user->getRole() === $roleEntity->getId();
+
+		return $result;
 	}
+
+    public function getRole()
+    {
+        return  $this->_user->getRole();
+    }
 
 	/**
 	 *
