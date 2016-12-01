@@ -143,7 +143,7 @@ class Api extends \erdiko\core\AjaxController
 	public function postCreateUser()
 	{
 		$response = array(
-			"action" => "createuser",
+			"method" => "createuser",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -187,7 +187,7 @@ class Api extends \erdiko\core\AjaxController
 	public function getRead()
 	{
 		$response = array(
-			"action" => "read",
+			"method" => "read",
 			"success" => false,
 			"body" => "",
 			"error_code" => 0,
@@ -310,7 +310,7 @@ class Api extends \erdiko\core\AjaxController
 	public function postUpdateUser()
 	{
 		$response = array(
-			"action" => "updateuser",
+			"method" => "updateuser",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -355,7 +355,7 @@ class Api extends \erdiko\core\AjaxController
 	public function getDeleteUser()
 	{
 		$response = array(
-			"action" => "deleteuser",
+			"method" => "deleteuser",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
