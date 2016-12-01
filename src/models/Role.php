@@ -87,9 +87,10 @@ class Role
     {
         try {
             $role = $this->getRepository('\erdiko\users\entities\Role');
-            $result = $role->findBy(array('active' => $active));
+            $result = $role->findBy(array('active' => 1));
         }catch (\Exception $e) {
             \error_log($e->getMessage());
+            die($e->getMessage());
         }
         return $result;
     }
@@ -102,7 +103,7 @@ class Role
         if(is_null($role)) throw new \Exception('Role is required');
         $result = 0;
         try {
-            $users  = $this->_em->getRepository('app\entities\User')
+            $users  = $this->_em->getRepository('\erdiko\users\entities\User')
                                           ->findBy(array('role' => $role));
             $result  = count($users);
 
@@ -122,7 +123,7 @@ class Role
         try {
             $role = $this->findById($id);
             if(empty($role)) throw new \Exception('Role is not found');
-            $users  = $this->_em->getRepository('app\entities\User')
+            $users  = $this->_em->getRepository('\erdiko\users\entities\User')
                                 ->findBy(array('role' => $role->getName()));
             $result  = $users;
         }catch (\Exception $e) {

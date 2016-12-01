@@ -74,7 +74,7 @@ class RoleTest extends \tests\ErdikoTestCase
     }
 
     function testGetCountByRole(){
-        $userEntity = new \app\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setEmail($this->userArray['email']);
         $userEntity->setPassword($this->userArray['password']);
         $userEntity->setName($this->userArray['name']);
@@ -82,7 +82,7 @@ class RoleTest extends \tests\ErdikoTestCase
         $userEntity->setGatewayCustomerId($this->userArray['gateway_customer_id']);
 
         // Save
-        $this->entityManager->getRepository('app\entities\User');
+        $this->entityManager->getRepository('erdiko\users\entities\User');
         $this->entityManager->persist($userEntity);
         $this->entityManager->flush();
         $this->entityManager->refresh($userEntity);
