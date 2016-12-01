@@ -80,33 +80,30 @@ class UserAPITest extends \tests\ErdikoTestCase
 
     public function testUsers()
     {
-	    $url = self::url.'users/'.self::$uid;
+	    $url = self::url.'users';
 	    $json = $this->_call($url,null,'GET');
 	    $result = json_decode($json);
 
 	    $this->assertFalse($result->errors);
 	    $this->assertEquals($result->body->method, 'users');
 	    $this->assertTrue($result->body->success);
-	    $this->assertEquals($result->body->body->email, $this->userData['email']);
-	    $this->assertEquals($result->body->body->role, $this->userData['role']);
-	    $this->assertEquals($result->body->body->name, $this->userData['name']);
-	    $this->assertEquals($result->body->body->gateway_customer_id, $this->userData['gateway_customer_id']);
-
+        $this->assertNotNull($result->body->users);
     }
 
     public function testUpdateFail()
     {
-	    $url = self::url.'update';
+	    $url = self::url.'updateuser';
 	    $json = $this->_call($url,$this->userData,'POST');
 	    $result = json_decode($json);
 
 	    $this->assertEquals($result->body->method, 'update');
 	    $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "ID is required.");
     }
 
     public function testUpdate()
     {
-	    $url = self::url.'update';
+	    $url = self::url.'updateuser';
 	    $this->userDataUpdate['id'] = self::$uid;
 	    $params = json_encode($this->userDataUpdate);
 
@@ -118,7 +115,7 @@ class UserAPITest extends \tests\ErdikoTestCase
 	    $this->assertTrue($result->body->success);
 
 	    // verify data
-	    $url = self::url.'user/'.self::$uid;
+	    $url = self::url.'user/id?='.self::$uid;
 	    $json = $this->_call($url,null,'GET');
 	    $result = json_decode($json);
 
@@ -137,7 +134,7 @@ class UserAPITest extends \tests\ErdikoTestCase
 
 	    $this->assertFalse($result->errors);
 	    $this->assertTrue($result->body->success);
-	    $this->assertEquals($result->body->method, 'delete');
+	    $this->assertEquals($result->body->method, 'deleteuser');
 	    $this->assertEquals($result->body->user->id, self::$uid);
 
 	    // verify data
@@ -147,6 +144,26 @@ class UserAPITest extends \tests\ErdikoTestCase
 
 	    $this->assertFalse($result->body->success);
         $this->assertEquals($result->body->error_message, "User not found.");
+    }
+
+
+    public function testDeleteNotExisting(){
+        $url = self::url.'delete/99999900';
+        $json = $this->_call($url,null,'GET');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->errors);
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->method, 'deleteuser');
+        $this->assertEquals($result->body->error_message, "User could not be deleted.");
+
+        // verify data
+        $url = self::url.'user/'.self::$uid;
+        $json = $this->_call($url,null,'GET');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "User could not be deleted.");
     }
 
 	/**

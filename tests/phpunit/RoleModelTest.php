@@ -52,6 +52,23 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->assertNotNull($entity);
     }
 
+
+    function testFindByNotExist(){
+        $id = 999999999;
+        $result = $this->roleModel->findById($id);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @expectedException \Exception
+     */
+
+    function testFindByBreaks(){
+        $id = null;
+        $result = $this->roleModel->findById($id);
+        $this->assertNull($result);
+    }
+
     function testFindByName(){
         $this->id = $this->roleModel->create($this->modelArray);
         $entity = $this->roleModel->findById($this->id);
@@ -89,6 +106,23 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->userId = $userEntity->getId();
         $count = $this->roleModel->getCountByRole($this->userArray['role']);
         $this->assertGreaterThan(0,$count);
+    }
+
+    function testGetCountByRoleNotExist(){
+        $role = 999999999;
+        $count = $this->roleModel->getCountByRole($role);
+        $this->assertEquals(0,$count);
+    }
+
+    /**
+     * throws exception Role is required
+     * @expectedException \Exception
+     */
+
+    function testGetCountByRoleBreaks(){
+        $role = null;
+        $count = $this->roleModel->getCountByRole($role);
+        $this->assertEquals(0,$count);
     }
 
 

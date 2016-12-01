@@ -273,6 +273,21 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 
+    public function testDeleteNullParam()
+    {
+        $id = null;
+        $result = $this->model->deleteUser($id);
+
+        $this->assertFalse($result);
+    }
+
+	public function testDeleteNotExisting(){
+	    $id = 99999999999;
+        $result = $this->model->deleteUser($id);
+
+        $this->assertFalse($result);
+    }
+
 	function tearDown()
 	{
 	   foreach ($this->rolesCreated as $id){
