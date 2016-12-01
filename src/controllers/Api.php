@@ -393,6 +393,44 @@ class Api extends \erdiko\core\AjaxController
 
     /**
      *
+     * return roles with properties: id, users count, active, name.
+     */
+    public function getRoles(){
+        $response = (object)array(
+            'method'        => 'roles',
+            'success'       => false,
+            'status'        => 200,
+            'error_code'    => 0,
+            'error_message' => '',
+            'roles'          => array()
+        );
+
+        try {
+            $roleModel    = new \erdiko\users\models\Role();
+            $roles = $roleModel->findByStatus(1);
+            $responseRoles = array();
+            foreach ($roles as $role){
+                $responseRoles[] = array('id'     => $role->getId(),
+                    'active' =>(bool) $role->getActive(),
+                    'name'   => $role->getName(),
+                    'users'  => $roleModel->getCountByRole($role->getName()),
+                );
+            }
+            $response->success = true;
+            $response->roles = $responseRoles;
+            unset($response->error_code);
+            unset($response->error_message);
+        } catch (\Exception $e) {
+            $response->success = false;
+            $response->error_code = $e->getCode();
+            $response->error_message = $e->getMessage();
+        }
+        $this->setContent($response);
+    }
+
+
+    /**
+     *
      * return a role with their users.
      */
     public function getRole(){
@@ -400,6 +438,7 @@ class Api extends \erdiko\core\AjaxController
             'method'        => 'role',
             'success'       => false,
             'status'        => 200,
+            'role'          =>'',
             'error_code'    => 0,
             'error_message' => ''
         );
@@ -409,23 +448,32 @@ class Api extends \erdiko\core\AjaxController
             if(empty($data->id)){
                 throw new \Exception('Role Id is required.');
             }
-            $roleModel    = new \app\models\Role();
+            $roleModel    = new \erdiko\users\models\Role();
             if(empty($data->id)){
                 throw new \Exception('Role Id is required.');
             }
             else{
                 $id = $_REQUEST['id'];
             }
+            $role = $roleModel->findById($id);
+            if(empty($role)){
+                throw new \Exception('Role not found.');
+            }
             $users = $roleModel->getUsersForRole($id);
-            $responseRole = array();
+            $responseUsers = array();
             foreach ($users as $user){
-                $responseRole[] = array('id'   => $user->getId(),
+                $responseUsers[] = array('id'   => $user->getId(),
                     'name' => $user->getName(),
                     'email'=> $user->getEmail()
                 );
             }
+            $responseRole = array('id' => $role->getId(),
+                                  'name' => $role->getName(),
+                                  'active' => $role->getActive(),
+                                  'users'  => $responseUsers
+            );
             $response->success = true;
-            $response->users = $responseRole;
+            $response->role = $responseRole;
             unset($response->error_code);
             unset($response->error_message);
         } catch (\Exception $e) {
@@ -462,15 +510,15 @@ class Api extends \erdiko\core\AjaxController
                 'name'   => strtolower($data['name'])
             );
 
-            $roleModel    = new \app\models\Role();
+            $roleModel    = new \erdiko\users\models\Role();
             $roleId = $roleModel->create($data);
             if($roleId === 0){
                 throw new \Exception('Could not create Role.');
             }
             $role = $roleModel->findById($roleId);
             $responseRole = array('id' => $role->getId(),
-                'active' => (boolean) $role->getActive(),
-                'name'   => $role->getName()
+                                  'active' => (boolean) $role->getActive(),
+                                  'name'   => $role->getName()
             );
             $response->success = true;
             $response->role = $responseRole;
@@ -506,12 +554,13 @@ class Api extends \erdiko\core\AjaxController
                     throw new \Exception($param .' is required.');
                 }
             }
+
             $data[] = array('id' => $data['id'],
-                'active' => $data['active'],
-                'name'   => strtolower($data['name'])
+                            'active' => filter_var($data['active'], FILTER_VALIDATE_BOOLEAN),
+                            'name'   => strtolower($data['name'])
             );
 
-            $roleModel    = new \app\models\Role();
+            $roleModel    = new \erdiko\users\models\Role();
             $roleId = $roleModel->save($data);
             $role = $roleModel->findById($roleId);
             $responseRole = array('id' => $role->getId(),
@@ -553,7 +602,7 @@ class Api extends \erdiko\core\AjaxController
                 }
             }
 
-            $roleModel    = new \app\models\Role();
+            $roleModel    = new \erdiko\users\models\Role();
             $roleId = $roleModel->delete($data['id']);
             $responseRoleId = array('id' => $roleId);
             $response->success = true;
