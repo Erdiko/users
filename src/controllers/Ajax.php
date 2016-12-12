@@ -2,7 +2,7 @@
 
 
 /**
- * Api
+ * Ajax
  *
  * @category    Erdiko
  * @package     User
@@ -17,7 +17,7 @@ use erdiko\authenticate\iErdikoUser;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\User;
 
-class Api extends \erdiko\core\AjaxController
+class Ajax extends \erdiko\core\AjaxController
 {
 	private $id = null;
 	/**
