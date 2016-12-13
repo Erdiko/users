@@ -88,14 +88,12 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
-	 * @expectedException TypeError
+	 * @expectedException Exception
 	 */
 	public function testSetEntityFail()
 	{
-		try {
-			$obj   = (object) array();
-			$this->model->setEntity( $obj );
-		} catch (\Exception $e) {}
+        $obj   = (object) array();
+		$this->model->setEntity($obj);
 	}
 
 	public function testSetEntity()
@@ -106,6 +104,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$entity->setName( 'anonymous' );
 		$entity->setEmail( 'anonymous' );
 		$this->model->setEntity($entity);
+        $this->assertTrue(true);
 	}
 
 	/**

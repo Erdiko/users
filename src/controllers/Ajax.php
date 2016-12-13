@@ -151,19 +151,22 @@ class Ajax extends \erdiko\core\AjaxController
 		);
 
 		try {
-			$params = json_decode(file_get_contents("php://input"));
-
-			// Check required fields
-			if(empty($params->email)){
-				throw new \Exception("email is required.");
-			} else if(empty($params->password)){
-				throw new \Exception("password is required.");
-			} else if(empty($params->role)){
-				throw new \Exception("role is required.");
-			}
+			$data = json_decode(file_get_contents("php://input"));
+            // Check required fields
+            $requiredParams = array('email','password', 'role', 'name');
+            $params = (array) $data;
+            foreach ($requiredParams as $param){
+                if(empty($params[$param])){
+                    throw new \Exception(ucfirst($param) .' is required.');
+                }
+            }
 
 			$userModel = new User();
-			$user = $userModel->save($params);
+			$userId = $userModel->save($data);
+            if(empty($userId)){
+                throw  new \Exception('Could not create new user.');
+            }
+            $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
                             'password' => $user->getPassword(),
@@ -322,16 +325,17 @@ class Ajax extends \erdiko\core\AjaxController
 
 			// Check required fields
 			if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
-				throw new \Exception("ID is required.");
+				throw new \Exception("Id is required.");
 			} elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
 				$params->id = $this->id;
 			}
 
 			$userModel = new User();
-			$result = $userModel->save($params);
-            if(empty($result)){
+			$entity = $userModel->getById($params->id);
+            if(empty($entity)){
                 throw new \Exception('User not found.');
             }
+            $result = $userModel->save($params);
             $user = $userModel->getById($result);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
@@ -367,7 +371,7 @@ class Ajax extends \erdiko\core\AjaxController
             $params = (object) $_REQUEST;
             // Check required fields
             if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
-                throw new \Exception("ID is required.");
+                throw new \Exception("Id is required.");
             } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
                 $params->id = $this->id;
             }
@@ -504,7 +508,7 @@ class Ajax extends \erdiko\core\AjaxController
             $data = (array) $data;
             foreach ($requiredParams as $param){
                 if(empty($data[$param])){
-                    throw new \Exception($param .' is required.');
+                    throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
             $data[] = array('active' => $data['active'],
@@ -552,7 +556,7 @@ class Ajax extends \erdiko\core\AjaxController
             $data = (array) $data;
             foreach ($requiredParams as $param){
                 if(empty($data[$param])){
-                    throw new \Exception($param .' is required.');
+                    throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
 
@@ -599,7 +603,7 @@ class Ajax extends \erdiko\core\AjaxController
             $data = (array) $data;
             foreach ($requiredParams as $param){
                 if(empty($data[$param])){
-                    throw new \Exception($param .' is required.');
+                    throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
 

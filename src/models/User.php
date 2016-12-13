@@ -31,8 +31,11 @@ class User implements iErdikoUser
 		$this->_user = self::createAnonymous();
 	}
 
-	public function setEntity(entity $entity)
+	public function setEntity($entity)
 	{
+	    if(!($entity instanceof  entity)){
+            throw new \Exception('Parameter must be an entity User');
+        }
 		$this->_user = $entity;
 	}
 
@@ -155,7 +158,8 @@ class User implements iErdikoUser
 	 * returns password string concat'd with password salt
 	 */
 	public function getSalted( $password ) {
-		return $password . self::PASSWORDSALT;
+		$res =  $password . self::PASSWORDSALT;
+        return $res;
 	}
 
 
@@ -165,7 +169,7 @@ class User implements iErdikoUser
 	 * attempt to validate the user by querying the DB for params
 	 */
 	public function authenticate( $email, $password ) {
-		$pass = $this->getSalted($password);
+		$pass = $password . self::PASSWORDSALT;
 		$pwd = md5( $pass );
 
 		// @todo: repository could change...
