@@ -291,7 +291,7 @@ class Ajax extends \erdiko\core\AjaxController
             if(empty($user)){
                 throw new \Exception('User not found.');
             }
-            $output[] = array('id'       => $user->getId(),
+            $output = array('id'       => $user->getId(),
                               'email'    => $user->getEmail(),
                               'password' => $user->getPassword(),
                               'role'     => $user->getRole(),
