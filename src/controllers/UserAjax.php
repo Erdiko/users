@@ -2,7 +2,7 @@
 
 
 /**
- * Ajax
+ * UserAjax
  *
  * @category    Erdiko
  * @package     User
@@ -17,7 +17,7 @@ use erdiko\authenticate\iErdikoUser;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\User;
 
-class Ajax extends \erdiko\core\AjaxController
+class UserAjax extends \erdiko\core\AjaxController
 {
 	private $id = null;
 	/**
@@ -140,10 +140,10 @@ class Ajax extends \erdiko\core\AjaxController
 	/**
 	 * User CRUD actions
 	 */
-	public function postCreateUser()
+	public function postRegister()
 	{
 		$response = array(
-			"method" => "createuser",
+			"method" => "register",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -232,9 +232,9 @@ class Ajax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getUsers(){
+	public function getGetusers(){
         $response = array(
-            "method" => "users",
+            "method" => "getusers",
             "success" => false,
             "users" => "",
             "error_code" => 0,
@@ -268,9 +268,9 @@ class Ajax extends \erdiko\core\AjaxController
 
     }
 
-    public function getUser(){
+    public function getGetUser(){
         $response = array(
-            "method" => "user",
+            "method" => "getuser",
             "success" => false,
             "user" => "",
             "error_code" => 0,
@@ -310,10 +310,10 @@ class Ajax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
-	public function postUpdateUser()
+	public function postUpdate()
 	{
 		$response = array(
-			"method" => "updateuser",
+			"method" => "update",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -356,10 +356,10 @@ class Ajax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getDeleteUser()
+	public function getCancel()
 	{
 		$response = array(
-			"method" => "deleteuser",
+			"method" => "cancel",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -395,6 +395,7 @@ class Ajax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
+    /** these methods will be moved out to another new controller */
 
     /**
      *
