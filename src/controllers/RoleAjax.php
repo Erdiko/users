@@ -16,7 +16,6 @@ use erdiko\authenticate\BasicAuth;
 use erdiko\authenticate\iErdikoUser;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\Role;
-use erdiko\users\models\User;
 
 class RoleAjax extends \erdiko\core\AjaxController
 {
