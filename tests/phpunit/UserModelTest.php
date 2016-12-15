@@ -19,7 +19,14 @@ class UserModelTest extends \tests\ErdikoTestCase
 	protected $entityManager = null;
 	protected $userArrayData;
 	protected $userArrayUpdate;
+    protected $roleAdminArrayData;
+    protected $roleAnonymousArrayData;
 	protected $model;
+    protected $roleModel;
+    protected $anonymousId;
+    protected $adminId;
+    protected $rolesCreated;
+
 	protected static $lastID;
 
 	function setUp()
@@ -28,38 +35,76 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$this->userArrayData = array(
 			"email"=>"leo@testlabs.com",
 			"password"=>"asdf1234",
-			"role"=>"super-admin",
+			"role"=>1,
 			"name"=>"Test",
 		);
 		$this->userArrayUpdate = array(
 			"id"=>null,
 			"email"=>"leo@arroyolabs.com",
 			"password"=>"asdf1234",
-			"role"=>"admin",
+			"role"=>2,
 			"name"=>"Test 2",
 		);
-		$this->model = new \erdiko\users\models\User();
+
+        $this->rolesCreated = array();
+
+        $this->roleAdminArrayData = array(
+            "name" => 'admin',
+            "active" => 1
+        );
+
+        $this->roleAnonymousArrayData = array(
+            "name" => 'anonymous',
+            "active" => 1
+        );
+
+        //create Roles needed to tests.
+        $this->roleModel = new \erdiko\users\models\Role();
+
+        $roleEntity = $this->roleModel->findByName('admin');
+        if(empty($roleEntity)) {
+            $id = $this->roleModel->create($this->roleAdminArrayData);
+            $this->rolesCreated[] = $id;
+            $this->adminId = $id;
+        }
+        else{
+            $this->adminId = $roleEntity->getId();
+        }
+
+
+
+        $roleEntity = $this->roleModel->findByName('anonymous');
+        if(empty($roleEntity)) {
+            $id = $this->roleModel->create($this->roleAnonymousArrayData);
+            $this->rolesCreated[] = $id;
+            $this->anonymousId = $id;
+        }
+        else{
+            $this->anonymousId = $roleEntity->getId();
+        }
+
+
+        $this->model = new \erdiko\users\models\User();
 	}
 
 	/**
-	 * @expectedException TypeError
+	 * @expectedException Exception
 	 */
 	public function testSetEntityFail()
 	{
-		try {
-			$obj   = (object) array();
-			$this->model->setEntity( $obj );
-		} catch (\Exception $e) {}
+        $obj   = (object) array();
+		$this->model->setEntity($obj);
 	}
 
 	public function testSetEntity()
 	{
 		$entity = new \erdiko\users\entities\User();
 		$entity->setId( 0 );
-		$entity->setRole( 'anonymous' );
+		$entity->setRole( $this->anonymousId);
 		$entity->setName( 'anonymous' );
 		$entity->setEmail( 'anonymous' );
 		$this->model->setEntity($entity);
+        $this->assertTrue(true);
 	}
 
 	/**
@@ -71,7 +116,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 		$this->assertInstanceOf('\erdiko\users\entities\User', $entity);
 		$this->assertEquals('anonymous', $entity->getName());
-		$this->assertEquals('anonymous', $entity->getRole());
+		$this->assertEquals($this->anonymousId, $entity->getRole());
 		$this->assertEquals('anonymous', $entity->getEmail());
 	}
 
@@ -86,7 +131,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$out = (object)array(
 			"id" => 0,
 			"name" => 'anonymous',
-			"role" => 'anonymous',
+			"role" => $this->anonymousId,
 			"email" => 'anonymous',
 			'gateway_customer_id' => null,
 			'last_login' => null
@@ -103,7 +148,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$object = (object)array(
 			"id" => 0,
 			"name" => 'anonymous',
-			"role" => 'anonymous',
+			"role" => $this->anonymousId,
 			"email" => 'anonymous',
 			'gateway_customer_id' => null,
 			'last_login' => null
@@ -192,9 +237,6 @@ class UserModelTest extends \tests\ErdikoTestCase
 		// double check
 		$logged = $this->model->isLoggedIn();
 		$this->assertTrue($logged);
-
-		$role = $this->model->hasRole('super-admin');
-		$this->assertTrue($role);
 	}
 
 	public function testSave()
@@ -202,6 +244,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$params = $this->userArrayUpdate;
 		$params['password'] = $this->model->getSalted($this->userArrayUpdate['password']);
 		$params['id'] = self::$lastID;
+        $params['role'] = $this->adminId;
+
 		$result = $this->model->save($params);
 
 		$this->assertInternalType('int',$result);
@@ -210,10 +254,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$entity = $this->model->getEntity();
 		$this->assertEquals($entity->getEmail(),$this->userArrayUpdate['email']);
 		$this->assertEquals($entity->getName(),$this->userArrayUpdate['name']);
-		$this->assertEquals($entity->getRole(),$this->userArrayUpdate['role']);
+		$this->assertEquals($entity->getRole(),$this->adminId);
 
-		$admin = $this->model->isAdmin();
-		$this->assertTrue($admin);
+		$this->assertTrue($this->model->isAdmin());
 
 		$newEntity = $this->model->getEntity();
 		$this->userArrayUpdate['id'] = $newEntity->getId();
@@ -229,8 +272,26 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 
+    public function testDeleteNullParam()
+    {
+        $id = null;
+        $result = $this->model->deleteUser($id);
+
+        $this->assertFalse($result);
+    }
+
+	public function testDeleteNotExisting(){
+	    $id = 99999999999;
+        $result = $this->model->deleteUser($id);
+
+        $this->assertFalse($result);
+    }
+
 	function tearDown()
 	{
-		unset($this->entityManager);
+	   foreach ($this->rolesCreated as $id){
+	       $this->roleModel->delete($id);
+       }
+       unset($this->entityManager);
 	}
 }
