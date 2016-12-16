@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Login
  *
@@ -38,7 +37,7 @@ class Login extends \erdiko\core\Controller
 
 	public function postLogin()
 	{
-		$authenticator = new BasicAuth(new User());
+		$authenticator = new BasicAuth(new User);
 		$data = (object)$_REQUEST;
 
 		if($authenticator->login(array('username'=>$data->email, 'password'=>$data->password),'erdiko_user')){
