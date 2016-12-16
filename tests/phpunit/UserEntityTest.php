@@ -27,7 +27,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
             'email' => 'user+'.time().'@email.com',
             'password' => 'booyah_'.time(),
             'name' => 'user+'.time(),
-            'role' => 'default',
+            'role' => '1',
             'gateway_customer_id' => time() 
             );
     }
@@ -108,7 +108,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
         $updates = array(
             'email' => 'user+'.time().'@update.com',
             'password' => microtime(),
-            'role' => 'tester',
+            'role' => '2',
             'name' => 'bill+'.time(),
             'last_login' => date('Y-m-d H:i:s')
             );

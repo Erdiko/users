@@ -35,7 +35,7 @@ class RoleEntityTest extends \tests\ErdikoTestCase
 
     function testCreate()
     {
-        $rolEntity = \erdiko\users\entities\Role();
+        $rolEntity = new \erdiko\users\entities\Role();
         $rolEntity->setActive($this->rolArray['active']);
         $rolEntity->setName($this->rolArray['name']);
         // Save

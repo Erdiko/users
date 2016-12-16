@@ -27,13 +27,13 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->modelArray = array(
             'id'=>0,
             'active' => 1,
-            'name' => 'ROLE_NAME'.time(),
+            'name' => 1,
         );
         $this->userArray = array(
             'email' => 'user+'.time().'@email.com',
             'password' => 'booyah_'.time(),
             'name' => 'user+'.time(),
-            'role' => 'default',
+            'role' => 1,
             'gateway_customer_id' => time()
         );
         $this->roleModel = new \erdiko\users\models\Role();
@@ -50,6 +50,23 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->id = $this->roleModel->create($this->modelArray);
         $entity = $this->roleModel->findById($this->id);
         $this->assertNotNull($entity);
+    }
+
+
+    function testFindByNotExist(){
+        $id = 999999999;
+        $result = $this->roleModel->findById($id);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @expectedException \Exception
+     */
+
+    function testFindByBreaks(){
+        $id = null;
+        $result = $this->roleModel->findById($id);
+        $this->assertNull($result);
     }
 
     function testFindByName(){
@@ -74,7 +91,7 @@ class RoleTest extends \tests\ErdikoTestCase
     }
 
     function testGetCountByRole(){
-        $userEntity = new \app\entities\User;
+        $userEntity = new \erdiko\users\entities\User;
         $userEntity->setEmail($this->userArray['email']);
         $userEntity->setPassword($this->userArray['password']);
         $userEntity->setName($this->userArray['name']);
@@ -82,13 +99,30 @@ class RoleTest extends \tests\ErdikoTestCase
         $userEntity->setGatewayCustomerId($this->userArray['gateway_customer_id']);
 
         // Save
-        $this->entityManager->getRepository('app\entities\User');
+        $this->entityManager->getRepository('erdiko\users\entities\User');
         $this->entityManager->persist($userEntity);
         $this->entityManager->flush();
         $this->entityManager->refresh($userEntity);
         $this->userId = $userEntity->getId();
-        $count = $this->roleModel->getCountByRole($userEntity->getRole());
+        $count = $this->roleModel->getCountByRole($this->userArray['role']);
         $this->assertGreaterThan(0,$count);
+    }
+
+    function testGetCountByRoleNotExist(){
+        $role = 999999999;
+        $count = $this->roleModel->getCountByRole($role);
+        $this->assertEquals(0,$count);
+    }
+
+    /**
+     * throws exception Role is required
+     * @expectedException \Exception
+     */
+
+    function testGetCountByRoleBreaks(){
+        $role = null;
+        $count = $this->roleModel->getCountByRole($role);
+        $this->assertEquals(0,$count);
     }
 
 

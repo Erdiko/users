@@ -15,7 +15,7 @@ require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 class UserAPITest extends \tests\ErdikoTestCase
 {
-	const url = "http://docker.local:8088/api/users/";
+	const url = "http://docker.local:8088/ajax/users/";
 
 	protected $userData;
 	protected $userDataUpdate;
@@ -26,7 +26,7 @@ class UserAPITest extends \tests\ErdikoTestCase
 	    $this->userData = array(
 			"email"=>"leo@testlabs.com",
 			"password"=>"asdf1234",
-			"role"=>"super-admin",
+			"role"=>"1",
 			"name"=>"Test",
 			"gateway_customer_id"=>""
 	    );
@@ -35,7 +35,7 @@ class UserAPITest extends \tests\ErdikoTestCase
 		    "id"=> 0,
 		    "email"=>"leo@arroyolabs.com",
 		    "password"=>"asdf1234",
-		    "role"=>"admin",
+		    "role"=>"2",
 		    "name"=>"Test_update",
 		    "gateway_customer_id"=>"1"
 	    );
@@ -50,6 +50,7 @@ class UserAPITest extends \tests\ErdikoTestCase
 	    $this->_call($url,null,'POST');
     }
 
+
     public function testCreate()
     {
 	    $url = self::url.'create';
@@ -57,42 +58,73 @@ class UserAPITest extends \tests\ErdikoTestCase
 	    $result = json_decode($json);
 
 	    $this->assertFalse($result->errors);
-	    $this->assertEquals($result->body->action, 'create');
+	    $this->assertEquals($result->body->action, 'createuser');
 	    $this->assertTrue($result->body->success);
-	    $this->assertInternalType('int',$result->body->body);
+	    $this->assertInternalType('int',$result->body->user->id);
 
 	    self::$uid = $result->body->body;
     }
 
-    public function testRead()
+    public function testCreateFailParamMissing(){
+        $url = self::url.'create';
+        $this->userData->email ='';
+
+        $json = $this->_call($url,json_encode($this->userData),'POST');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->errors);
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->method, 'createuser');
+        $this->assertEquals($result->body->error_message, "Email is required.");
+
+        // verify data
+        $url = self::url.'user/'.self::$uid;
+        $json = $this->_call($url,null,'GET');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "User not found.");
+    }
+
+    public function testUserNotFound()
     {
-	    $url = self::url.'read/'.self::$uid;
+        $url = self::url.'user?id=999999999';
+        $json = $this->_call($url,null,'GET');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->errors);
+        $this->assertEquals($result->body->method, 'user');
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "User not found.");
+
+    }
+
+    public function testUsers()
+    {
+	    $url = self::url.'users';
 	    $json = $this->_call($url,null,'GET');
 	    $result = json_decode($json);
 
 	    $this->assertFalse($result->errors);
-	    $this->assertEquals($result->body->action, 'read');
+	    $this->assertEquals($result->body->method, 'users');
 	    $this->assertTrue($result->body->success);
-	    $this->assertEquals($result->body->body->email, $this->userData['email']);
-	    $this->assertEquals($result->body->body->role, $this->userData['role']);
-	    $this->assertEquals($result->body->body->name, $this->userData['name']);
-	    $this->assertEquals($result->body->body->gateway_customer_id, $this->userData['gateway_customer_id']);
-
+        $this->assertNotNull($result->body->users);
     }
 
     public function testUpdateFail()
     {
-	    $url = self::url.'update';
+	    $url = self::url.'updateuser';
 	    $json = $this->_call($url,$this->userData,'POST');
 	    $result = json_decode($json);
 
-	    $this->assertEquals($result->body->action, 'update');
+	    $this->assertEquals($result->body->method, 'update');
 	    $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "Id is required.");
     }
 
     public function testUpdate()
     {
-	    $url = self::url.'update';
+	    $url = self::url.'updateuser';
 	    $this->userDataUpdate['id'] = self::$uid;
 	    $params = json_encode($this->userDataUpdate);
 
@@ -100,37 +132,59 @@ class UserAPITest extends \tests\ErdikoTestCase
 	    $result = json_decode($json);
 
 	    $this->assertFalse($result->errors);
-	    $this->assertEquals($result->body->action, 'update');
+	    $this->assertEquals($result->body->method, 'updateuser');
 	    $this->assertTrue($result->body->success);
 
 	    // verify data
-	    $url = self::url.'read/'.self::$uid;
+	    $url = self::url.'user/id?='.self::$uid;
 	    $json = $this->_call($url,null,'GET');
 	    $result = json_decode($json);
 
-	    $this->assertEquals($result->body->body->email, $this->userDataUpdate['email']);
-	    $this->assertEquals($result->body->body->role, $this->userDataUpdate['role']);
-	    $this->assertEquals($result->body->body->name, $this->userDataUpdate['name']);
-	    $this->assertEquals($result->body->body->gateway_customer_id, $this->userDataUpdate['gateway_customer_id']);
+	    $this->assertEquals($result->body->user->email, $this->userDataUpdate['email']);
+	    $this->assertEquals($result->body->user->role, $this->userDataUpdate['role']);
+	    $this->assertEquals($result->body->user->name, $this->userDataUpdate['name']);
+        $this->assertEquals($result->body->user->last_login, $this->userDataUpdate['last_login']);
+	    $this->assertEquals($result->body->user->gateway_customer_id, $this->userDataUpdate['gateway_customer_id']);
     }
 
     public function testDelete()
     {
-	    $url = self::url.'delete/'.self::$uid;
+	    $url = self::url.'deleteuser/'.self::$uid;
 	    $json = $this->_call($url,null,'GET');
 	    $result = json_decode($json);
 
 	    $this->assertFalse($result->errors);
 	    $this->assertTrue($result->body->success);
-	    $this->assertEquals($result->body->action, 'delete');
-	    $this->assertEquals($result->body->body, "User ".self::$uid." successfully deleted.");
+	    $this->assertEquals($result->body->method, 'deleteuser');
+	    $this->assertEquals($result->body->user, self::$uid);
 
 	    // verify data
-	    $url = self::url.'read/'.self::$uid;
+	    $url = self::url.'user/'.self::$uid;
 	    $json = $this->_call($url,null,'GET');
 	    $result = json_decode($json);
 
-	    $this->assertEmpty($result->body->body);
+	    $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "User not found.");
+    }
+
+
+    public function testDeleteNotExisting(){
+        $url = self::url.'delete/99999999999';
+        $json = $this->_call($url,null,'GET');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->errors);
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->method, 'deleteuser');
+        $this->assertEquals($result->body->error_message, "User could not be deleted.");
+
+        // verify data
+        $url = self::url.'user/'.self::$uid;
+        $json = $this->_call($url,null,'GET');
+        $result = json_decode($json);
+
+        $this->assertFalse($result->body->success);
+        $this->assertEquals($result->body->error_message, "User could not be deleted.");
     }
 
 	/**
