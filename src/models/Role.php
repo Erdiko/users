@@ -85,12 +85,12 @@ class Role
      */
     public function findByStatus($active=1)
     {
+        $result = null;
         try {
             $role = $this->getRepository('\erdiko\users\entities\Role');
-            $result = $role->findBy(array('active' => 1));
+            $result = $role->findBy(array('active' => $active));
         }catch (\Exception $e) {
             \error_log($e->getMessage());
-            die($e->getMessage());
         }
         return $result;
     }
@@ -104,7 +104,7 @@ class Role
         $result = 0;
         try {
             $users  = $this->_em->getRepository('\erdiko\users\entities\User')
-                                          ->findBy(array('role' => $role));
+                           ->findBy(array('role' => $role));
             $result  = count($users);
 
         }catch (\Exception $e) {
