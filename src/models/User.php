@@ -171,12 +171,16 @@ class User implements iErdikoUser
 	public function authenticate( $email, $password ) {
 		$pass = $password . self::PASSWORDSALT;
 		$pwd = md5( $pass );
-
 		// @todo: repository could change...
 		$repo   = $this->getRepository( '\erdiko\users\entities\User' );
 		$result = $repo->findOneBy( array( 'email' => $email, 'password' => $pwd ) );
 
 		if (!empty($result)) {
+		    //update last_login
+            $result->setLastLogin();
+            $this->_em->merge($result);
+            $this->_em->flush();
+
 			$this->setEntity( $result );
 			return $this;
 		}
