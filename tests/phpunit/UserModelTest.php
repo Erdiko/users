@@ -221,23 +221,53 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$this->assertFalse( $result );
 	}
 
-	/**
-	 *
-	 */
-	public function testAuthenticate()
-	{
-		$email = $this->userArrayData['email'];
-		$password = $this->userArrayData['password'];
+    /**
+     *
+     */
+    public function testAuthenticate()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
 
-		$result = $this->model->authenticate($email, $password);
 
-		$this->assertNotEmpty($result);
-		$this->assertInstanceOf('\erdiko\users\models\User', $result);
+        $email = $this->userArrayData['email'];
+        $password = $this->userArrayData['password'];
 
-		// double check
-		$logged = $this->model->isLoggedIn();
-		$this->assertTrue($logged);
-	}
+        $result = $this->model->authenticate($email, $password);
+
+        $this->assertNotEmpty($result);
+        $this->assertInstanceOf('\erdiko\users\models\User', $result);
+
+        // double check
+        $logged = $result->isLoggedIn();
+        $this->assertTrue($logged);
+    }
+
+
+    /**
+     *
+     */
+    public function testLastLogin()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+
+        $email = $this->userArrayData['email'];
+        $password = $this->userArrayData['password'];
+
+        $result = $this->model->authenticate($email, $password);
+
+        $entity = $this->model->getEntity();
+        $this->assertNotEmpty($entity->getLastLogin());
+
+    }
 
 	public function testSave()
 	{
@@ -293,5 +323,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 	       $this->roleModel->delete($id);
        }
        unset($this->entityManager);
+       if(!empty(self::$lastID)){
+           $this->model->deleteUser(self::$lastID);
+       }
 	}
 }
