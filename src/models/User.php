@@ -184,7 +184,7 @@ class User implements iErdikoUser
 			$this->setEntity( $result );
 			return $this;
 		}
-
+		
 		return false;
 	}
 

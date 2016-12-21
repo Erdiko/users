@@ -230,7 +230,7 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
         $newEntity = $this->model->getEntity();
-         self::$lastID = $newEntity->getId();
+        self::$lastID = $newEntity->getId();
 
 
         $email = $this->userArrayData['email'];
@@ -326,6 +326,5 @@ class UserModelTest extends \tests\ErdikoTestCase
        if(!empty(self::$lastID)){
            $this->model->deleteUser(self::$lastID);
        }
-
 	}
 }
