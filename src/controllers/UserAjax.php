@@ -241,10 +241,33 @@ class UserAjax extends \erdiko\core\AjaxController
             "error_message" => ""
         );
 
+        // decode
+        $data =  ( object) array();
 
+        $data->page = 0;
+        if(array_key_exists("page", $_REQUEST)) {
+            $data->page = $_REQUEST['page'];
+        }
+
+        $data->pagesize = 100;
+        if(array_key_exists("pagesize", $_REQUEST)){
+            $data->pagesize = $_REQUEST['pagesize'];
+        }
+
+        $data->sort = 'id';
+
+        $validSort = array('id', 'name','email','created_at', 'updated_at');
         try {
+            if(array_key_exists("sort", $_REQUEST)) {
+                $sort = strtolower($_REQUEST["sort"]);
+                if(!in_array($sort, $validSort)){
+                    throw new \Exception('The attribute used to sort is invalid.');
+                }
+                $data->sort = $sort;
+            }
+
             $userModel = new User();
-            $users = $userModel->getUsers();
+            $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
             $output = array();
             foreach ($users as $user){
                 $output[] = array('id'       => $user->getId(),
