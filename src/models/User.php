@@ -171,16 +171,20 @@ class User implements iErdikoUser
 	public function authenticate( $email, $password ) {
 		$pass = $password . self::PASSWORDSALT;
 		$pwd = md5( $pass );
-
 		// @todo: repository could change...
 		$repo   = $this->getRepository( '\erdiko\users\entities\User' );
 		$result = $repo->findOneBy( array( 'email' => $email, 'password' => $pwd ) );
 
 		if (!empty($result)) {
+		    //update last_login
+            $result->setLastLogin();
+            $this->_em->merge($result);
+            $this->_em->flush();
+
 			$this->setEntity( $result );
 			return $this;
 		}
-
+		
 		return false;
 	}
 
@@ -260,7 +264,7 @@ class User implements iErdikoUser
         if(empty($roleEntity)){
             throw  new \Exception('Error, role anonymous not found.');
         }
-        $result = $this->_user->getRole() === $roleEntity->getId();
+        $result = $this->_user->getRole() == $roleEntity->getId();
 
 		return $result;
 	}
@@ -275,12 +279,37 @@ class User implements iErdikoUser
 	 *
 	 *
 	 */
-	public function getUsers() {
+	public function getUsers($page=0, $pagesize=100, $sort = 'id') {
 		$repo   = $this->getRepository( 'erdiko\users\entities\User' );
-		$result = $repo->findAll();
+        $offset = 0;
+        if($page > 0) {
+            $offset = $page * $pagesize;
+        }
+        $result = $repo->findBy(array(),array($sort => 'asc'), $pagesize, $offset);
 
 		return $result;
 	}
+
+    /**
+     *
+     *
+     *
+     */
+    public function getAdmins($page=0, $pagesize=100, $sort = 'id') {
+        $roleModel = new \erdiko\users\models\Role();
+        $roleAdmin = $roleModel->findByName('admin');
+        if(empty($roleAdmin)){
+            throw  new \Exception('Error, role admin not found.');
+        }
+        $repo   = $this->getRepository( 'erdiko\users\entities\User' );
+        $offset = 0;
+        if($page > 0) {
+            $offset = $page * $pagesize;
+        }
+        $result = $repo->findBy(array('role'=>$roleAdmin->getId()),array($sort => 'asc'), $pagesize, $offset);
+
+        return $result;
+    }
 
 	/**
 	 * deleteUser
