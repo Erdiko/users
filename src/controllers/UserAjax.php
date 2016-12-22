@@ -322,7 +322,6 @@ class UserAjax extends \erdiko\core\AjaxController
             }
             $output = array('id'       => $user->getId(),
                               'email'    => $user->getEmail(),
-                              'password' => $user->getPassword(),
                               'role'     => $user->getRole(),
                               'name'     => $user->getName(),
                               'last_login' => $user->getLastLogin(),
