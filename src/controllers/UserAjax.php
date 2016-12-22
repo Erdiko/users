@@ -19,7 +19,9 @@ use erdiko\users\models\User;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
-	private $id = null;
+
+    private $id = null;
+
 	/**
 	 * @param $action
 	 * @param $resource
@@ -66,7 +68,10 @@ class UserAjax extends \erdiko\core\AjaxController
 			}
 
 			if ($this->checkAuth("read",$var)) {
-				// load action based off of naming conventions
+                // load action based off of naming conventions
+
+                header('Content-Type: application/json');
+
 				return $this->_autoaction($var, 'get');
 			} else {
 				return $this->getForbbiden($var);
@@ -97,6 +102,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("write", $var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
 			} else {
 				return $this->getForbbiden($var);
@@ -232,7 +238,8 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getGetusers(){
+    public function getGetusers()
+    {
         $response = array(
             "method" => "getusers",
             "success" => false,
@@ -256,7 +263,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
         $data->sort = 'id';
 
-        $validSort = array('id', 'name','email','created_at', 'updated_at');
+        $validSort = array('id', 'name', 'email', 'created_at', 'updated_at');
         try {
             if(array_key_exists("sort", $_REQUEST)) {
                 $sort = strtolower($_REQUEST["sort"]);
@@ -272,7 +279,6 @@ class UserAjax extends \erdiko\core\AjaxController
             foreach ($users as $user){
                 $output[] = array('id'       => $user->getId(),
                                   'email'    => $user->getEmail(),
-                                  'password' => $user->getPassword(),
                                   'role'     => $user->getRole(),
                                   'name'     => $user->getName(),
                                   'last_login' => $user->getLastLogin(),
@@ -291,7 +297,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
     }
 
-    public function getGetUser(){
+    public function getGetUser()
+    {
         $response = array(
             "method" => "getuser",
             "success" => false,
@@ -316,7 +323,6 @@ class UserAjax extends \erdiko\core\AjaxController
             }
             $output = array('id'       => $user->getId(),
                               'email'    => $user->getEmail(),
-                              'password' => $user->getPassword(),
                               'role'     => $user->getRole(),
                               'name'     => $user->getName(),
                               'last_login' => $user->getLastLogin(),
@@ -344,7 +350,10 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-			$params = json_decode(file_get_contents("php://input"));
+            $params = json_decode(file_get_contents("php://input"));
+            if(empty($params)) {
+                $params = (object) $_REQUEST;
+            }
 
 			// Check required fields
 			if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
@@ -417,4 +426,5 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		$this->setContent($response);
 	}
+
 }

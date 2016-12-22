@@ -35,8 +35,8 @@ class User
 	protected $password;
 
 	/**
-	 * @Column(type="integer")
-	 * @var integer
+	 * @Column(type="string")
+	 * @var string
 	 */
 	protected $role;
 
