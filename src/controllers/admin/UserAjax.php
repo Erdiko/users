@@ -311,7 +311,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userModel = new User();
             $user = $userModel->getById($params->id);
-            if(empty($user)){
+            if(empty($user) || $this->isNotAdmin($user)){
                 throw new \Exception('Admin not found.');
             }
             $output = array('id'       => $user->getId(),
@@ -355,8 +355,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$userModel = new User();
 			$entity = $userModel->getById($params->id);
-            if(empty($entity)){
-                throw new \Exception('User not found.');
+            if(empty($entity) || $this->isNotAdmin($entity)){
+                throw new \Exception('Admin not found.');
             }
             $result = $userModel->save($params);
             $user = $userModel->getById($result);
@@ -390,7 +390,6 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-
             $params = (object) $_REQUEST;
             // Check required fields
             if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
@@ -417,4 +416,10 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		$this->setContent($response);
 	}
+
+	private function isNotAdmin($user){
+	    $userModel = new \erdiko\users\models\User();
+        $userModel->setEntity($user);
+        return !$userModel->isAdmin();
+    }
 }
