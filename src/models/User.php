@@ -264,7 +264,7 @@ class User implements iErdikoUser
         if(empty($roleEntity)){
             throw  new \Exception('Error, role anonymous not found.');
         }
-        $result = $this->_user->getRole() === $roleEntity->getId();
+        $result = $this->_user->getRole() == $roleEntity->getId();
 
 		return $result;
 	}
