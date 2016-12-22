@@ -311,8 +311,13 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 	public function testDelete()
 	{
-		$id = empty($this->userArrayUpdate['id']) ? self::$lastID : $this->userArrayUpdate['id'];
-		$result = $this->model->deleteUser($id);
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+		$result = $this->model->deleteUser(self::$lastID );
 
 		$this->assertTrue($result);
 	}
