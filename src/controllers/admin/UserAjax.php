@@ -7,10 +7,10 @@
  * @category    Erdiko
  * @package     User
  * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
- * @author      Leo Daidone, leo@arroyolabs.com
+ * @author      Julian Diaz, julian@arroyolabs.com
  */
 
-namespace erdiko\users\controllers;
+namespace erdiko\users\controllers\admin;
 
 use erdiko\authenticate\BasicAuth;
 use erdiko\authenticate\iErdikoUser;
@@ -140,10 +140,10 @@ class UserAjax extends \erdiko\core\AjaxController
 	/**
 	 * User CRUD actions
 	 */
-	public function postRegister()
+	public function postCreate()
 	{
 		$response = array(
-			"method" => "register",
+			"method" => "create",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -153,7 +153,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		try {
 			$data = json_decode(file_get_contents("php://input"));
             // Check required fields
-            $requiredParams = array('email','password', 'role', 'name');
+            $requiredParams = array('email','password', 'name');
             $params = (array) $data;
             foreach ($requiredParams as $param){
                 if(empty($params[$param])){
@@ -164,7 +164,7 @@ class UserAjax extends \erdiko\core\AjaxController
 			$userModel = new User();
 			$userId = $userModel->save($data);
             if(empty($userId)){
-                throw  new \Exception('Could not create new user.');
+                throw  new \Exception('Could not create new admin.');
             }
             $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
@@ -232,9 +232,9 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getGetusers(){
+	public function getList(){
         $response = array(
-            "method" => "getusers",
+            "method" => "list",
             "success" => false,
             "users" => "",
             "error_code" => 0,
@@ -267,7 +267,7 @@ class UserAjax extends \erdiko\core\AjaxController
             }
 
             $userModel = new User();
-            $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
+            $users = $userModel->getAdmins($data->page, $data->pagesize, $data->sort);
             $output = array();
             foreach ($users as $user){
                 $output[] = array('id'       => $user->getId(),
@@ -291,9 +291,9 @@ class UserAjax extends \erdiko\core\AjaxController
 
     }
 
-    public function getGetUser(){
+    public function getRetrieve(){
         $response = array(
-            "method" => "getuser",
+            "method" => "retrieve",
             "success" => false,
             "user" => "",
             "error_code" => 0,
@@ -311,8 +311,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userModel = new User();
             $user = $userModel->getById($params->id);
-            if(empty($user)){
-                throw new \Exception('User not found.');
+            if(empty($user) || $this->isNotAdmin($user)){
+                throw new \Exception('Admin not found.');
             }
             $output = array('id'       => $user->getId(),
                               'email'    => $user->getEmail(),
@@ -355,8 +355,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$userModel = new User();
 			$entity = $userModel->getById($params->id);
-            if(empty($entity)){
-                throw new \Exception('User not found.');
+            if(empty($entity) || $this->isNotAdmin($entity)){
+                throw new \Exception('Admin not found.');
             }
             $result = $userModel->save($params);
             $user = $userModel->getById($result);
@@ -379,10 +379,10 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getCancel()
+	public function getDelete()
 	{
 		$response = array(
-			"method" => "cancel",
+			"method" => "delete",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -390,7 +390,6 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-
             $params = (object) $_REQUEST;
             // Check required fields
             if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
@@ -417,4 +416,10 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		$this->setContent($response);
 	}
+
+	private function isNotAdmin($user){
+	    $userModel = new \erdiko\users\models\User();
+        $userModel->setEntity($user);
+        return !$userModel->isAdmin();
+    }
 }
