@@ -102,6 +102,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("write", $var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
 			} else {
 				return $this->getForbbiden($var);
@@ -349,7 +350,10 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-			$params = json_decode(file_get_contents("php://input"));
+            $params = json_decode(file_get_contents("php://input"));
+            if(empty($params)) {
+                $params = (object) $_REQUEST;
+            }
 
 			// Check required fields
 			if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
