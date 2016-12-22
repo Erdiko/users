@@ -67,6 +67,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("read",$var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'get');
 			} else {
 				return $this->getForbbiden($var);
@@ -97,6 +98,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("write", $var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
 			} else {
 				return $this->getForbbiden($var);
