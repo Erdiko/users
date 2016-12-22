@@ -19,7 +19,9 @@ use erdiko\users\models\User;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
-	private $id = null;
+
+    private $id = null;
+
 	/**
 	 * @param $action
 	 * @param $resource
@@ -66,7 +68,10 @@ class UserAjax extends \erdiko\core\AjaxController
 			}
 
 			if ($this->checkAuth("read",$var)) {
-				// load action based off of naming conventions
+                // load action based off of naming conventions
+                
+                header('Content-Type: application/json');
+
 				return $this->_autoaction($var, 'get');
 			} else {
 				return $this->getForbbiden($var);
@@ -232,7 +237,8 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getGetusers(){
+    public function getGetusers()
+    {
         $response = array(
             "method" => "getusers",
             "success" => false,
@@ -241,15 +247,37 @@ class UserAjax extends \erdiko\core\AjaxController
             "error_message" => ""
         );
 
+        // decode
+        $data =  ( object) array();
 
+        $data->page = 0;
+        if(array_key_exists("page", $_REQUEST)) {
+            $data->page = $_REQUEST['page'];
+        }
+
+        $data->pagesize = 100;
+        if(array_key_exists("pagesize", $_REQUEST)){
+            $data->pagesize = $_REQUEST['pagesize'];
+        }
+
+        $data->sort = 'id';
+
+        $validSort = array('id', 'name', 'email', 'created_at', 'updated_at');
         try {
+            if(array_key_exists("sort", $_REQUEST)) {
+                $sort = strtolower($_REQUEST["sort"]);
+                if(!in_array($sort, $validSort)){
+                    throw new \Exception('The attribute used to sort is invalid.');
+                }
+                $data->sort = $sort;
+            }
+
             $userModel = new User();
-            $users = $userModel->getUsers();
+            $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
             $output = array();
             foreach ($users as $user){
                 $output[] = array('id'       => $user->getId(),
                                   'email'    => $user->getEmail(),
-                                  'password' => $user->getPassword(),
                                   'role'     => $user->getRole(),
                                   'name'     => $user->getName(),
                                   'last_login' => $user->getLastLogin(),
@@ -268,7 +296,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
     }
 
-    public function getGetUser(){
+    public function getGetUser()
+    {
         $response = array(
             "method" => "getuser",
             "success" => false,
@@ -394,4 +423,5 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		$this->setContent($response);
 	}
+
 }
