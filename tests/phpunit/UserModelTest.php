@@ -289,8 +289,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 	{
 		$params = $this->userArrayUpdate;
 		$params['password'] = $this->model->getSalted($this->userArrayUpdate['password']);
-		$params['id'] = self::$lastID;
         $params['role'] = $this->adminId;
+        $params['name'] = $this->userArrayUpdate['name'];
 
 		$result = $this->model->save($params);
 
@@ -308,6 +308,36 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$this->userArrayUpdate['id'] = $newEntity->getId();
 		self::$lastID = $newEntity->getId();
 	}
+
+    public function testSaveExist()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+        $params['id'] = self::$lastID;
+        $params['password'] = $this->model->getSalted($this->userArrayUpdate['password']);
+        $params['role'] = $this->adminId;
+        $params['name'] = $this->userArrayUpdate['name'];
+
+        $result = $this->model->save($params);
+
+        $this->assertInternalType('int',$result);
+        $this->assertTrue(($result > 0));
+
+        $entity = $this->model->getEntity();
+        $this->assertEquals($entity->getEmail(),$entity->getEmail());
+        $this->assertEquals($entity->getName(),$this->userArrayUpdate['name']);
+        $this->assertEquals($entity->getRole(),$this->adminId);
+
+        $this->assertTrue($this->model->isAdmin());
+
+        $newEntity = $this->model->getEntity();
+        $this->userArrayUpdate['id'] = $newEntity->getId();
+        self::$lastID = $newEntity->getId();
+    }
 
 	public function testDelete()
 	{
