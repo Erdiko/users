@@ -163,9 +163,6 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$userModel = new User();
 			$userId = $userModel->save($data);
-            if(empty($userId)){
-                throw  new \Exception('Could not create new admin.');
-            }
             $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
@@ -267,7 +264,7 @@ class UserAjax extends \erdiko\core\AjaxController
             }
 
             $userModel = new User();
-            $users = $userModel->getAdmins($data->page, $data->pagesize, $data->sort);
+            $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
             $output = array();
             foreach ($users as $user){
                 $output[] = array('id'       => $user->getId(),
@@ -311,9 +308,6 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userModel = new User();
             $user = $userModel->getById($params->id);
-            if(empty($user) || $this->isNotAdmin($user)){
-                throw new \Exception('Admin not found.');
-            }
             $output = array('id'       => $user->getId(),
                               'email'    => $user->getEmail(),
                               'password' => $user->getPassword(),
@@ -355,9 +349,6 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$userModel = new User();
 			$entity = $userModel->getById($params->id);
-            if(empty($entity) || $this->isNotAdmin($entity)){
-                throw new \Exception('Admin not found.');
-            }
             $result = $userModel->save($params);
             $user = $userModel->getById($result);
             $output = array('id'       => $user->getId(),
@@ -415,11 +406,6 @@ class UserAjax extends \erdiko\core\AjaxController
 		}
 
 		$this->setContent($response);
-	}
-
-	private function isNotAdmin($user){
-	    $userModel = new \erdiko\users\models\User();
-        $userModel->setEntity($user);
-        return !$userModel->isAdmin();
     }
+
 }
