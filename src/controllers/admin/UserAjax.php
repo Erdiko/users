@@ -153,7 +153,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		try {
 			$data = json_decode(file_get_contents("php://input"));
             // Check required fields
-            $requiredParams = array('email','password', 'role', 'name');
+            $requiredParams = array('email','password', 'name');
             $params = (array) $data;
             foreach ($requiredParams as $param){
                 if(empty($params[$param])){
@@ -267,7 +267,7 @@ class UserAjax extends \erdiko\core\AjaxController
             }
 
             $userModel = new User();
-            $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
+            $users = $userModel->getAdmins($data->page, $data->pagesize, $data->sort);
             $output = array();
             foreach ($users as $user){
                 $output[] = array('id'       => $user->getId(),
