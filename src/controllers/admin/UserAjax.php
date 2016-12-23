@@ -166,7 +166,6 @@ class UserAjax extends \erdiko\core\AjaxController
             $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
-                            'password' => $user->getPassword(),
                             'role'     => $user->getRole(),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
@@ -269,7 +268,6 @@ class UserAjax extends \erdiko\core\AjaxController
             foreach ($users as $user){
                 $output[] = array('id'       => $user->getId(),
                                   'email'    => $user->getEmail(),
-                                  'password' => $user->getPassword(),
                                   'role'     => $user->getRole(),
                                   'name'     => $user->getName(),
                                   'last_login' => $user->getLastLogin(),
@@ -310,7 +308,6 @@ class UserAjax extends \erdiko\core\AjaxController
             $user = $userModel->getById($params->id);
             $output = array('id'       => $user->getId(),
                               'email'    => $user->getEmail(),
-                              'password' => $user->getPassword(),
                               'role'     => $user->getRole(),
                               'name'     => $user->getName(),
                               'last_login' => $user->getLastLogin(),
@@ -353,7 +350,6 @@ class UserAjax extends \erdiko\core\AjaxController
             $user = $userModel->getById($result);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
-                            'password' => $user->getPassword(),
                             'role'     => $user->getRole(),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
