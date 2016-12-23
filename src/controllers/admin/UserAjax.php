@@ -256,7 +256,8 @@ class UserAjax extends \erdiko\core\AjaxController
             $data->pagesize = $_REQUEST['pagesize'];
         }
 
-        $data->sort = 'id';
+        $data->sort         = 'id';
+        $data->direction    = 'desc';
 
         $validSort = array('id', 'name','email','created_at', 'updated_at');
         try {
@@ -268,8 +269,16 @@ class UserAjax extends \erdiko\core\AjaxController
                 $data->sort = $sort;
             }
 
+            if(array_key_exists("direction", $_REQUEST)) {
+                $dir = strtolower($_REQUEST["direction"]);
+                if(!in_array($dir, array("asc", "desc"))){
+                    throw new \Exception('sort direction is invalid');
+                }
+                $data->direction = $dir;
+            }
+
             $userModel = new User();
-            $userResult = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
+            $userResult = $userModel->getUsers($data->page, $data->pagesize, $data->sort, $data->direction);
             $output = array("users" => array(), "total" => $userResult->total);
             foreach ($userResult->users as $user) {
 

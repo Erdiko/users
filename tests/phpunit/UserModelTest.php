@@ -288,7 +288,7 @@ class UserModelTest extends \tests\ErdikoTestCase
     /**
      *
      */
-    public function testGetUsesr()
+    public function testGetUsers()
     {
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
@@ -306,6 +306,14 @@ class UserModelTest extends \tests\ErdikoTestCase
         $user = $results->users[0];
         $this->assertTrue(!empty($user), "first result is not empty");
         $this->assertTrue(!empty($user->getId()), "first result ID is not empty");
+
+        //TODO test the paging and other variables
+        if($results->users > 10) {
+            $results = $this->model->getUsers(1,10);
+            $count = count($results->users);
+            $this->assertTrue((11 > $count), "expected number of results have been returned");
+        }
+
     }
 
 
