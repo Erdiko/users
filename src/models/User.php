@@ -279,7 +279,7 @@ class User implements iErdikoUser
 	 *
 	 *
 	 */
-    public function getUsers($page=0, $pagesize=100, $sort = 'id') 
+    public function getUsers($page = 0, $pagesize = 100, $sort = 'id') 
     {
         $result = (Object)array(
             "users" =>  array(),
@@ -290,7 +290,7 @@ class User implements iErdikoUser
 
         $offset = 0;
         if($page > 0) {
-            $offset = $page * $pagesize;
+            $offset = ($page - 1) * $pagesize;
         }
 
         $result->users = $repo->findBy(
