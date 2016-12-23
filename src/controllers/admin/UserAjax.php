@@ -285,7 +285,7 @@ class UserAjax extends \erdiko\core\AjaxController
                 );
             }
             $response['success'] = true;
-            $response['users'] = $output;
+            $response['result'] = $output;
             $this->setStatusCode(200);
         } catch (\Exception $e) {
             $response['error_message'] = $e->getMessage();
