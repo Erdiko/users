@@ -67,6 +67,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("read",$var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'get');
 			} else {
 				return $this->getForbbiden($var);
@@ -97,6 +98,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("write", $var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
 			} else {
 				return $this->getForbbiden($var);
@@ -228,7 +230,8 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getList(){
+    public function getList()
+    {
         $response = array(
             "method" => "list",
             "success" => false,
@@ -265,13 +268,19 @@ class UserAjax extends \erdiko\core\AjaxController
             $userModel = new User();
             $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
             $output = array();
-            foreach ($users as $user){
-                $output[] = array('id'       => $user->getId(),
-                                  'email'    => $user->getEmail(),
-                                  'role'     => $user->getRole(),
-                                  'name'     => $user->getName(),
-                                  'last_login' => $user->getLastLogin(),
-                                  'gateway_customer_id'=> $user->getGatewayCustomerId()
+            foreach ($users as $user) {
+
+                $lastLogin = $user->getLastLogin();
+                if(empty($lastLogin)) {
+                    $lastLogin = "n/a";
+                }
+
+                $output[] = array('id'          => $user->getId(),
+                                  'email'       => $user->getEmail(),
+                                  'role'        => $user->getRole(),
+                                  'name'        => $user->getName(),
+                                  'last_login'  => $lastLogin,
+                                  'joined'      => $user->getCreatedAt()
                 );
             }
             $response['success'] = true;
@@ -286,7 +295,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
     }
 
-    public function getRetrieve(){
+    public function getRetrieve()
+    {
         $response = array(
             "method" => "retrieve",
             "success" => false,
