@@ -155,7 +155,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		try {
 			$data = json_decode(file_get_contents("php://input"));
             // Check required fields
-            $requiredParams = array('email','password', 'name');
+            $requiredParams = array('email', 'name', 'role');
             $params = (array) $data;
             foreach ($requiredParams as $param){
                 if(empty($params[$param])){
@@ -163,8 +163,11 @@ class UserAjax extends \erdiko\core\AjaxController
                 }
             }
 
+            // default password, user will need to update on login
+            $data->password = "changeme";
+
 			$userModel = new User();
-			$userId = $userModel->save($data);
+            $userId = $userModel->save($data);
             $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
