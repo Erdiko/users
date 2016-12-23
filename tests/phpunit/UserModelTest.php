@@ -285,6 +285,30 @@ class UserModelTest extends \tests\ErdikoTestCase
         $this->assertGreaterThan(0,$adminCount);
     }
 
+    /**
+     *
+     */
+    public function testGetUsesr()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+        $results = $this->model->getUsers();
+        
+        $adminCount = count($results->users);
+        $this->assertGreaterThan(0, $adminCount, "some results have been returned");
+        $this->assertTrue(($results->total == $adminCount), "expected count returned");
+
+        // check the first result
+        $user = $results->users[0];
+        $this->assertTrue(!empty($user), "first result is not empty");
+        $this->assertTrue(!empty($user->getId()), "first result ID is not empty");
+    }
+
+
 	public function testSave()
 	{
 		$params = $this->userArrayUpdate;

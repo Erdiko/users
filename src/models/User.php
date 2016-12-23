@@ -279,13 +279,34 @@ class User implements iErdikoUser
 	 *
 	 *
 	 */
-	public function getUsers($page=0, $pagesize=100, $sort = 'id') {
-		$repo   = $this->getRepository( 'erdiko\users\entities\User' );
+    public function getUsers($page=0, $pagesize=100, $sort = 'id') 
+    {
+        $result = (Object)array(
+            "users" =>  array(),
+            "total" => 0
+        );
+
+        $repo = $this->getRepository('erdiko\users\entities\User');
+
         $offset = 0;
         if($page > 0) {
             $offset = $page * $pagesize;
         }
-        $result = $repo->findBy(array(),array($sort => 'asc'), $pagesize, $offset);
+
+        $result->users = $repo->findBy(
+                                        array(),
+                                        array(
+                                            $sort => 'asc'
+                                        ), 
+                                        $pagesize, 
+                                        $offset
+                                    );
+
+        // get total users count
+        $result->total = (int)$repo->createQueryBuilder('u')
+                                   ->select('count(u.id)')
+                                   ->getQuery()
+                                   ->getSingleScalarResult();
 
 		return $result;
 	}

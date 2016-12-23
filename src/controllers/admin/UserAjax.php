@@ -266,21 +266,22 @@ class UserAjax extends \erdiko\core\AjaxController
             }
 
             $userModel = new User();
-            $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
-            $output = array();
-            foreach ($users as $user) {
+            $userResult = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
+            $output = array("users" => array(), "total" => $userResult->total);
+            foreach ($userResult->users as $user) {
 
                 $lastLogin = $user->getLastLogin();
                 if(empty($lastLogin)) {
                     $lastLogin = "n/a";
                 }
 
-                $output[] = array('id'          => $user->getId(),
-                                  'email'       => $user->getEmail(),
-                                  'role'        => $user->getRole(),
-                                  'name'        => $user->getName(),
-                                  'last_login'  => $lastLogin,
-                                  'joined'      => $user->getCreatedAt()
+                $output["users"][] = array(
+                    'id'          => $user->getId(),
+                    'email'       => $user->getEmail(),
+                    'role'        => $user->getRole(),
+                    'name'        => $user->getName(),
+                    'last_login'  => $lastLogin,
+                    'joined'      => $user->getCreatedAt()
                 );
             }
             $response['success'] = true;
