@@ -226,8 +226,10 @@ class User implements iErdikoUser
 	/**
 	 * @return array
 	 */
-	public function getRoles() {
-		return array( $this->_user->getRole() );
+	public function getRoles(){
+        $roleModel = new \erdiko\users\models\Role();
+        $roleEntity = $roleModel->findById($this->_user->getRole());
+		return array( $roleEntity->getName());
 	}
 
 	/**
@@ -384,7 +386,7 @@ class User implements iErdikoUser
 			$entity->setEmail( $data->email );
 		}
 		if ( isset( $data->password ) ) {
-			$entity->setPassword( $data->password );
+			$entity->setPassword($this->getSalted($data->password));
 		}
 		if ( isset( $data->role ) ) {
 			$entity->setRole( $data->role );

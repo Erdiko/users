@@ -175,7 +175,6 @@ class UserAjax extends \erdiko\core\AjaxController
             $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
-                            'password' => $user->getPassword(),
                             'role'     => $user->getRole(),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
@@ -238,10 +237,10 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-    public function getGetusers()
+    public function getList()
     {
         $response = array(
-            "method" => "getusers",
+            "method" => "list",
             "success" => false,
             "users" => "",
             "error_code" => 0,
@@ -297,10 +296,10 @@ class UserAjax extends \erdiko\core\AjaxController
 
     }
 
-    public function getGetUser()
+    public function getRetrieve()
     {
         $response = array(
-            "method" => "getuser",
+            "method" => "retrieve",
             "success" => false,
             "user" => "",
             "error_code" => 0,
@@ -371,7 +370,6 @@ class UserAjax extends \erdiko\core\AjaxController
             $user = $userModel->getById($result);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
-                            'password' => $user->getPassword(),
                             'role'     => $user->getRole(),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),

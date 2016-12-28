@@ -26,16 +26,17 @@ class UserAjax extends \erdiko\core\AjaxController
 	 *
 	 * @return bool
 	 */
-	protected function checkAuth($action,$resource)
+	protected function checkAuth()
 	{
-		return true; // remove after testing
+        // remove after testing
+	    return true;
 		try {
 			$userModel  = new User();
 			$auth       = new BasicAuth($userModel);
 			$user       = $auth->current_user();
+
 			if($user instanceof iErdikoUser){
-				$authorizer = new Authorizer( $user );
-				$result     = $authorizer->can( $action, $resource );
+				$result = $user->isAdmin();
 			} else {
 				$result = false;
 			}
@@ -65,7 +66,7 @@ class UserAjax extends \erdiko\core\AjaxController
 				$var = $routing;
 			}
 
-			if ($this->checkAuth("read",$var)) {
+			if ($this->checkAuth()) {
 				// load action based off of naming conventions
                 header('Content-Type: application/json');
 				return $this->_autoaction($var, 'get');
@@ -96,7 +97,7 @@ class UserAjax extends \erdiko\core\AjaxController
 				$var = $routing;
 			}
 
-			if ($this->checkAuth("write", $var)) {
+			if ($this->checkAuth()) {
 				// load action based off of naming conventions
                 header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
@@ -168,6 +169,10 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$userModel = new User();
             $userId = $userModel->save($data);
+
+            if(empty($userId)){
+                throw  new \Exception('Could not create new user.');
+            }
             $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
@@ -297,7 +302,7 @@ class UserAjax extends \erdiko\core\AjaxController
                 );
             }
             $response['success'] = true;
-            $response['result'] = $output;
+            $response['users'] = $output;
             $this->setStatusCode(200);
         } catch (\Exception $e) {
             $response['error_message'] = $e->getMessage();
@@ -329,12 +334,15 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userModel = new User();
             $user = $userModel->getById($params->id);
+            if(empty($user)){
+                throw new \Exception('User not found.');
+            }
             $output = array('id'       => $user->getId(),
-                              'email'    => $user->getEmail(),
-                              'role'     => $user->getRole(),
-                              'name'     => $user->getName(),
-                              'last_login' => $user->getLastLogin(),
-                              'gateway_customer_id'=> $user->getGatewayCustomerId()
+                            'email'    => $user->getEmail(),
+                            'role'     => $user->getRole(),
+                            'name'     => $user->getName(),
+                            'last_login' => $user->getLastLogin(),
+                            'gateway_customer_id'=> $user->getGatewayCustomerId()
             );
             $response['success'] = true;
             $response['user'] = $output;
@@ -369,6 +377,9 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$userModel = new User();
 			$entity = $userModel->getById($params->id);
+            if(empty($entity)){
+                throw new \Exception('User not found.');
+            }
             $result = $userModel->save($params);
             $user = $userModel->getById($result);
             $output = array('id'       => $user->getId(),
@@ -426,5 +437,4 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		$this->setContent($response);
     }
-
 }
