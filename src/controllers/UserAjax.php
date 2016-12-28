@@ -247,6 +247,7 @@ class UserAjax extends \erdiko\core\AjaxController
             "error_message" => ""
         );
 
+
         // decode
         $data =  ( object) array();
 
@@ -275,7 +276,7 @@ class UserAjax extends \erdiko\core\AjaxController
             $userModel = new User();
             $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
             $output = array();
-            foreach ($users as $user){
+            foreach ($users->users as $user){
                 $output[] = array('id'       => $user->getId(),
                                   'email'    => $user->getEmail(),
                                   'role'     => $user->getRole(),

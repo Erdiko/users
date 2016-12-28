@@ -269,21 +269,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 
     }
 
-    /**
-     *
-     */
-    public function testGetAdmins()
-    {
-        $data = $this->userArrayData;
-        $data['role'] = $this->adminId;
-        $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
 
-        $results = $this->model->getAdmins();
-        $adminCount = count($results);
-        $this->assertGreaterThan(0,$adminCount);
-    }
 
     /**
      *

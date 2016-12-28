@@ -28,8 +28,9 @@ class UserAjax extends \erdiko\core\AjaxController
 	 */
 	protected function checkAuth()
 	{
-        // remove after testing
-	    return true;
+        //remove after testing
+        //frisby test are not able to get a kind of "setUp" before each test.
+	    //return true;
 		try {
 			$userModel  = new User();
 			$auth       = new BasicAuth($userModel);

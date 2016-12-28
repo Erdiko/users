@@ -313,26 +313,6 @@ class User implements iErdikoUser
 		return $result;
 	}
 
-    /**
-     *
-     *
-     *
-     */
-    public function getAdmins($page=0, $pagesize=100, $sort = 'id') {
-        $roleModel = new \erdiko\users\models\Role();
-        $roleAdmin = $roleModel->findByName('admin');
-        if(empty($roleAdmin)){
-            throw  new \Exception('Error, role admin not found.');
-        }
-        $repo   = $this->getRepository( 'erdiko\users\entities\User' );
-        $offset = 0;
-        if($page > 0) {
-            $offset = $page * $pagesize;
-        }
-        $result = $repo->findBy(array('role'=>$roleAdmin->getId()),array($sort => 'asc'), $pagesize, $offset);
-
-        return $result;
-    }
 
 	/**
 	 * deleteUser
