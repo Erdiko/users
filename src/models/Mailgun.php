@@ -47,10 +47,9 @@ class Mailgun extends \Mailgun\Mailgun
   }
 
 
-  public function forgotPassword($email, $newpass){
+  public function forgotPassword($email, $newpass, $html){
       //$to = $email;
       $subject = "Arroyo Labs - Password Reset";
-      $html = "<p>Credentials were cleared, to login please use the following password:<br><strong>{$newpass}</strong><br>Thanks.<br><\p>";
 
       try{
           $this->sendMail(compact("to", "subject", "html"));
