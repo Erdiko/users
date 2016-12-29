@@ -16,6 +16,7 @@ use erdiko\authenticate\BasicAuth;
 use erdiko\authenticate\iErdikoUser;
 
 use erdiko\users\models\User;
+use erdiko\users\models\Mailgun;
 
 class UserAuthenticationAjax extends \erdiko\core\AjaxController
 {
@@ -147,38 +148,6 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
-    public function postForgotPass(){
-        $response = array(
-            "method" => "forgotpass",
-            "success" => false,
-            "error_code" => 0,
-            "error_message" => ""
-        );
-
-        try {
-            $data = json_decode(file_get_contents("php://input"));
-            // Check required fields
-            $requiredParams = array('email');
-            $params = (array) $data;
-            foreach ($requiredParams as $param){
-                if(empty($params[$param])){
-                    throw new \Exception(ucfirst($param) .' is required.');
-                }
-            }
-
-            $authenticator = new BasicAuth(new User());
-            /**
-             * ask what to do here
-             */
-            $this->setStatusCode(200);
-        } catch (\Exception $e) {
-            $response['error_message'] = $e->getMessage();
-            $response['error_code'] = $e->getCode();
-        }
-
-        $this->setContent($response);
-    }
-
     public function postChangePass(){
         $response = array(
             "method" => "changepass",
@@ -221,5 +190,64 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         }
 
         $this->setContent($response);
+    }
+
+    public function postForgotPass(){
+        $response = array(
+            "method" => "forgotpass",
+            "success" => false,
+            "error_code" => 0,
+            "error_message" => ""
+        );
+
+        try {
+            $data = json_decode(file_get_contents("php://input"));
+
+            // Check required fields
+            $requiredParams = array('email');
+            $params = (array) $data;
+
+            foreach ($requiredParams as $param){
+                if(empty($params[$param])){
+                    throw new \Exception(ucfirst($param) .' is required.');
+                }
+            }
+
+            $email = $data->email;
+            $userModel = new \erdiko\users\models\User();
+            $result = $userModel->getByParams(array('email' => $email));
+            if(!empty($result)){
+                $userEntity = $result[0];
+                $userModel->setEntity($userEntity);
+
+                $randomPassword = $this->getRandomPassword();
+                $userModel->save(array('id' => $userModel->getUserId(), 'password' => $randomPassword));
+
+                $mailgunModel = new \erdiko\users\models\Mailgun();
+                $mailgunModel->forgotPassword($email, $randomPassword);
+
+                $this->setStatusCode(200);
+                $response['success'] = true;
+            }
+            else{
+                throw new \Exception('Email not found.');
+            }
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+        $this->setContent($response);
+    }
+
+
+    private function getRandomPassword() {
+        $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
+        $pass = array();
+        $alphaLength = strlen($alphabet) - 1;
+        for ($i = 0; $i < 8; $i++) {
+            $n = rand(0, $alphaLength);
+            $pass[] = $alphabet[$n];
+        }
+        return implode($pass);
     }
 }

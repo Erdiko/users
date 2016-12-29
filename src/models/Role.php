@@ -68,6 +68,7 @@ class Role
      */
     public function findByName($name) {
         if(is_null($name)) throw new \Exception('name is required');
+        $result = null;
         try {
             $role = $this->getRepository('\erdiko\users\entities\Role');
             $result = $role->findOneBy(array('name' => $name));
