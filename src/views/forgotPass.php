@@ -4,7 +4,7 @@
             <h1>Password Reset</h1>
             <hr>
             <p>Credentials were cleared, to login please use the following password:<br>
-               <strong>{$newpass}</strong><br>
+               <strong><? echo $data['newPass'] ?></strong><br>
                Thanks.<br>
             </p>
         </div>

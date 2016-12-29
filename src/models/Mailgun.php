@@ -5,7 +5,7 @@
  * @category    Erdiko
  * @package     users
  * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
- * @author      Leo Daidone, leo@arroyolabs.com
+ * @author      Julian Diaz, julian@arroyolabs.com
  */
 
 namespace erdiko\users\models;
@@ -17,7 +17,7 @@ class Mailgun extends \Mailgun\Mailgun
 
   public function __construct()
   {
-    $config = \Erdiko::getConfig('application')['mailgun'];
+    $config = \Erdiko::getConfigFile(dirname(__DIR__)."/shared/mailgun.json");
     $env = $config['environment'];
     $apiKey = $config[$env]['key'];
     $apiEndpoint = $config[$env]['endpoint'];
@@ -31,7 +31,7 @@ class Mailgun extends \Mailgun\Mailgun
   {
     return array(
       'from'    => "Arroyo Labs <info@arroyolabs.com>",
-      'to'      => "Julian <diazjulian@gmail.com>",
+      'to'      => "Arroyo Labs <info@arroyolabs.com>",
       'cc'      => '',
       'bcc'     => '',
       'subject' => 'Arroyo Labs',
@@ -48,7 +48,7 @@ class Mailgun extends \Mailgun\Mailgun
 
 
   public function forgotPassword($email, $newpass, $html){
-      //$to = $email;
+      $to = $email;
       $subject = "Arroyo Labs - Password Reset";
 
       try{
