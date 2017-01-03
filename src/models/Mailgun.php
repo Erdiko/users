@@ -47,12 +47,12 @@ class Mailgun extends \Mailgun\Mailgun
   }
 
 
-  public function forgotPassword($email, $newpass, $html){
+  public function forgotPassword($email, $html){
       $to = $email;
       $subject = "Arroyo Labs - Password Reset";
 
       try{
-          $this->sendMail(compact("to", "subject", "html"));
+          return $this->sendMail(compact("to", "subject", "html"));
       }catch (\Exception $e){
           throw new \Exception('Could not send email.');
       }

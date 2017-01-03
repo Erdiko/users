@@ -227,7 +227,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 $emailData = array('newPass' => $randomPassword);
                 $viewPath =  dirname(__FILE__)."/..";
                 $view = new \erdiko\core\View('forgotPass', $emailData, $viewPath);
-                $mailgunModel->forgotPassword($email, $randomPassword, $view->toHtml());
+                $mailgunModel->forgotPassword($email, $view->toHtml());
 
                 $this->setStatusCode(200);
                 $response['success'] = true;
