@@ -34,6 +34,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
 
     /**
      * @expectedException Doctrine\DBAL\Exception\NotNullConstraintViolationException
+     * test the email cant be sent.
      */
     function testCreateFailNoEmail()
     {
@@ -47,6 +48,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
 
     /**
      * @expectedException Doctrine\DBAL\Exception\NotNullConstraintViolationException
+     *
      */
     function testCreateFailNoPass()
     {
@@ -58,6 +60,11 @@ class UserEntityTest extends \tests\ErdikoTestCase
         $this->entityManager->flush();
     }
 
+    /**
+     * @return int|null
+     *
+     * test the entity exist after be created.
+     */
     function testCreate()
     {
         $userEntity = new \erdiko\users\entities\User;
@@ -104,7 +111,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
     public function testUpdate($id)
     {
         $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
-            ->find($id);
+                                      ->find($id);
         $updates = array(
             'email' => 'user+'.time().'@update.com',
             'password' => microtime(),
@@ -125,7 +132,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
 
         // get entity
         $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
-            ->find($id);
+                                      ->find($id);
 
         $this->assertEquals($entity->getEmail(), $updates['email']);
         $this->assertEquals($entity->getPassword(), md5($updates['password']));
@@ -143,7 +150,7 @@ class UserEntityTest extends \tests\ErdikoTestCase
     public function testDelete($id)
     {
         $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
-            ->find($id);
+                                      ->find($id);
 
         // Delete
         $this->entityManager->remove($entity);
@@ -153,8 +160,8 @@ class UserEntityTest extends \tests\ErdikoTestCase
 
         // Attempt to read recently deleted record
         $entity = $this->entityManager
-            ->getRepository('erdiko\users\entities\User')
-            ->find($id);
+                       ->getRepository('erdiko\users\entities\User')
+                       ->find($id);
 
         $this->assertEmpty($entity);
     }

@@ -10,6 +10,7 @@
  */
 
 namespace tests\phpunit;
+
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 class MailgunTest extends \tests\ErdikoTestCase
@@ -32,12 +33,17 @@ class MailgunTest extends \tests\ErdikoTestCase
         );
     }
 
-    function tearDown(){
+    function tearDown()
+    {
         unset($this->mailgunModel);
         unset($this->dataTest);
     }
 
-    function testForgotPassword(){
+    /**
+     * test the email is sent correctly
+     */
+    function testForgotPassword()
+    {
         $result = $this->mailgunModel->forgotPassword($this->dataTest->to,
                                             $this->dataTest->pass,
                                             $this->dataTest->html
@@ -49,16 +55,23 @@ class MailgunTest extends \tests\ErdikoTestCase
 
     /**
      * @expectedException \Exception
+     *
+     * test the email is not sent
      */
-    function testForgotPasswordFail(){
+    function testForgotPasswordFail()
+    {
         $this->dataTest->to = null;
         $this->mailgunModel->forgotPassword($this->dataTest->to,
-            $this->dataTest->pass,
-            $this->dataTest->html
+                                            $this->dataTest->pass,
+                                            $this->dataTest->html
         );
     }
 
-    function testSendMail(){
+    /**
+     * test the email is sent with success
+     */
+    function testSendMail()
+    {
         $result = $this->mailgunModel->sendMail($this->dataTest);
         $this->assertEquals("200", $result->http_response_code);
         $this->assertEquals("Queued. Thank you.", $result->http_response_body->message);
@@ -67,8 +80,10 @@ class MailgunTest extends \tests\ErdikoTestCase
 
     /**
      * @expectedException \Exception
+     * test the email is not sent
      */
-    function testSendMailFail(){
+    function testSendMailFail()
+    {
         $this->dataTest->to = null;
         $this->mailgunModel->sendMail($this->dataTest);
     }

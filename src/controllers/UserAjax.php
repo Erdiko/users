@@ -58,7 +58,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->id = 0;
 		if (!empty($var)) {
 			$routing = explode('/', $var);
-			if(is_array($routing)) {
+			if (is_array($routing)) {
 				$var = array_shift($routing);
 				$this->id = empty($routing)
 					? 0
@@ -91,7 +91,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->id = 0;
 		if (!empty($var)) {
 			$routing = explode('/', $var);
-			if(is_array($routing)) {
+			if (is_array($routing)) {
 				$var = array_shift($routing);
 				$this->id = empty($routing)
 					? 0
@@ -157,25 +157,28 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-			$data = json_decode(file_get_contents("php://input"));
+            $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
             // Check required fields
             $requiredParams = array('email','password', 'role', 'name');
             $params = (array) $data;
             foreach ($requiredParams as $param){
-                if(empty($params[$param])){
+                if (empty($params[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
 
 			$userModel = new User();
 			$userId = $userModel->save($data);
-            if(empty($userId)){
+            if (empty($userId)) {
                 throw  new \Exception('Could not create new user.');
             }
             $user = $userModel->getById($userId);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
-                            'role'     => $user->getRole(),
+                            'role'     => $this->getRoleInfo($user),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
                             'gateway_customer_id'=> $user->getGatewayCustomerId()
@@ -192,50 +195,6 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getRead()
-	{
-		$response = array(
-			"method" => "read",
-			"success" => false,
-			"body" => "",
-			"error_code" => 0,
-			"error_message" => ""
-		);
-
-		try {
-			$user = new User();
-			$result = array();
-			if(empty($this->id) || ($this->id < 1)){
-				$params = json_decode(file_get_contents("php://input"));
-				if(empty($params)) {
-					// List all users
-					$users = $user->getUsers();
-					foreach ( $users as $item ) {
-						array_push( $result, $item->marshall( 'array' ) );
-					}
-				}else{
-					$users = $user->getByParams($params);
-					foreach ( $users as $item ) {
-						array_push( $result, $item->marshall( 'array' ) );
-					}
-				}
-			} else {
-				// Get User by ID
-				$users = $user->getById($this->id);
-				$result = empty($users) ? null : $users->marshall('array');
-			}
-
-			$response['success'] = true;
-			$response['body'] = $result;
-
-			$this->setStatusCode(200);
-		} catch (\Exception $e) {
-			$response['error_message'] = $e->getTraceAsString();
-			$response['error_code'] = $e->getCode();
-		}
-
-		$this->setContent($response);
-	}
 
     public function getList()
     {
@@ -252,22 +211,22 @@ class UserAjax extends \erdiko\core\AjaxController
         $data =  ( object) array();
 
         $data->page = 0;
-        if(array_key_exists("page", $_REQUEST)) {
-            $data->page = $_REQUEST['page'];
+        if(array_key_exists("page", $_GET)) {
+            $data->page = $_GET['page'];
         }
 
         $data->pagesize = 100;
-        if(array_key_exists("pagesize", $_REQUEST)){
-            $data->pagesize = $_REQUEST['pagesize'];
+        if(array_key_exists("pagesize", $_GET)){
+            $data->pagesize = $_GET['pagesize'];
         }
 
         $data->sort = 'id';
 
         $validSort = array('id', 'name', 'email', 'created_at', 'updated_at');
         try {
-            if(array_key_exists("sort", $_REQUEST)) {
-                $sort = strtolower($_REQUEST["sort"]);
-                if(!in_array($sort, $validSort)){
+            if (array_key_exists("sort", $_GET)) {
+                $sort = strtolower($_GET["sort"]);
+                if (!in_array($sort, $validSort)) {
                     throw new \Exception('The attribute used to sort is invalid.');
                 }
                 $data->sort = $sort;
@@ -279,7 +238,7 @@ class UserAjax extends \erdiko\core\AjaxController
             foreach ($users->users as $user){
                 $output[] = array('id'       => $user->getId(),
                                   'email'    => $user->getEmail(),
-                                  'role'     => $user->getRole(),
+                                  'role'     => $this->getRoleInfo($user),
                                   'name'     => $user->getName(),
                                   'last_login' => $user->getLastLogin(),
                                   'gateway_customer_id'=> $user->getGatewayCustomerId()
@@ -308,9 +267,9 @@ class UserAjax extends \erdiko\core\AjaxController
         );
 
         try {
-            $params = (object) $_REQUEST;
+            $params = (object) $_GET;
             // Check required fields
-            if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
+            if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
                 throw new \Exception("ID is required.");
             } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
                 $params->id = $this->id;
@@ -318,15 +277,15 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userModel = new User();
             $user = $userModel->getById($params->id);
-            if(empty($user)){
+            if( empty($user)) {
                 throw new \Exception('User not found.');
             }
             $output = array('id'       => $user->getId(),
-                              'email'    => $user->getEmail(),
-                              'role'     => $user->getRole(),
-                              'name'     => $user->getName(),
-                              'last_login' => $user->getLastLogin(),
-                              'gateway_customer_id'=> $user->getGatewayCustomerId()
+                            'email'    => $user->getEmail(),
+                            'role'     => $this->getRoleInfo($user),
+                            'name'     => $user->getName(),
+                            'last_login' => $user->getLastLogin(),
+                            'gateway_customer_id'=> $user->getGatewayCustomerId()
             );
             $response['success'] = true;
             $response['user'] = $output;
@@ -351,12 +310,12 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		try {
             $params = json_decode(file_get_contents("php://input"));
-            if(empty($params)) {
-                $params = (object) $_REQUEST;
+            if (empty($params)) {
+                $params = (object) $_POST;
             }
 
 			// Check required fields
-			if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
+			if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
 				throw new \Exception("Id is required.");
 			} elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
 				$params->id = $this->id;
@@ -364,14 +323,14 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$userModel = new User();
 			$entity = $userModel->getById($params->id);
-            if(empty($entity)){
+            if (empty($entity)) {
                 throw new \Exception('User not found.');
             }
             $result = $userModel->save($params);
             $user = $userModel->getById($result);
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
-                            'role'     => $user->getRole(),
+                            'role'     => $this->getRoleInfo($user),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
                             'gateway_customer_id'=> $user->getGatewayCustomerId()
@@ -399,9 +358,9 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		try {
 
-            $params = (object) $_REQUEST;
+            $params = (object) $_GET;
             // Check required fields
-            if((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))){
+            if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
                 throw new \Exception("Id is required.");
             } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
                 $params->id = $this->id;
@@ -410,7 +369,7 @@ class UserAjax extends \erdiko\core\AjaxController
 			$userModel = new User();
 			$result = $userModel->deleteUser($params->id);
 
-            if(false == $result){
+            if (false == $result) {
                 throw new \Exception('User could not be deleted.');
             }
 
@@ -425,5 +384,32 @@ class UserAjax extends \erdiko\core\AjaxController
 
 		$this->setContent($response);
 	}
+
+    /**
+     * @param $user
+     * @return null|object
+     */
+    private function getRoleInfo($user)
+    {
+        $roleModel = new \erdiko\users\models\Role();
+        $roleEntity = $roleModel->findById($user->getRole());
+        return array('id' => $roleEntity->getId(),
+            'name' => $roleEntity->getName()
+        );
+    }
+
+    public function postTest()
+    {
+        $params = json_decode(file_get_contents("php://input"));
+        if (empty($params)) {
+            $params = (object) $_POST;
+        }
+        var_dump($params);die();
+    }
+
+    public function getTest()
+    {
+        var_dump($_GET);die();
+    }
 
 }

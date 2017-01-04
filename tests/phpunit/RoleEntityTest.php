@@ -12,6 +12,7 @@
 namespace tests\phpunit;
 
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
+
 class RoleEntityTest extends \tests\ErdikoTestCase
 {
     protected $entityManager = null;
@@ -33,6 +34,11 @@ class RoleEntityTest extends \tests\ErdikoTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * @return int
+     *
+     * test the Role is created.
+     */
     function testCreate()
     {
         $rolEntity = new \erdiko\users\entities\Role();

@@ -10,7 +10,6 @@
 
 namespace erdiko\users\models;
 
-
 class Mailgun extends \Mailgun\Mailgun
 {
   private $domain;
@@ -40,14 +39,27 @@ class Mailgun extends \Mailgun\Mailgun
     );
   }
 
+    /**
+     * @param $postData
+     * @return \stdClass
+     * Send a email with specific data
+     */
   public function sendMail($postData)
   {
     $data = array_filter(array_replace($this->getDefaults(),(array)$postData));
     return $this->post("$this->domain/messages", $data, array());
   }
 
-
-  public function forgotPassword($email, $html){
+    /**
+     * @param $email
+     * @param $html
+     * @return \stdClass
+     * @throws \Exception
+     *
+     * Send a email with a new password using a html view
+     */
+  public function forgotPassword($email, $html)
+  {
       $to = $email;
       $subject = "Arroyo Labs - Password Reset";
 

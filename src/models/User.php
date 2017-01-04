@@ -23,9 +23,10 @@ class User implements iErdikoUser
 	protected $_user;
 	private $_em;
 
-	public function __construct( $em = null ) {
+	public function __construct( $em = null )
+    {
 		$this->_em = $em;
-		if ( empty( $em ) ) {
+		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
 		$this->_user = self::createAnonymous();
@@ -33,7 +34,7 @@ class User implements iErdikoUser
 
 	public function setEntity($entity)
 	{
-	    if(!($entity instanceof  entity)){
+	    if (!($entity instanceof  entity)) {
             throw new \Exception('Parameter must be an entity User');
         }
 		$this->_user = $entity;
@@ -52,13 +53,14 @@ class User implements iErdikoUser
 	 *
 	 * @return User
 	 */
-	public static function unmarshall( $encoded ) {
+	public static function unmarshall($encoded)
+    {
 		$decode = json_decode( $encoded, true );
-		if(empty($decode)){
+		if (empty($decode)) {
 			$entity = self::createAnonymous();
 		} else {
 			$entity = new entity();
-			foreach ($decode as $key=>$value) {
+			foreach ($decode as $key => $value) {
 				$key = str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
 				$method = "set{$key}";
 				$entity->$method($value);
@@ -69,11 +71,17 @@ class User implements iErdikoUser
 		return $model;
 	}
 
+    /**
+     * @return entity
+     * @throws \Exception
+     *
+     * returns a new anonymous user entity.
+     */
 	protected static function createAnonymous()
 	{
 	    $roleModel = new \erdiko\users\models\Role();
         $roleAnonymous = $roleModel->findByName('anonymous');
-        if(empty($roleAnonymous)){
+        if (empty($roleAnonymous)) {
             throw  new \Exception('Error, role anonymous not found.');
         }
 
@@ -85,6 +93,12 @@ class User implements iErdikoUser
 		return $entity;
 	}
 
+
+    /**
+     * @return User
+     *
+     * returns a new User model with entity anonymous
+     */
 	public static function getAnonymous()
 	{
 		$user = new User();
@@ -110,24 +124,30 @@ class User implements iErdikoUser
 	{
 		return $this->_user->getName();
 	}
-	/**
-	 *
-	 */
-	public function createUser( $data = array() ) {
-		if ( empty( $data ) ) {
+
+
+    /**
+     * @param array $data
+     * @return bool
+     * @throws \Exception
+     *
+     * create a new entity and set it to current user model.
+     */
+	public function createUser($data = array())
+    {
+		if (empty($data)) {
 			throw new \Exception( "User data is missing" );
 		}
 
-		if ( empty( $data['email'] ) || empty( $data['password'] ) ) {
+		if (empty($data['email']) || empty($data['password'])) {
 			throw new \Exception( "email & password are required" );
 		}
 
 		try {
-
-			if ( empty( $data['role'] ) ) {
+			if (empty($data['role'])) {
                 $roleModel = new \erdiko\users\models\Role();
                 $roleAnonymous = $roleModel->findByName('anonymous');
-                if(empty($roleAnonymous)){
+                if (empty($roleAnonymous)) {
                     throw  new \Exception('Error, role anonymous not found.');
                 }
 				$data['role'] = $roleAnonymous->getId();
@@ -157,7 +177,8 @@ class User implements iErdikoUser
 	 *
 	 * returns password string concat'd with password salt
 	 */
-	public function getSalted( $password ) {
+	public function getSalted($password)
+    {
 		$res =  $password . self::PASSWORDSALT;
         return $res;
 	}
@@ -168,7 +189,8 @@ class User implements iErdikoUser
 	 *
 	 * attempt to validate the user by querying the DB for params
 	 */
-	public function authenticate( $email, $password ) {
+	public function authenticate($email, $password)
+    {
 		$pass = $password . self::PASSWORDSALT;
 		$pwd = md5( $pass );
 		// @todo: repository could change...
@@ -195,10 +217,12 @@ class User implements iErdikoUser
 	 *
 	 * returns true if the user is logged in
 	 */
-	public function isLoggedIn() {
+	public function isLoggedIn()
+    {
         $roleModel = new \erdiko\users\models\Role();
         $roleAnonymous = $roleModel->findByName('anonymous');
-        if(empty($roleAnonymous)){
+
+        if (empty($roleAnonymous)){
             throw  new \Exception('Error, role anonymous not found.');
         }
 
@@ -210,11 +234,12 @@ class User implements iErdikoUser
 	 *
 	 * returns true if provided email was not found in the user table
 	 */
-	public function isEmailUnique( $email ) {
+	public function isEmailUnique($email)
+    {
 		$repo   = $this->getRepository( 'erdiko\users\entities\User' );
 		$result = $repo->findBy( array( 'email' => $email ) );
 
-		if ( empty( $result ) ) {
+		if (empty($result)) {
 			$response = 0;
 		} else {
 			$response = (bool) ( count( $result ) == 0 );
@@ -225,8 +250,11 @@ class User implements iErdikoUser
 
 	/**
 	 * @return array
+     *
+     * return the friendly user role names
 	 */
-	public function getRoles(){
+	public function getRoles()
+    {
         $roleModel = new \erdiko\users\models\Role();
         $roleEntity = $roleModel->findById($this->_user->getRole());
 		return array( $roleEntity->getName());
@@ -237,7 +265,8 @@ class User implements iErdikoUser
 	 *
 	 * returns true if current user's role is admin
 	 */
-	public function isAdmin() {
+	public function isAdmin()
+    {
         return $this->hasRole('admin');
 	}
 
@@ -263,7 +292,7 @@ class User implements iErdikoUser
 	{
         $roleModel = new \erdiko\users\models\Role();
         $roleEntity = $roleModel->findByName($role);
-        if(empty($roleEntity)){
+        if (empty($roleEntity)) {
             throw  new \Exception('Error, role anonymous not found.');
         }
         $result = $this->_user->getRole() == $roleEntity->getId();
@@ -276,11 +305,15 @@ class User implements iErdikoUser
         return  $this->_user->getRole();
     }
 
-	/**
-	 *
-	 *
-	 *
-	 */
+    /**
+     * @param int $page
+     * @param int $pagesize
+     * @param string $sort
+     * @param string $direction
+     * @return object
+     *
+     * return all the users paginated by parameters.
+     */
     public function getUsers($page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc') 
     {
         $result = (Object)array(
@@ -291,7 +324,7 @@ class User implements iErdikoUser
         $repo = $this->getRepository('erdiko\users\entities\User');
 
         $offset = 0;
-        if($page > 0) {
+        if ($page > 0) {
             $offset = ($page - 1) * $pagesize;
         }
 
@@ -319,11 +352,12 @@ class User implements iErdikoUser
 	 *
 	 *
 	 */
-	public function deleteUser( $id ) {
+	public function deleteUser($id)
+    {
 		try {
 			$_user = $this->_em->getRepository( 'erdiko\users\entities\User' )->findOneBy(array('id'=>$id));
 
-			if ( ! is_null( $_user ) ) {
+			if (! is_null($_user)) {
 				$this->_em->remove($_user);
 				$this->_em->flush();
 				$this->_user = null;
@@ -343,54 +377,62 @@ class User implements iErdikoUser
 	 *
 	 *
 	 */
-	public function getUserId() {
+	public function getUserId()
+    {
 		return $this->_user->getId();
 	}
 
-	/**
-	 *
-	 */
-	public function save( $data ) {
+    /**
+     * @param $data
+     * @return int
+     *
+     * update or return a new user with a new or updated entity.
+     */
+	public function save($data)
+    {
 		$data = (object) $data;
 		$new  = false;
-		if ( isset( $data->id ) ) {
-			$entity = $this->getById( $data->id );
+		if (isset($data->id)) {
+			$entity = $this->getById($data->id);
 		} else {
 			$entity = new entity();
 			$new    = true;
 		}
-		if ( isset( $data->name ) ) {
-			$entity->setName( $data->name );
+		if (isset($data->name)) {
+			$entity->setName($data->name);
 		}
-		if ( isset( $data->email ) ) {
-			$entity->setEmail( $data->email );
+		if (isset($data->email)) {
+			$entity->setEmail($data->email);
 		}
-		if ( isset( $data->password ) ) {
+		if (isset($data->password)) {
 			$entity->setPassword($this->getSalted($data->password));
 		}
-		if ( isset( $data->role ) ) {
-			$entity->setRole( $data->role );
+		if (isset($data->role)) {
+			$entity->setRole($data->role);
 		}
-		if ( isset( $data->gateway_customer_id ) ) {
-			$entity->setGatewayCustomerId( $data->gateway_customer_id );
+		if (isset($data->gateway_customer_id)) {
+			$entity->setGatewayCustomerId($data->gateway_customer_id);
 		}
-		if ( $new ) {
-			$this->_em->persist( $entity );
+		if ($new) {
+			$this->_em->persist($entity);
 		} else {
-			$this->_em->merge( $entity );
+			$this->_em->merge($entity);
 		}
 		$this->_em->flush();
 		$this->setEntity($entity);
 		return $entity->getId();
 	}
 
-	/**
-	 * getById
-	 *
-	 */
-	public function getById( $id ) {
-		$repo   = $this->getRepository( 'erdiko\users\entities\User' );
-		$result = $repo->findOneBy( array( 'id' => $id ) );
+    /**
+     * @param $id
+     * @return null|object
+     *
+     * return a user by id.
+     */
+	public function getById($id)
+    {
+		$repo   = $this->getRepository('erdiko\users\entities\User');
+		$result = $repo->findOneBy(array('id' => $id ));
 
 		return $result;
 	}
@@ -402,6 +444,8 @@ class User implements iErdikoUser
 	 *
 	 * @return array
 	 * @throws \Exception
+     *
+     * return users using params as query filter
 	 */
 	public function getByParams($params)
 	{
@@ -410,9 +454,9 @@ class User implements iErdikoUser
 			$obj    = new \erdiko\users\entities\User();
 			$params = (array) $params;
 			$filter = array();
-			foreach ( $params as $key => $value ) {
+			foreach ($params as $key => $value) {
 				$method = "get" . ucfirst( $key );
-				if ( method_exists( $obj, $method ) ) {
+				if (method_exists($obj, $method)) {
 					$filter[ $key ] = $value;
 				}
 			}
@@ -431,11 +475,12 @@ class User implements iErdikoUser
 	 *
 	 * @return int
 	 */
-	public function getGatewayCustomerId( $uid ) {
+	public function getGatewayCustomerId($uid)
+    {
 		$result = 0;
 		$user   = $this->findUser( $uid );
-		if ( ! is_null( $user ) ) {
-			$result = intval( $user->getGatewayCustomerId() );
+		if (! is_null($user)) {
+			$result = intval($user->getGatewayCustomerId());
 		}
 
 		return $result;

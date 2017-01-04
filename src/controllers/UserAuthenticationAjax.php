@@ -31,7 +31,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->id = 0;
         if (!empty($var)) {
             $routing = explode('/', $var);
-            if(is_array($routing)) {
+            if( is_array($routing)) {
                 $var = array_shift($routing);
                 $this->id = empty($routing)
                     ? 0
@@ -57,7 +57,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->id = 0;
         if (!empty($var)) {
             $routing = explode('/', $var);
-            if(is_array($routing)) {
+            if (is_array($routing)) {
                 $var = array_shift($routing);
                 $this->id = empty($routing)
                     ? 0
@@ -101,20 +101,22 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
 
         try {
             $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
             // Check required fields
             $requiredParams = array('email','password');
             $params = (array) $data;
             foreach ($requiredParams as $param){
-                if(empty($params[$param])){
+                if (empty($params[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
 
             $authenticator = new BasicAuth(new User());
-            if($authenticator->login(array('username'=>$data->email, 'password'=>$data->password),'erdiko_user')){
+            if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->password),'erdiko_user')) {
                 $response['success'] = true;
-            }
-            else{
+            } else{
                 throw new \Exception("Username or password are wrong. Please try again.");
             }
             $this->setStatusCode(200);
@@ -158,29 +160,31 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
 
         try {
             $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
             // Check required fields
             $requiredParams = array('email', 'currentpass', 'newpass');
             $params = (array) $data;
             foreach ($requiredParams as $param){
-                if(empty($params[$param])){
+                if (empty($params[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
 
-            if($data->currentpass == $data->newpass){
+            if ($data->currentpass == $data->newpass) {
                 throw new \Exception('Current pass and new pass should be different.');
             }
 
             $authenticator = new BasicAuth(new User());
 
-            if($authenticator->login(array('username'=>$data->email, 'password'=>$data->currentpass),'erdiko_user')){
+            if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->currentpass),'erdiko_user')) {
                 $usermodel = new \erdiko\users\models\User();
                 $currentUser = $authenticator->current_user();
                 $currentUser->save(array('id' => $currentUser->getUserId(), 'password' => $data->newpass));
 
                 $response['success'] = true;
-            }
-            else{
+            } else{
                 throw new \Exception("Username or password are wrong. Please try again.");
             }
             $this->setStatusCode(200);
@@ -192,7 +196,8 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
-    public function postForgotPass(){
+    public function postForgotPass()
+    {
         $response = array(
             "method" => "forgotpass",
             "success" => false,
@@ -202,13 +207,16 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
 
         try {
             $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
 
             // Check required fields
             $requiredParams = array('email');
             $params = (array) $data;
 
             foreach ($requiredParams as $param){
-                if(empty($params[$param])){
+                if (empty($params[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
@@ -216,7 +224,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
             $email = $data->email;
             $userModel = new \erdiko\users\models\User();
             $result = $userModel->getByParams(array('email' => $email));
-            if(!empty($result)){
+            if (!empty($result)) {
                 $userEntity = $result[0];
                 $userModel->setEntity($userEntity);
 
