@@ -72,7 +72,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 
 
-        $roleEntity = $this->roleModel->findByName('anonymous');
+        $roleEntity = $this->roleModel->findByName('user');
         if (empty($roleEntity)) {
             $id = $this->roleModel->create($this->roleAnonymousArrayData);
             $this->rolesCreated[] = $id;
@@ -117,9 +117,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$entity = $this->model->getEntity();
 
 		$this->assertInstanceOf('\erdiko\users\entities\User', $entity);
-		$this->assertEquals('anonymous', $entity->getName());
+		$this->assertEquals('user', $entity->getName());
 		$this->assertEquals($this->anonymousId, $entity->getRole());
-		$this->assertEquals('anonymous', $entity->getEmail());
+		$this->assertEquals('user', $entity->getEmail());
 	}
 
 	/**
@@ -132,9 +132,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 		$out = (object)array(
 			"id" => 0,
-			"name" => 'anonymous',
+			"name" => 'user',
 			"role" => $this->anonymousId,
-			"email" => 'anonymous',
+			"email" => 'user',
 			'gateway_customer_id' => null,
 			'last_login' => null
 		);

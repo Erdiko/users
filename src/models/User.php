@@ -80,7 +80,7 @@ class User implements iErdikoUser
 	protected static function createAnonymous()
 	{
 	    $roleModel = new \erdiko\users\models\Role();
-        $roleAnonymous = $roleModel->findByName('anonymous');
+        $roleAnonymous = $roleModel->findByName('user');
         if (empty($roleAnonymous)) {
             throw  new \Exception('Error, role anonymous not found.');
         }
@@ -88,8 +88,8 @@ class User implements iErdikoUser
 		$entity = new entity();
 		$entity->setId( 0 );
 		$entity->setRole( $roleAnonymous->getId() );
-		$entity->setName( 'anonymous' );
-		$entity->setEmail( 'anonymous' );
+		$entity->setName( 'user' );
+		$entity->setEmail( 'user' );
 		return $entity;
 	}
 
@@ -146,7 +146,7 @@ class User implements iErdikoUser
 		try {
 			if (empty($data['role'])) {
                 $roleModel = new \erdiko\users\models\Role();
-                $roleAnonymous = $roleModel->findByName('anonymous');
+                $roleAnonymous = $roleModel->findByName('user');
                 if (empty($roleAnonymous)) {
                     throw  new \Exception('Error, role anonymous not found.');
                 }
@@ -220,10 +220,10 @@ class User implements iErdikoUser
 	public function isLoggedIn()
     {
         $roleModel = new \erdiko\users\models\Role();
-        $roleAnonymous = $roleModel->findByName('anonymous');
+        $roleAnonymous = $roleModel->findByName('user');
 
         if (empty($roleAnonymous)){
-            throw  new \Exception('Error, role anonymous not found.');
+            throw  new \Exception('Error, role user not found.');
         }
 
 		return ( ( $this->_user->getId() > 0 ) && ( $this->_user->getRole() !== $roleAnonymous->getId() ) );
@@ -288,7 +288,7 @@ class User implements iErdikoUser
 	 *
 	 * @return bool
 	 */
-	public function hasRole($role="anonymous")
+	public function hasRole($role = "user")
 	{
         $roleModel = new \erdiko\users\models\Role();
         $roleEntity = $roleModel->findByName($role);
