@@ -10,6 +10,7 @@
  */
 
 namespace tests\phpunit;
+
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 class RoleTest extends \tests\ErdikoTestCase
@@ -39,21 +40,33 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->roleModel = new \erdiko\users\models\Role();
     }
 
-    function testCreate(){
+    /**
+     * test the Role is created.
+     */
+    function testCreate()
+    {
         $this->id = $this->roleModel->create($this->modelArray);
         $this->assertGreaterThan(0, $this->id);
     }
 
 
-
-    function testFindById(){
+    /**
+     * test the findById is working. The entity should exist.
+     */
+    function testFindById()
+    {
         $this->id = $this->roleModel->create($this->modelArray);
         $entity = $this->roleModel->findById($this->id);
         $this->assertNotNull($entity);
     }
 
 
-    function testFindByNotExist(){
+    /**
+     * test findById with an fake id. The entity should not exist.
+     *
+     */
+    function testFindByNotExist()
+    {
         $id = 999999999;
         $result = $this->roleModel->findById($id);
         $this->assertNull($result);
@@ -61,15 +74,21 @@ class RoleTest extends \tests\ErdikoTestCase
 
     /**
      * @expectedException \Exception
+     * test the findById method should brake if a null id is given.
      */
 
-    function testFindByBreaks(){
+    function testFindByBreaks()
+    {
         $id = null;
         $result = $this->roleModel->findById($id);
         $this->assertNull($result);
     }
 
-    function testFindByName(){
+    /**
+     * test findByName with a real id given. Entity should exist.
+     */
+    function testFindByName()
+    {
         $this->id = $this->roleModel->create($this->modelArray);
         $entity = $this->roleModel->findById($this->id);
         $entityfound = $this->roleModel->findByName($entity->getName());
@@ -77,20 +96,32 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->assertEquals($entity->getId(),$entityfound->getId());
     }
 
+    /**
+     * test save method a new entity should be created.
+     */
 
-    function testSaveNewOne(){
+    function testSaveNewOne()
+    {
         $this->id = $this->roleModel->save($this->modelArray);
         $this->assertGreaterThan(0,$this->id);
     }
 
-    function testSaveExistent(){
+    /**
+     * test save method, the entity exist then should update params.
+     */
+    function testSaveExistent()
+    {
         $this->id = $this->roleModel->create($this->modelArray);
         $this->modelArray['id'] = $this->id;
         $new_id = $this->roleModel->save($this->modelArray);
         $this->assertEquals($new_id,$this->id);
     }
 
-    function testGetCountByRole(){
+    /**
+     * test getCountByRole the number of entities should not be 0
+     */
+    function testGetCountByRole()
+    {
         $userEntity = new \erdiko\users\entities\User;
         $userEntity->setEmail($this->userArray['email']);
         $userEntity->setPassword($this->userArray['password']);
@@ -108,7 +139,11 @@ class RoleTest extends \tests\ErdikoTestCase
         $this->assertGreaterThan(0,$count);
     }
 
-    function testGetCountByRoleNotExist(){
+    /**
+     * test getCountByRole with a not real id, should be 0
+     */
+    function testGetCountByRoleNotExist()
+    {
         $role = 999999999;
         $count = $this->roleModel->getCountByRole($role);
         $this->assertEquals(0,$count);
@@ -119,19 +154,21 @@ class RoleTest extends \tests\ErdikoTestCase
      * @expectedException \Exception
      */
 
-    function testGetCountByRoleBreaks(){
+    function testGetCountByRoleBreaks()
+    {
         $role = null;
         $count = $this->roleModel->getCountByRole($role);
         $this->assertEquals(0,$count);
     }
 
 
-    private function removeEntities(){
-        if(!empty($this->id)){
+    private function removeEntities()
+    {
+        if (!empty($this->id)) {
             $this->roleModel->delete($this->id);
         }
 
-        if(!empty($this->userId)){
+        if (!empty($this->userId)) {
             $entity = $this->entityManager->getRepository('erdiko\users\entities\User')
                 ->find($this->userId);
             $this->entityManager->remove($entity);
