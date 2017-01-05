@@ -80,7 +80,7 @@ class User implements iErdikoUser
 	protected static function createAnonymous()
 	{
 	    $roleModel = new \erdiko\users\models\Role();
-        $roleAnonymous = $roleModel->findByName('user');
+        $roleAnonymous = $roleModel->findByName('anonymous');
         if (empty($roleAnonymous)) {
             throw  new \Exception('Error, role anonymous not found.');
         }
@@ -146,7 +146,7 @@ class User implements iErdikoUser
 		try {
 			if (empty($data['role'])) {
                 $roleModel = new \erdiko\users\models\Role();
-                $roleAnonymous = $roleModel->findByName('user');
+                $roleAnonymous = $roleModel->findByName('anonymous');
                 if (empty($roleAnonymous)) {
                     throw  new \Exception('Error, role anonymous not found.');
                 }
@@ -288,7 +288,7 @@ class User implements iErdikoUser
 	 *
 	 * @return bool
 	 */
-	public function hasRole($role = "user")
+	public function hasRole($role = "anonymous")
 	{
         $roleModel = new \erdiko\users\models\Role();
         $roleEntity = $roleModel->findByName($role);
