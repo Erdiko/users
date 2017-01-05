@@ -33,7 +33,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 			$userModel  = new User();
 			$auth       = new BasicAuth($userModel);
 			$user       = $auth->current_user();
-			if($user instanceof iErdikoUser){
+			if ($user instanceof iErdikoUser) {
 				$authorizer = new Authorizer( $user );
 				$result     = $authorizer->can( $action, $resource );
 			} else {
@@ -56,7 +56,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 		$this->id = 0;
 		if (!empty($var)) {
 			$routing = explode('/', $var);
-			if(is_array($routing)) {
+			if (is_array($routing)) {
 				$var = array_shift($routing);
 				$this->id = empty($routing)
 					? 0
@@ -67,6 +67,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("read",$var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'get');
 			} else {
 				return $this->getForbbiden($var);
@@ -86,7 +87,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 		$this->id = 0;
 		if (!empty($var)) {
 			$routing = explode('/', $var);
-			if(is_array($routing)) {
+			if (is_array($routing)) {
 				$var = array_shift($routing);
 				$this->id = empty($routing)
 					? 0
@@ -97,6 +98,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 
 			if ($this->checkAuth("write", $var)) {
 				// load action based off of naming conventions
+                header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
 			} else {
 				return $this->getForbbiden($var);
@@ -140,7 +142,8 @@ class RoleAjax extends \erdiko\core\AjaxController
      *
      * return roles with properties: id, users count, active, name.
      */
-    public function getRoles(){
+    public function getRoles()
+    {
         $response = (object)array(
             'method'        => 'roles',
             'success'       => false,
@@ -188,20 +191,19 @@ class RoleAjax extends \erdiko\core\AjaxController
             'error_message' => ''
         );
 
-        $data = (object) $_REQUEST;
+        $data = (object) $_GET;
         try {
-            if(empty($data->id)){
+            if (empty($data->id)) {
                 throw new \Exception('Role Id is required.');
             }
             $roleModel    = new \erdiko\users\models\Role();
-            if(empty($data->id)){
+            if (empty($data->id)) {
                 throw new \Exception('Role Id is required.');
-            }
-            else{
-                $id = $_REQUEST['id'];
+            } else{
+                $id = $_GET['id'];
             }
             $role = $roleModel->findById($id);
-            if(empty($role)){
+            if (empty($role)) {
                 throw new \Exception('Role not found.');
             }
             $users = $roleModel->getUsersForRole($id);
@@ -232,7 +234,8 @@ class RoleAjax extends \erdiko\core\AjaxController
     /**
      * Create a new role
      */
-    public function postCreateRole(){
+    public function postCreateRole()
+    {
         $response = (object)array(
             'method'        => 'createrole',
             'success'       => false,
@@ -241,13 +244,15 @@ class RoleAjax extends \erdiko\core\AjaxController
             'error_message' => ''
         );
         // decode json data
-        $json = file_get_contents('php://input');
-        $data = json_decode(trim($json));
+        $data = json_decode(file_get_contents("php://input"));
+        if (empty($data)) {
+            $data = (object) $_POST;
+        }
         $requiredParams = array('name', 'active');
         try {
             $data = (array) $data;
             foreach ($requiredParams as $param){
-                if(empty($data[$param])){
+                if (empty($data[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
@@ -257,7 +262,7 @@ class RoleAjax extends \erdiko\core\AjaxController
 
             $roleModel    = new \erdiko\users\models\Role();
             $roleId = $roleModel->create($data);
-            if($roleId === 0){
+            if ($roleId === 0) {
                 throw new \Exception('Could not create Role.');
             }
             $role = $roleModel->findById($roleId);
@@ -280,7 +285,8 @@ class RoleAjax extends \erdiko\core\AjaxController
     /**
      * update a given role
      */
-    public function postUpdateRole(){
+    public function postUpdateRole()
+    {
         $response = (object)array(
             'method'        => 'updaterole',
             'success'       => false,
@@ -289,13 +295,15 @@ class RoleAjax extends \erdiko\core\AjaxController
             'error_message' => ''
         );
         // decode json data
-        $json = file_get_contents('php://input');
-        $data = json_decode(trim($json));
+        $data = json_decode(file_get_contents("php://input"));
+        if (empty($data)) {
+            $data = (object) $_POST;
+        }
         $requiredParams = array('id', 'name', 'active');
         try {
             $data = (array) $data;
             foreach ($requiredParams as $param){
-                if(empty($data[$param])){
+                if (empty($data[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
@@ -327,7 +335,8 @@ class RoleAjax extends \erdiko\core\AjaxController
     /**
      * delete a given role
      */
-    public function postDeleteRole(){
+    public function postDeleteRole()
+    {
         $response = (object)array(
             'method'        => 'deleterole',
             'success'       => false,
@@ -336,13 +345,15 @@ class RoleAjax extends \erdiko\core\AjaxController
             'error_message' => ''
         );
         // decode json data
-        $json = file_get_contents('php://input');
-        $data = json_decode(trim($json));
+        $data = json_decode(file_get_contents("php://input"));
+        if( empty($data)) {
+            $data = (object) $_POST;
+        }
         $requiredParams = array('id');
         try {
             $data = (array) $data;
             foreach ($requiredParams as $param){
-                if(empty($data[$param])){
+                if (empty($data[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
@@ -362,3 +373,4 @@ class RoleAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 }
+

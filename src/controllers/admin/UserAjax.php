@@ -7,10 +7,10 @@
  * @category    Erdiko
  * @package     User
  * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
- * @author      Leo Daidone, leo@arroyolabs.com
+ * @author      Julian Diaz, julian@arroyolabs.com
  */
 
-namespace erdiko\users\controllers;
+namespace erdiko\users\controllers\admin;
 
 use erdiko\authenticate\BasicAuth;
 use erdiko\authenticate\iErdikoUser;
@@ -19,25 +19,25 @@ use erdiko\users\models\User;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
-
-    private $id = null;
-
+	private $id = null;
 	/**
 	 * @param $action
 	 * @param $resource
 	 *
 	 * @return bool
 	 */
-	protected function checkAuth($action,$resource)
+	protected function checkAuth()
 	{
-		return true; // remove after testing
+        //remove after testing
+        //frisby test are not able to get a kind of "setUp" before each test.
+	    return true;
 		try {
 			$userModel  = new User();
 			$auth       = new BasicAuth($userModel);
 			$user       = $auth->current_user();
-			if($user instanceof iErdikoUser){
-				$authorizer = new Authorizer( $user );
-				$result     = $authorizer->can( $action, $resource );
+
+			if ($user instanceof iErdikoUser) {
+				$result = $user->isAdmin();
 			} else {
 				$result = false;
 			}
@@ -58,7 +58,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->id = 0;
 		if (!empty($var)) {
 			$routing = explode('/', $var);
-			if (is_array($routing)) {
+			if(is_array($routing)) {
 				$var = array_shift($routing);
 				$this->id = empty($routing)
 					? 0
@@ -67,11 +67,9 @@ class UserAjax extends \erdiko\core\AjaxController
 				$var = $routing;
 			}
 
-			if ($this->checkAuth("read",$var)) {
-                // load action based off of naming conventions
-
+			if ($this->checkAuth()) {
+				// load action based off of naming conventions
                 header('Content-Type: application/json');
-
 				return $this->_autoaction($var, 'get');
 			} else {
 				return $this->getForbbiden($var);
@@ -100,7 +98,7 @@ class UserAjax extends \erdiko\core\AjaxController
 				$var = $routing;
 			}
 
-			if ($this->checkAuth("write", $var)) {
+			if ($this->checkAuth()) {
 				// load action based off of naming conventions
                 header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
@@ -146,10 +144,10 @@ class UserAjax extends \erdiko\core\AjaxController
 	/**
 	 * User CRUD actions
 	 */
-	public function postRegister()
+	public function postCreate()
 	{
 		$response = array(
-			"method" => "register",
+			"method" => "create",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -162,7 +160,7 @@ class UserAjax extends \erdiko\core\AjaxController
                 $data = (object) $_POST;
             }
             // Check required fields
-            $requiredParams = array('email','password', 'role', 'name');
+            $requiredParams = array('email', 'name', 'role');
             $params = (array) $data;
             foreach ($requiredParams as $param){
                 if (empty($params[$param])) {
@@ -170,8 +168,12 @@ class UserAjax extends \erdiko\core\AjaxController
                 }
             }
 
+            // default password, user will need to update on login
+            $data->password = "changeme";
+
 			$userModel = new User();
-			$userId = $userModel->save($data);
+            $userId = $userModel->save($data);
+
             if (empty($userId)) {
                 throw  new \Exception('Could not create new user.');
             }
@@ -206,23 +208,23 @@ class UserAjax extends \erdiko\core\AjaxController
             "error_message" => ""
         );
 
-
         // decode
         $data =  ( object) array();
 
         $data->page = 0;
-        if(array_key_exists("page", $_GET)) {
+        if (array_key_exists("page", $_GET)) {
             $data->page = $_GET['page'];
         }
 
         $data->pagesize = 100;
-        if(array_key_exists("pagesize", $_GET)){
+        if (array_key_exists("pagesize", $_GET)) {
             $data->pagesize = $_GET['pagesize'];
         }
 
-        $data->sort = 'id';
+        $data->sort         = 'id';
+        $data->direction    = 'desc';
 
-        $validSort = array('id', 'name', 'email', 'created_at', 'updated_at');
+        $validSort = array('id', 'name','email','created_at', 'updated_at');
         try {
             if (array_key_exists("sort", $_GET)) {
                 $sort = strtolower($_GET["sort"]);
@@ -232,16 +234,31 @@ class UserAjax extends \erdiko\core\AjaxController
                 $data->sort = $sort;
             }
 
+            if(array_key_exists("direction", $_GET)) {
+                $dir = strtolower($_GET["direction"]);
+                if (!in_array($dir, array("asc", "desc"))) {
+                    throw new \Exception('sort direction is invalid');
+                }
+                $data->direction = $dir;
+            }
+
             $userModel = new User();
-            $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
-            $output = array();
-            foreach ($users->users as $user){
-                $output[] = array('id'       => $user->getId(),
-                                  'email'    => $user->getEmail(),
-                                  'role'     => $this->getRoleInfo($user),
-                                  'name'     => $user->getName(),
-                                  'last_login' => $user->getLastLogin(),
-                                  'gateway_customer_id'=> $user->getGatewayCustomerId()
+            $userResult = $userModel->getUsers($data->page, $data->pagesize, $data->sort, $data->direction);
+            $output = array("users" => array(), "total" => $userResult->total);
+            foreach ($userResult->users as $user) {
+
+                $lastLogin = $user->getLastLogin();
+                if (empty($lastLogin)) {
+                    $lastLogin = "n/a";
+                }
+
+                $output["users"][] = array(
+                    'id'          => $user->getId(),
+                    'email'       => $user->getEmail(),
+                    'role'     => $this->getRoleInfo($user),
+                    'name'        => $user->getName(),
+                    'last_login'  => $lastLogin,
+                    'joined'      => $user->getCreatedAt()
                 );
             }
             $response['success'] = true;
@@ -277,7 +294,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userModel = new User();
             $user = $userModel->getById($params->id);
-            if( empty($user)) {
+            if (empty($user)) {
                 throw new \Exception('User not found.');
             }
             $output = array('id'       => $user->getId(),
@@ -328,6 +345,7 @@ class UserAjax extends \erdiko\core\AjaxController
             }
             $result = $userModel->save($params);
             $user = $userModel->getById($result);
+
             $output = array('id'       => $user->getId(),
                             'email'    => $user->getEmail(),
                             'role'     => $this->getRoleInfo($user),
@@ -346,10 +364,10 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getCancel()
+	public function getDelete()
 	{
 		$response = array(
-			"method" => "cancel",
+			"method" => "delete",
 			"success" => false,
 			"user" => "",
 			"error_code" => 0,
@@ -357,7 +375,6 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-
             $params = (object) $_GET;
             // Check required fields
             if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
@@ -383,7 +400,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		}
 
 		$this->setContent($response);
-	}
+    }
 
     /**
      * @param $user
@@ -394,22 +411,7 @@ class UserAjax extends \erdiko\core\AjaxController
         $roleModel = new \erdiko\users\models\Role();
         $roleEntity = $roleModel->findById($user->getRole());
         return array('id' => $roleEntity->getId(),
-            'name' => $roleEntity->getName()
+                     'name' => $roleEntity->getName()
         );
     }
-
-    public function postTest()
-    {
-        $params = json_decode(file_get_contents("php://input"));
-        if (empty($params)) {
-            $params = (object) $_POST;
-        }
-        var_dump($params);die();
-    }
-
-    public function getTest()
-    {
-        var_dump($_GET);die();
-    }
-
 }

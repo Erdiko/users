@@ -62,24 +62,22 @@ class UserModelTest extends \tests\ErdikoTestCase
         $this->roleModel = new \erdiko\users\models\Role();
 
         $roleEntity = $this->roleModel->findByName('admin');
-        if(empty($roleEntity)) {
+        if (empty($roleEntity)) {
             $id = $this->roleModel->create($this->roleAdminArrayData);
             $this->rolesCreated[] = $id;
             $this->adminId = $id;
-        }
-        else{
+        } else{
             $this->adminId = $roleEntity->getId();
         }
 
 
 
-        $roleEntity = $this->roleModel->findByName('anonymous');
-        if(empty($roleEntity)) {
+        $roleEntity = $this->roleModel->findByName('user');
+        if (empty($roleEntity)) {
             $id = $this->roleModel->create($this->roleAnonymousArrayData);
             $this->rolesCreated[] = $id;
             $this->anonymousId = $id;
-        }
-        else{
+        } else{
             $this->anonymousId = $roleEntity->getId();
         }
 
@@ -89,6 +87,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 	/**
 	 * @expectedException Exception
+     * test the entity cant be created
 	 */
 	public function testSetEntityFail()
 	{
@@ -96,6 +95,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$this->model->setEntity($obj);
 	}
 
+    /**
+     * test setEntity method works.
+     */
 	public function testSetEntity()
 	{
 		$entity = new \erdiko\users\entities\User();
@@ -107,21 +109,21 @@ class UserModelTest extends \tests\ErdikoTestCase
         $this->assertTrue(true);
 	}
 
-	/**
-	 *
-	 */
+    /**
+     * test getEntity method works.
+     */
 	public function testGetEntity()
 	{
 		$entity = $this->model->getEntity();
 
 		$this->assertInstanceOf('\erdiko\users\entities\User', $entity);
-		$this->assertEquals('anonymous', $entity->getName());
+		$this->assertEquals('user', $entity->getName());
 		$this->assertEquals($this->anonymousId, $entity->getRole());
-		$this->assertEquals('anonymous', $entity->getEmail());
+		$this->assertEquals('user', $entity->getEmail());
 	}
 
 	/**
-	 *
+	 * test mashall method works. the json received should be equal to the mocked.
 	 */
 	public function testMarshall()
 	{
@@ -130,9 +132,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 		$out = (object)array(
 			"id" => 0,
-			"name" => 'anonymous',
+			"name" => 'user',
 			"role" => $this->anonymousId,
-			"email" => 'anonymous',
+			"email" => 'user',
 			'gateway_customer_id' => null,
 			'last_login' => null
 		);
@@ -141,7 +143,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
-	 *
+	 * test unmarshall works, the result should be a User instance.
 	 */
 	public function testUnmarshall()
 	{
@@ -159,6 +161,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$this->assertNotEmpty($this->model->getEntity());
 	}
 
+    /**
+     * test getSalted method works.
+     */
 	public function testGetSalted()
 	{
 		$password = "asdf1234";
@@ -171,6 +176,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 	/**
 	 * @expectedException \Exception
 	 * @expectedExceptionMessage User data is missing
+     *
+     * test createUser is not working with empty params.
 	 */
 	public function testCreateUserNoData()
 	{
@@ -180,6 +187,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 	/**
 	 * @expectedException \Exception
 	 * @expectedExceptionMessage email & password are required
+     *
+     * test createUser is not working without required params.
 	 */
 	public function testCreateUserFail()
 	{
@@ -189,7 +198,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
-	 *
+	 * test createUser works with params required.
 	 */
 	public function testCreateUser()
 	{
@@ -210,7 +219,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
-	 *
+	 * test authenticate is not working without required params.
 	 */
 	public function testAuthenticateInvalid()
 	{
@@ -221,30 +230,96 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$this->assertFalse( $result );
 	}
 
-	/**
-	 *
-	 */
-	public function testAuthenticate()
-	{
-		$email = $this->userArrayData['email'];
-		$password = $this->userArrayData['password'];
+    /**
+     * test authenticate is working with required params.
+     */
+    public function testAuthenticate()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
 
-		$result = $this->model->authenticate($email, $password);
 
-		$this->assertNotEmpty($result);
-		$this->assertInstanceOf('\erdiko\users\models\User', $result);
+        $email = $this->userArrayData['email'];
+        $password = $this->userArrayData['password'];
 
-		// double check
-		$logged = $this->model->isLoggedIn();
-		$this->assertTrue($logged);
-	}
+        $result = $this->model->authenticate($email, $password);
 
+        $this->assertNotEmpty($result);
+        $this->assertInstanceOf('\erdiko\users\models\User', $result);
+
+        // double check
+        $logged = $result->isLoggedIn();
+        $this->assertTrue($logged);
+    }
+
+
+    /**
+     * test lastLogin attribute is set after login.
+     */
+    public function testLastLogin()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+
+        $email = $this->userArrayData['email'];
+        $password = $this->userArrayData['password'];
+
+        $result = $this->model->authenticate($email, $password);
+
+        $entity = $this->model->getEntity();
+        $this->assertNotEmpty($entity->getLastLogin());
+
+    }
+
+
+
+    /**
+     * test getUsers method is working
+     */
+    public function testGetUsers()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+        $results = $this->model->getUsers();
+        
+        $adminCount = count($results->users);
+        $this->assertGreaterThan(0, $adminCount, "some results have been returned");
+        $this->assertTrue(($results->total == $adminCount), "expected count returned");
+
+        // check the first result
+        $user = $results->users[0];
+        $this->assertTrue(!empty($user), "first result is not empty");
+        $this->assertTrue(!empty($user->getId()), "first result ID is not empty");
+
+        //TODO test the paging and other variables
+        if ($results->users > 10) {
+            $results = $this->model->getUsers(1,10);
+            $count = count($results->users);
+            $this->assertTrue((11 > $count), "expected number of results have been returned");
+        }
+
+    }
+
+    /**
+     * test save method is working, and the role is correct.
+     */
 	public function testSave()
 	{
 		$params = $this->userArrayUpdate;
 		$params['password'] = $this->model->getSalted($this->userArrayUpdate['password']);
-		$params['id'] = self::$lastID;
         $params['role'] = $this->adminId;
+        $params['name'] = $this->userArrayUpdate['name'];
 
 		$result = $this->model->save($params);
 
@@ -263,15 +338,57 @@ class UserModelTest extends \tests\ErdikoTestCase
 		self::$lastID = $newEntity->getId();
 	}
 
+
+    /**
+     * same goal the prior test, but with an existent user.
+     */
+    public function testSaveExist()
+    {
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+        $params['id'] = self::$lastID;
+        $params['password'] = $this->model->getSalted($this->userArrayUpdate['password']);
+        $params['role'] = $this->adminId;
+        $params['name'] = $this->userArrayUpdate['name'];
+
+        $result = $this->model->save($params);
+
+        $this->assertInternalType('int',$result);
+        $this->assertTrue(($result > 0));
+
+        $entity = $this->model->getEntity();
+        $this->assertEquals($entity->getEmail(),$entity->getEmail());
+        $this->assertEquals($entity->getName(),$this->userArrayUpdate['name']);
+        $this->assertEquals($entity->getRole(),$this->adminId);
+
+        $this->assertTrue($this->model->isAdmin());
+
+        $newEntity = $this->model->getEntity();
+        $this->userArrayUpdate['id'] = $newEntity->getId();
+        self::$lastID = $newEntity->getId();
+    }
+
 	public function testDelete()
 	{
-		$id = empty($this->userArrayUpdate['id']) ? self::$lastID : $this->userArrayUpdate['id'];
-		$result = $this->model->deleteUser($id);
+        $data = $this->userArrayData;
+        $data['role'] = $this->adminId;
+        $result = $this->model->createUser($data);
+        $newEntity = $this->model->getEntity();
+        self::$lastID = $newEntity->getId();
+
+		$result = $this->model->deleteUser(self::$lastID );
 
 		$this->assertTrue($result);
 	}
 
 
+    /**
+     * test delete is not working when a null id is given.
+     */
     public function testDeleteNullParam()
     {
         $id = null;
@@ -280,7 +397,12 @@ class UserModelTest extends \tests\ErdikoTestCase
         $this->assertFalse($result);
     }
 
-	public function testDeleteNotExisting(){
+    /**
+     * test delete method is not working with an id not real.
+     */
+
+	public function testDeleteNotExisting()
+    {
 	    $id = 99999999999;
         $result = $this->model->deleteUser($id);
 
@@ -293,5 +415,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 	       $this->roleModel->delete($id);
        }
        unset($this->entityManager);
+       if(!empty(self::$lastID)){
+           $this->model->deleteUser(self::$lastID);
+       }
 	}
 }

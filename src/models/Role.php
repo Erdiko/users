@@ -10,7 +10,6 @@
 
 namespace erdiko\users\models;
 
-
 class Role
 {
     use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
@@ -24,8 +23,11 @@ class Role
 
 
     /**
+     * @param $data
+     * @return int
+     * @throws \Exception
      *
-     *
+     * Create a new rol
      */
     public function create($data)
     {
@@ -47,12 +49,20 @@ class Role
         }
         return (int)$id;
     }
+
     /**
+     * @param $id
+     * @return null|object
+     * @throws \Exception
      *
-     *
+     * return a Role entity by id
      */
-    public function findById($id) {
-        if(is_null($id)) throw new \Exception('ID is required');
+    public function findById($id)
+    {
+        if( is_null($id)) {
+            throw new \Exception('ID is required');
+        }
+
         try {
             $role = $this->getRepository('\erdiko\users\entities\Role');
             $result = $role->find($id);
@@ -63,15 +73,23 @@ class Role
     }
 
     /**
+     * @param $name
+     * @return null|object
+     * @throws \Exception
      *
-     *
+     * return a Role entity with a name given
      */
-    public function findByName($name) {
-        if(is_null($name)) throw new \Exception('name is required');
+    public function findByName($name)
+    {
+        if (is_null($name)) {
+            throw new \Exception('name is required');
+        }
+
+        $result = null;
         try {
             $role = $this->getRepository('\erdiko\users\entities\Role');
             $result = $role->findOneBy(array('name' => $name));
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             \error_log($e->getMessage());
         }
         return $result;
@@ -89,18 +107,25 @@ class Role
         try {
             $role = $this->getRepository('\erdiko\users\entities\Role');
             $result = $role->findBy(array('active' => $active));
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             \error_log($e->getMessage());
         }
         return $result;
     }
 
     /**
+     * @param $role
+     * @return int
+     * @throws \Exception
      *
-     *
+     * Return the count users with a  given id Role
      */
-    public function getCountByRole($role) {
-        if(is_null($role)) throw new \Exception('Role is required');
+    public function getCountByRole($role)
+    {
+        if (is_null($role)) {
+            throw new \Exception('Role is required');
+        }
+
         $result = 0;
         try {
             $users  = $this->_em->getRepository('\erdiko\users\entities\User')
@@ -114,11 +139,18 @@ class Role
     }
 
     /**
+     * @param $id
+     * @return array
+     * @throws \Exception
      *
-     *
+     * Return users with a given Role id
      */
-    public function getUsersForRole($id) {
-        if(is_null($id)) throw new \Exception('name is required');
+    public function getUsersForRole($id)
+    {
+        if (is_null($id)) {
+            throw new \Exception('name is required');
+        }
+
         $result = array();
         try {
             $role = $this->findById($id);
@@ -126,7 +158,7 @@ class Role
             $users  = $this->_em->getRepository('\erdiko\users\entities\User')
                                 ->findBy(array('role' => $role->getName()));
             $result  = $users;
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             \error_log($e->getMessage());
             throw  $e;
         }
@@ -134,20 +166,28 @@ class Role
     }
 
     /**
-     * @param $data
+     * @param null $data
+     * @return int
+     * @throws \Exception
+     *
+     * save/update Role attributes. If no id is passed, save a new Role.
      */
     public function save($data=null)
     {
-        if(is_null($data)) throw new \Exception('There is no data to save.');
+        if ( is_null($data)) {
+            throw new \Exception('There is no data to save.');
+        }
 
         $filter = array();
-        if(isset($data['id']))
+        if (isset($data['id'])) {
             $filter['id'] = $data['id'];
+        }
+
         try {
 
             // check if exists record
             $entity = $this->getEntity($filter);
-            if(!empty($filter['id']) && empty($entity)){
+            if (!empty($filter['id']) && empty($entity)) {
                 throw new \Exception("Role not found.");
             }
             $entity->setActive($data['active']);
@@ -171,15 +211,17 @@ class Role
 
     /**
      * @param $filter
+     * @return \erdiko\users\entities\Role|null|object
+     *
+     * returns a entity Role or a new one.
      */
     private function getEntity($filter)
     {
         $roles = $this->getRepository('\erdiko\users\entities\Role');
 
-        if(isset($filter['id']) && $filter['id'] > 0){
+        if (isset($filter['id']) && $filter['id'] > 0) {
             $result = $roles->find($filter['id']);
-        }
-        else {
+        } else {
             $result = new \erdiko\users\entities\Role();
         }
         return $result;
@@ -191,8 +233,9 @@ class Role
      * delete Entity with given ID
      */
 
-    public function delete($id){
-        if(empty($id)){
+    public function delete($id)
+    {
+        if (empty($id)) {
             throw new \Exception('There is no data to save.');
         }
         try{
