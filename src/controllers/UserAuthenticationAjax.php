@@ -18,6 +18,8 @@ use erdiko\authenticate\iErdikoUser;
 use erdiko\users\models\User;
 use erdiko\users\models\Mailgun;
 
+use \Firebase\JWT\JWT;
+
 class UserAuthenticationAjax extends \erdiko\core\AjaxController
 {
 
@@ -73,6 +75,21 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
             return $this->getNoop();
         }
     }
+    
+    /**
+     * Return TRUE to allow CORS requests 
+     * 
+     * 
+     * @param null $var
+     *
+     * @return boolean
+     */
+    public function options($var = null) 
+    {
+        header('Access-Control-Allow-Credentials: true');
+        header("Access-Control-Allow-Headers: *");
+        return;
+    }
 
     /**
      * Default response for no action requests
@@ -89,7 +106,10 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
-
+    /**
+     *
+     *
+     */
     public function postLogin()
     {
         $response = array(
@@ -115,10 +135,19 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
 
             $authenticator = new BasicAuth(new User());
             if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->password),'erdiko_user')) {
+
+                //FIXME does the BasicAuth class actually handle the session?
+
+                //TODO move this into a class?
+                $token["id"]        = $authenticator->current_user()->getUserId();
+                //TODO update the secret key!
+                $response["token"]  = JWT::encode($token, 'secret_server_key', 'HS256');
+
                 $response['success'] = true;
             } else{
                 throw new \Exception("Username or password are wrong. Please try again.");
             }
+
             $this->setStatusCode(200);
         } catch (\Exception $e) {
             $response['error_message'] = $e->getMessage();
@@ -128,6 +157,10 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
+    /**
+     *
+     *
+     */
     public function getLogout()
     {
         $response = array(
@@ -150,7 +183,12 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
-    public function postChangePass(){
+    /**
+     *
+     *
+     */
+    public function postChangePass()
+    {
         $response = array(
             "method" => "changepass",
             "success" => false,
@@ -196,6 +234,10 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
+    /**
+     *
+     *
+     */
     public function postForgotPass()
     {
         $response = array(
@@ -250,8 +292,12 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
-
-    private function getRandomPassword() {
+    /**
+     *
+     *
+     */
+    private function getRandomPassword() 
+    {
         $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
         $pass = array();
         $alphaLength = strlen($alphabet) - 1;
@@ -261,4 +307,5 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         }
         return implode($pass);
     }
+
 }

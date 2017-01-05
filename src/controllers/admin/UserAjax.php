@@ -17,6 +17,8 @@ use erdiko\authenticate\iErdikoUser;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\User;
 
+use \Firebase\JWT\JWT;
+
 class UserAjax extends \erdiko\core\AjaxController
 {
 	private $id = null;
@@ -28,24 +30,20 @@ class UserAjax extends \erdiko\core\AjaxController
 	 */
 	protected function checkAuth()
 	{
-        //remove after testing
-        //frisby test are not able to get a kind of "setUp" before each test.
-	    return true;
 		try {
-			$userModel  = new User();
-			$auth       = new BasicAuth($userModel);
-			$user       = $auth->current_user();
+            list($jwt) = sscanf($_SERVER["HTTP_AUTHORIZATION"], 'Bearer %s');
+            // TODO move this to a helper
+            $token = JWT::decode($jwt, 'secret_server_key', array('HS256'));
+            if(empty($token) || empty($token->id)) {
+                throw new \Exception("JWT Token invalid");
+            }
 
-			if ($user instanceof iErdikoUser) {
-				$result = $user->isAdmin();
-			} else {
-				$result = false;
-			}
+            //TODO look up the user and validate this it has an admin user role
+
+            return true;
 		} catch (\Exception $e) {
-			\error_log($e->getMessage());
-			$result = false;
-		}
-		return $result;
+            return false;
+        }
 	}
 
 	/**
@@ -109,6 +107,22 @@ class UserAjax extends \erdiko\core\AjaxController
 			return $this->getNoop();
 		}
 	}
+
+    /**
+     * Return TRUE to allow CORS requests 
+     * 
+     * 
+     * @param null $var
+     *
+     * @return boolean
+     */
+    public function options($var = null) 
+    {
+        header('Access-Control-Allow-Credentials: true');    
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); 
+        header("Access-Control-Allow-Headers: Accept, Accept-CH, Accept-Charset, Accept-Datetime, Accept-Encoding, Accept-Ext, Accept-Features, Accept-Language, Accept-Params, Accept-Ranges, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin, Access-Control-Expose-Headers, Access-Control-Max-Age, Access-Control-Request-Headers, Access-Control-Request-Method, Age, Allow, Alternates, Authentication-Info, Authorization, C-Ext, C-Man, C-Opt, C-PEP, C-PEP-Info, CONNECT, Cache-Control, Compliance, Connection, Content-Base, Content-Disposition, Content-Encoding, Content-ID, Content-Language, Content-Length, Content-Location, Content-MD5, Content-Range, Content-Script-Type, Content-Security-Policy, Content-Style-Type, Content-Transfer-Encoding, Content-Type, Content-Version, Cookie, Cost, DAV, DELETE, DNT, DPR, Date, Default-Style, Delta-Base, Depth, Derived-From, Destination, Differential-ID, Digest, ETag, Expect, Expires, Ext, From, GET, GetProfile, HEAD, HTTP-date, Host, IM, If, If-Match, If-Modified-Since, If-None-Match, If-Range, If-Unmodified-Since, Keep-Alive, Label, Last-Event-ID, Last-Modified, Link, Location, Lock-Token, MIME-Version, Man, Max-Forwards, Media-Range, Message-ID, Meter, Negotiate, Non-Compliance, OPTION, OPTIONS, OWS, Opt, Optional, Ordering-Type, Origin, Overwrite, P3P, PEP, PICS-Label, POST, PUT, Pep-Info, Permanent, Position, Pragma, ProfileObject, Protocol, Protocol-Query, Protocol-Request, Proxy-Authenticate, Proxy-Authentication-Info, Proxy-Authorization, Proxy-Features, Proxy-Instruction, Public, RWS, Range, Referer, Refresh, Resolution-Hint, Resolver-Location, Retry-After, Safe, Sec-Websocket-Extensions, Sec-Websocket-Key, Sec-Websocket-Origin, Sec-Websocket-Protocol, Sec-Websocket-Version, Security-Scheme, Server, Set-Cookie, Set-Cookie2, SetProfile, SoapAction, Status, Status-URI, Strict-Transport-Security, SubOK, Subst, Surrogate-Capability, Surrogate-Control, TCN, TE, TRACE, Timeout, Title, Trailer, Transfer-Encoding, UA-Color, UA-Media, UA-Pixels, UA-Resolution, UA-Windowpixels, URI, Upgrade, User-Agent, Variant-Vary, Vary, Version, Via, Viewport-Width, WWW-Authenticate, Want-Digest, Warning, Width, X-Content-Duration, X-Content-Security-Policy, X-Content-Type-Options, X-CustomHeader, X-DNSPrefetch-Control, X-Forwarded-For, X-Forwarded-Port, X-Forwarded-Proto, X-Frame-Options, X-Modified, X-OTHER, X-PING, X-PINGOTHER, X-Powered-By, X-Requested-With");
+        return;
+    }
 
 	/**
 	 * Default response for not Authorized requests
@@ -197,7 +211,9 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-
+    /**
+     *
+     */
     public function getList()
     {
         $response = array(
@@ -273,6 +289,9 @@ class UserAjax extends \erdiko\core\AjaxController
 
     }
 
+    /**
+     *
+     */
     public function getRetrieve()
     {
         $response = array(
@@ -315,6 +334,9 @@ class UserAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
+    /**
+     *
+     */
 	public function postUpdate()
 	{
 		$response = array(
@@ -364,6 +386,9 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
+    /**
+     *
+     */
 	public function getDelete()
 	{
 		$response = array(
