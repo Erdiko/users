@@ -13,8 +13,7 @@
     "require": {
         "php": ">=5.4.0",
         "erdiko/doctrine": "^0.2.1",
-        "mailgun/mailgun-php": "~1.7.2",
-		"firebase/php-jwt": "^4.0"
+        "mailgun/mailgun-php": "~1.7.2"
     },
     "config": {
         "minimum-stability": "dev"
