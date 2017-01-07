@@ -12,13 +12,11 @@
 
 namespace erdiko\users\controllers;
 
-use erdiko\authenticate\BasicAuth;
+use erdiko\authenticate\JWTAuth;
 use erdiko\authenticate\iErdikoUser;
 
 use erdiko\users\models\User;
 use erdiko\users\models\Mailgun;
-
-use \Firebase\JWT\JWT;
 
 class UserAuthenticationAjax extends \erdiko\core\AjaxController
 {
@@ -133,23 +131,38 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 }
             }
 
-            $authenticator = new BasicAuth(new User());
-            if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->password),'erdiko_user')) {
+            // init the jwt auth class
+            $authenticator = new JWTAuth(new User());
 
-                //FIXME does the BasicAuth class actually handle the session?
+            // get the application secret key
+            $config     = \Erdiko::getConfig();
 
-                //TODO move this into a class?
-                $token["id"]        = $authenticator->current_user()->getUserId();
-                //TODO update the secret key!
-                $response["token"]  = JWT::encode($token, 'secret_server_key', 'HS256');
+            // we need the secret key!
+            if(!array_key_exists("secret_key", $config["site"]) || empty($config["site"]["secret_key"])) {
+                throw new \Exception("Secret Key required to create a JWT for user");
+            }
+            $secretKey  = $config["site"]["secret_key"];
 
-                $response['success'] = true;
+            // collect login params
+            $authParams = array(
+                'secret_key'    =>  $secretKey, 
+                'username'      =>  $data->email, 
+                'password'      =>  $data->password
+            );
+
+            // attempt to login
+            if ($result = $authenticator->login($authParams, 'jwt_auth')) {
+
+                // if successful, return the JWT token
+                $response['token']      = $result->token;
+                $response['success']    = true;
             } else{
                 throw new \Exception("Username or password are wrong. Please try again.");
             }
 
             $this->setStatusCode(200);
         } catch (\Exception $e) {
+            $this->setStatusCode(500);
             $response['error_message'] = $e->getMessage();
             $response['error_code'] = $e->getCode();
         }
