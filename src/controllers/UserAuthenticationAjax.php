@@ -12,7 +12,7 @@
 
 namespace erdiko\users\controllers;
 
-use erdiko\authenticate\JWTAuth;
+use erdiko\authenticate\JWTAuthenticator;
 use erdiko\authenticate\iErdikoUser;
 
 use erdiko\users\models\User;
@@ -132,7 +132,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
             }
 
             // init the jwt auth class
-            $authenticator = new JWTAuth(new User());
+            $authenticator = new JWTAuthenticator(new User());
 
             // get the application secret key
             $config     = \Erdiko::getConfig();
