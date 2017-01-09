@@ -398,18 +398,4 @@ class UserAjax extends \erdiko\core\AjaxController
         );
     }
 
-    public function postTest()
-    {
-        $params = json_decode(file_get_contents("php://input"));
-        if (empty($params)) {
-            $params = (object) $_POST;
-        }
-        var_dump($params);die();
-    }
-
-    public function getTest()
-    {
-        var_dump($_GET);die();
-    }
-
 }
