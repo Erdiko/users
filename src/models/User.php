@@ -1,6 +1,7 @@
 <?php
 /**
  * User Model
+ * @todo should refactor and move some of the get methods into a user service class (e.g. getUsers())
  *
  * @category    Erdiko
  * @package     User
@@ -11,9 +12,10 @@
 namespace erdiko\users\models;
 
 use \erdiko\users\entities\User as entity;
-use \erdiko\authenticate\iErdikoUser;
 
-class User implements iErdikoUser
+class User implements 
+	\erdiko\authenticate\UserStorageInterface, 
+	\erdiko\authorize\UserInterface
 {
 
 	use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
