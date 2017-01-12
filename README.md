@@ -11,11 +11,30 @@ Erdiko users leverages our authenticate and authorization packages.
 
 Installation
 ------------
+Add package using composer 
 
+`composer require erdiko/users`
+
+Add required tables into your database running in order the `.sql` files placed in `sql` directory inside the package.
 
 How to Use
 ----------
+1. Add Login controller's route.
+ 
+ It provides a self-contained login/logout actions and views, to have it accessible, edit your 
+ `routes.json` like this:
 
+```
+{
+    "routes": {
+        "/": "\app\controllers\Front",
+        ...
+        "/users/:action": "\erdiko\users\controllers\Login"
+    }
+}
+```
+
+It also provides an AJAX interface that expose endpoints you can use to interact with users, authentication and roles. 
 
 Special Thanks
 --------------
