@@ -34,7 +34,48 @@ How to Use
 }
 ```
 
-It also provides an AJAX interface that expose endpoints you can use to interact with users, authentication and roles. 
+2. Add UserAuthenticationAjax controller's route.
+ 
+ It provides actions to manage login/logout and password related situations as forgotpass and changePass, 
+ to have it accessible, edit your `routes.json` like this:
+
+```
+{
+    "routes": {
+        "/": "\app\controllers\Front",
+        ...
+        "/users/authentication/:action": "\erdiko\users\controllers\UserAuthenticationAjax"
+    }
+}
+```
+3. Add \admin\Userajax controller's route.
+ 
+ It provides actions relative to manage users as admin level. All the actions requires to be in session firts, 
+ to have it accessible, edit your `routes.json` like this:
+
+```
+{
+    "routes": {
+        "/": "\app\controllers\Front",
+        ...
+        "/users/:action": "\erdiko\users\controllers\admin\Userajax"
+    }
+}
+```
+
+4. Add Userajax controller's route.
+ 
+ It provides actions relative to manage users without privileges, to have it accessible, edit your `routes.json` like this:
+
+```
+{
+    "routes": {
+        "/": "\app\controllers\Front",
+        ...
+        "/users/:action": "\erdiko\users\controllers\Userajax"
+    }
+}
+``` 
 
 Special Thanks
 --------------
