@@ -1,6 +1,4 @@
 <?php
-
-
 /**
  * RoleAjax
  *
@@ -12,8 +10,8 @@
 
 namespace erdiko\users\controllers;
 
-use erdiko\authenticate\BasicAuth;
-use erdiko\authenticate\iErdikoUser;
+use erdiko\authenticate\services\BasicAuthenticator;
+use erdiko\authorize\UserInterface;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\Role;
 
@@ -31,9 +29,9 @@ class RoleAjax extends \erdiko\core\AjaxController
 		return true; // remove after testing
 		try {
 			$userModel  = new User();
-			$auth       = new BasicAuth($userModel);
-			$user       = $auth->current_user();
-			if ($user instanceof iErdikoUser) {
+			$auth       = new BasicAuthenticator($userModel);
+			$user       = $auth->currentUser();
+			if ($user instanceof UserInterface) {
 				$authorizer = new Authorizer( $user );
 				$result     = $authorizer->can( $action, $resource );
 			} else {

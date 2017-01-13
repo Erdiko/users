@@ -12,9 +12,9 @@
 
 namespace erdiko\users\controllers\admin;
 
-use erdiko\authenticate\BasicAuth;
-use erdiko\authenticate\iErdikoUser;
+use erdiko\authenticate\services\BasicAuthenticator;
 use erdiko\authorize\Authorizer;
+use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
 
 class UserAjax extends \erdiko\core\AjaxController
@@ -33,10 +33,10 @@ class UserAjax extends \erdiko\core\AjaxController
 	    return true;
 		try {
 			$userModel  = new User();
-			$auth       = new BasicAuth($userModel);
-			$user       = $auth->current_user();
+			$auth       = new BasicAuthenticator($userModel);
+			$user       = $auth->currentUser();
 
-			if ($user instanceof iErdikoUser) {
+			if ($user instanceof UserInterface) {
 				$result = $user->isAdmin();
 			} else {
 				$result = false;

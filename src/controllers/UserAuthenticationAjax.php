@@ -1,20 +1,15 @@
 <?php
-
-
 /**
  * UserAuthenticationAjax
  *
  * @category    Erdiko
  * @package     User
- * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
+ * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
  */
-
 namespace erdiko\users\controllers;
 
-use erdiko\authenticate\BasicAuth;
-use erdiko\authenticate\iErdikoUser;
-
+use erdiko\authenticate\services\BasicAuthenticator;
 use erdiko\users\models\User;
 use erdiko\users\models\Mailgun;
 
@@ -113,7 +108,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 }
             }
 
-            $authenticator = new BasicAuth(new User());
+            $authenticator = new BasicAuthenticator(new User());
             if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->password),'erdiko_user')) {
                 $response['success'] = true;
             } else{
@@ -138,7 +133,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         );
 
         try {
-            $authenticator = new BasicAuth(new User());
+            $authenticator = new BasicAuthenticator(new User());
             $authenticator->logout();
             $response['success'] = true;
             $this->setStatusCode(200);
@@ -176,11 +171,11 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 throw new \Exception('Current pass and new pass should be different.');
             }
 
-            $authenticator = new BasicAuth(new User());
+            $authenticator = new BasicAuthenticator(new User());
 
             if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->currentpass),'erdiko_user')) {
                 $usermodel = new \erdiko\users\models\User();
-                $currentUser = $authenticator->current_user();
+                $currentUser = $authenticator->currentUser();
                 $currentUser->save(array('id' => $currentUser->getUserId(), 'password' => $data->newpass));
 
                 $response['success'] = true;

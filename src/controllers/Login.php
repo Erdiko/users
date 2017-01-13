@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Login
  *
@@ -11,7 +10,7 @@
 
 namespace erdiko\users\controllers;
 
-use erdiko\authenticate\BasicAuth;
+use erdiko\authenticate\services\BasicAuthenticator;
 use erdiko\users\models\User;
 
 class Login extends \erdiko\core\Controller
@@ -38,7 +37,7 @@ class Login extends \erdiko\core\Controller
 
 	public function postLogin()
 	{
-		$authenticator = new BasicAuth(new User());
+		$authenticator = new BasicAuthenticator(new User);
 		$data = (object)$_REQUEST;
 
 		if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->password),'erdiko_user')) {
@@ -52,9 +51,9 @@ class Login extends \erdiko\core\Controller
 
 	public function getLogout()
 	{
-		$authenticator = new BasicAuth(new User());
+		$authenticator = new BasicAuthenticator(new User());
 		$authenticator->logout();
-		\erdiko\core\helpers\FlashMessages::set("Good bye, ".$authenticator->current_user()->getUsername(), "success");
+		\erdiko\core\helpers\FlashMessages::set("Good bye, ".$authenticator->currentUser()->getUsername(), "success");
 		$this->getLogin();
 	}
 }
