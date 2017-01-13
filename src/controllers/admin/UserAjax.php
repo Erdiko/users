@@ -1,18 +1,15 @@
 <?php
-
-
 /**
  * UserAjax
  *
- * @category    Erdiko
- * @package     User
+ * @package     erdiko/users/controllers
  * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
  */
 
 namespace erdiko\users\controllers\admin;
 
-use erdiko\authenticate\services\BasicAuthenticator;
+use erdiko\authenticate\services\JWTAuthenticator;
 use erdiko\authorize\Authorizer;
 use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
@@ -33,7 +30,7 @@ class UserAjax extends \erdiko\core\AjaxController
 	    return true;
 		try {
 			$userModel  = new User();
-			$auth       = new BasicAuthenticator($userModel);
+			$auth       = new JWTAuthenticator($userModel);
 			$user       = $auth->currentUser();
 
 			if ($user instanceof UserInterface) {
