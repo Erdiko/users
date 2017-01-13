@@ -16,6 +16,7 @@ use erdiko\authenticate\JWTAuthenticator;
 use erdiko\authenticate\iErdikoUser;
 
 use erdiko\authorize\Authorizer;
+use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
 
 class UserAjax extends \erdiko\core\AjaxController

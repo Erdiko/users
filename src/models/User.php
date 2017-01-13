@@ -1,6 +1,7 @@
 <?php
 /**
  * User Model
+ * @todo should refactor and move some of the get methods into a user service class (e.g. getUsers())
  *
  * @category    Erdiko
  * @package     User
@@ -11,9 +12,10 @@
 namespace erdiko\users\models;
 
 use \erdiko\users\entities\User as entity;
-use \erdiko\authenticate\iErdikoUser;
 
-class User implements iErdikoUser
+class User implements 
+	\erdiko\authenticate\UserStorageInterface, 
+	\erdiko\authorize\UserInterface
 {
 
 	use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
@@ -80,7 +82,7 @@ class User implements iErdikoUser
 	protected static function createAnonymous()
 	{
 	    $roleModel = new \erdiko\users\models\Role();
-        $roleAnonymous = $roleModel->findByName('user');
+        $roleAnonymous = $roleModel->findByName('anonymous');
         if (empty($roleAnonymous)) {
             throw  new \Exception('Error, role anonymous not found.');
         }
@@ -146,7 +148,7 @@ class User implements iErdikoUser
 		try {
 			if (empty($data['role'])) {
                 $roleModel = new \erdiko\users\models\Role();
-                $roleAnonymous = $roleModel->findByName('user');
+                $roleAnonymous = $roleModel->findByName('anonymous');
                 if (empty($roleAnonymous)) {
                     throw  new \Exception('Error, role anonymous not found.');
                 }
@@ -288,7 +290,7 @@ class User implements iErdikoUser
 	 *
 	 * @return bool
 	 */
-	public function hasRole($role = "user")
+	public function hasRole($role = "anonymous")
 	{
         $roleModel = new \erdiko\users\models\Role();
         $roleEntity = $roleModel->findByName($role);

@@ -1,25 +1,22 @@
 <?php
-
-
 /**
  * UserAjax
  *
  * @category    Erdiko
  * @package     User
- * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
+ * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Leo Daidone, leo@arroyolabs.com
  */
 
 namespace erdiko\users\controllers;
 
-use erdiko\authenticate\BasicAuth;
-use erdiko\authenticate\iErdikoUser;
+use erdiko\authenticate\services\BasicAuthenticator;
+use erdiko\authorize\UserInterface;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\User;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
-
     private $id = null;
 
 	/**
@@ -33,9 +30,9 @@ class UserAjax extends \erdiko\core\AjaxController
 		return true; // remove after testing
 		try {
 			$userModel  = new User();
-			$auth       = new BasicAuth($userModel);
-			$user       = $auth->current_user();
-			if($user instanceof iErdikoUser){
+			$auth       = new BasicAuthenticator($userModel);
+			$user       = $auth->currentUser();
+			if($user instanceof UserInterface){
 				$authorizer = new Authorizer( $user );
 				$result     = $authorizer->can( $action, $resource );
 			} else {
