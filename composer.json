@@ -15,7 +15,6 @@
         "erdiko/doctrine": "^0.2.1",
         "mailgun/mailgun-php": "2.1.2",
         "guzzlehttp/psr7": "^1.3",
-        "php-http/message": "^1.4",
         "php-http/guzzle6-adapter": "^1.1"
     },
     "config": {
