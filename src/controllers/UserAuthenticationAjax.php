@@ -9,7 +9,7 @@
  */
 namespace erdiko\users\controllers;
 
-use erdiko\authenticate\JWTAuthenticator;
+use erdiko\authenticate\services\JWTAuthenticator;
 use erdiko\authenticate\iErdikoUser;
 
 use erdiko\users\models\User;
