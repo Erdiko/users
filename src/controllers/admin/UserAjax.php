@@ -49,7 +49,7 @@ class UserAjax extends \erdiko\core\AjaxController
                 'jwt'           =>  $jwt
             );
 
-            $user = $authenticator->decodeJWT($params, 'jwt_auth');
+            $user = $authenticator->verify($params, 'jwt_auth');
 
             //TODO check the user's permissions via Resource & Authorization
 
