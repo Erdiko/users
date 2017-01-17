@@ -338,6 +338,7 @@ class UserAjax extends \erdiko\core\AjaxController
                             'role'     => $this->getRoleInfo($user),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
+                            'created_at'    => $user->getCreatedAt(),
                             'gateway_customer_id'=> $user->getGatewayCustomerId()
             );
             $response['success'] = true;
