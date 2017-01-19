@@ -407,7 +407,7 @@ class UserAjax extends \erdiko\core\AjaxController
     /**
      *
      */
-	public function getDelete()
+	public function postDelete()
 	{
 		$response = array(
 			"method" => "delete",
@@ -418,22 +418,24 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-            $params = (object) $_GET;
+            $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
+
             // Check required fields
-            if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
+            if (empty($data->id)) {
                 throw new \Exception("Id is required.");
-            } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
-                $params->id = $this->id;
             }
 
 			$userModel = new User();
-			$result = $userModel->deleteUser($params->id);
+			$result = $userModel->deleteUser($data->id);
 
             if (false == $result) {
                 throw new \Exception('User could not be deleted.');
             }
 
-			$response['user'] = array('id' => $params->id);
+			$response['user'] = array('id' => $data->id);
 			$response['success'] = true;
 
 			$this->setStatusCode(200);
@@ -457,4 +459,6 @@ class UserAjax extends \erdiko\core\AjaxController
                      'name' => $roleEntity->getName()
         );
     }
+
+
 }
