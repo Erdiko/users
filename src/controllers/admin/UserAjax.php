@@ -460,5 +460,50 @@ class UserAjax extends \erdiko\core\AjaxController
         );
     }
 
+    public function postChangePass()
+    {
+        $response = array(
+            "method" => "changepass",
+            "success" => false,
+            "error_code" => 0,
+            "error_message" => ""
+        );
 
+        try {
+            $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
+            // Check required fields
+            $requiredParams = array('email', 'currentpass', 'newpass');
+            $params = (array) $data;
+            foreach ($requiredParams as $param) {
+                if (empty($params[$param])) {
+                    throw new \Exception(ucfirst($param) .' is required.');
+                }
+            }
+
+            if ($data->currentpass == $data->newpass) {
+                throw new \Exception('Current pass and new pass should be different.');
+            }
+
+            $authenticator = new BasicAuthenticator(new User());
+
+            if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->currentpass),'erdiko_user')) {
+                $currentUser = $authenticator->currentUser();
+                $currentUser->save(array('id' => $currentUser->getUserId(), 'password' => $data->newpass));
+
+                $response['success'] = true;
+            } else {
+                throw new \Exception("Username or password are wrong. Please try again.");
+            }
+            $this->setStatusCode(200);
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+
+        $this->setContent($response);
+    }
 }
+
