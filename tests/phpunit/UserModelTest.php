@@ -20,11 +20,13 @@ class UserModelTest extends \tests\ErdikoTestCase
 	protected $userArrayData;
 	protected $userArrayUpdate;
     protected $roleAdminArrayData;
-    protected $roleAnonymousArrayData;
-	protected $model;
+    protected $roleUserArrayData;
+	protected $roleAnonymousData;
+    protected $model;
     protected $roleModel;
-    protected $anonymousId;
+    protected $userId;
     protected $adminId;
+    protected $anonymousId;
     protected $rolesCreated;
 
 	protected static $lastID;
@@ -53,6 +55,11 @@ class UserModelTest extends \tests\ErdikoTestCase
             "active" => 1
         );
 
+        $this->roleUserArrayData = array(
+            "name" => 'user',
+            "active" => 1
+        );
+
         $this->roleAnonymousArrayData = array(
             "name" => 'anonymous',
             "active" => 1
@@ -74,7 +81,16 @@ class UserModelTest extends \tests\ErdikoTestCase
 
         $roleEntity = $this->roleModel->findByName('user');
         if (empty($roleEntity)) {
-            $id = $this->roleModel->create($this->roleAnonymousArrayData);
+            $id = $this->roleModel->create($this->roleUserArrayData);
+            $this->rolesCreated[] = $id;
+            $this->userId = $id;
+        } else{
+            $this->userId = $roleEntity->getId();
+        }
+
+        $roleEntity = $this->roleModel->findByName('anonymous');
+        if (empty($roleEntity)) {
+            $id = $this->roleModel->create($this->roleAnonymousData);
             $this->rolesCreated[] = $id;
             $this->anonymousId = $id;
         } else{
@@ -102,7 +118,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	{
 		$entity = new \erdiko\users\entities\User();
 		$entity->setId( 0 );
-		$entity->setRole( $this->anonymousId);
+		$entity->setRole( $this->userId);
 		$entity->setName( 'anonymous' );
 		$entity->setEmail( 'anonymous' );
 		$this->model->setEntity($entity);

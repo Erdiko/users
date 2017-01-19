@@ -2,18 +2,22 @@
 /**
  * UserAuthenticationAjax
  *
- * @package     erdiko/users/controllers
+ * @category    Erdiko
+ * @package     User
  * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
  */
 namespace erdiko\users\controllers;
 
 use erdiko\authenticate\services\JWTAuthenticator;
+use erdiko\authenticate\iErdikoUser;
+
 use erdiko\users\models\User;
 use erdiko\users\models\Mailgun;
 
 class UserAuthenticationAjax extends \erdiko\core\AjaxController
 {
+
     /**
      * @param null $var
      *
@@ -149,7 +153,6 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 // if successful, return the JWT token
                 $response['token']      = $result->token;
                 $response['success']    = true;
-
             } else{
                 throw new \Exception("Username or password are wrong. Please try again.");
             }
@@ -178,7 +181,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
         );
 
         try {
-            $authenticator = new JWTAuthenticator(new User());
+            $authenticator = new BasicAuthenticator(new User());
             $authenticator->logout();
             $response['success'] = true;
             $this->setStatusCode(200);
@@ -221,7 +224,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 throw new \Exception('Current pass and new pass should be different.');
             }
 
-            $authenticator = new JWTAuthenticator(new User());
+            $authenticator = new BasicAuthenticator(new User());
 
             if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->currentpass),'erdiko_user')) {
                 $usermodel = new \erdiko\users\models\User();

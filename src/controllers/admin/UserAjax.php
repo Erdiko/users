@@ -1,16 +1,20 @@
 <?php
+
+
 /**
  * UserAjax
  *
- * @package     erdiko/users/controllers
+ * @category    Erdiko
+ * @package     User
  * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
  */
 
 namespace erdiko\users\controllers\admin;
 
-
 use erdiko\authenticate\services\JWTAuthenticator;
+use erdiko\authenticate\iErdikoUser;
+
 use erdiko\authorize\Authorizer;
 use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
@@ -45,13 +49,12 @@ class UserAjax extends \erdiko\core\AjaxController
                 'jwt'           =>  $jwt
             );
 
-            $user = $authenticator->decodeJWT($params, 'jwt_auth');
+            $user = $authenticator->verify($params, 'jwt_auth');
 
             //TODO check the user's permissions via Resource & Authorization
 
             // no exceptions? welp, this is a valid request
             return true;
-
 		} catch (\Exception $e) {
             return false;
         }
@@ -335,6 +338,7 @@ class UserAjax extends \erdiko\core\AjaxController
                             'role'     => $this->getRoleInfo($user),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
+                            'created_at'    => $user->getCreatedAt(),
                             'gateway_customer_id'=> $user->getGatewayCustomerId()
             );
             $response['success'] = true;
@@ -403,7 +407,7 @@ class UserAjax extends \erdiko\core\AjaxController
     /**
      *
      */
-	public function getDelete()
+	public function postDelete()
 	{
 		$response = array(
 			"method" => "delete",
@@ -414,22 +418,24 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-            $params = (object) $_GET;
+            $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
+
             // Check required fields
-            if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
+            if (empty($data->id)) {
                 throw new \Exception("Id is required.");
-            } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
-                $params->id = $this->id;
             }
 
 			$userModel = new User();
-			$result = $userModel->deleteUser($params->id);
+			$result = $userModel->deleteUser($data->id);
 
             if (false == $result) {
                 throw new \Exception('User could not be deleted.');
             }
 
-			$response['user'] = array('id' => $params->id);
+			$response['user'] = array('id' => $data->id);
 			$response['success'] = true;
 
 			$this->setStatusCode(200);
@@ -453,4 +459,6 @@ class UserAjax extends \erdiko\core\AjaxController
                      'name' => $roleEntity->getName()
         );
     }
+
+
 }

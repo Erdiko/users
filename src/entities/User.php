@@ -194,6 +194,7 @@ class User
 	{
 		$tmp = $this;
 		// unset sensitive fields
+		unset($tmp->token);
 		unset($tmp->password);
 		unset($tmp->created_at);
 		unset($tmp->updated_at);
