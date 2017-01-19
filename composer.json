@@ -13,7 +13,9 @@
     "require": {
         "php": ">=5.4.0",
         "erdiko/doctrine": "^0.2.1",
-        "mailgun/mailgun-php": "~1.7.2"
+        "mailgun/mailgun-php": "2.1.2",
+        "guzzlehttp/psr7": "^1.3",
+        "php-http/guzzle6-adapter": "^1.1"
     },
     "config": {
         "minimum-stability": "dev"

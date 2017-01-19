@@ -23,7 +23,11 @@ class Mailgun extends \Mailgun\Mailgun
     $apiVersion = $config[$env]['version'];
     $ssl = $config[$env]['ssl'];
     $this->domain = $config[$env]['domain'];
-    parent::__construct($apiKey, $apiEndpoint, $apiVersion, $ssl);
+
+    $httpClient =  new \GuzzleHttp\Client();
+    $adapter = new \Http\Adapter\Guzzle6\Client($httpClient);
+
+    parent::__construct($apiKey, $adapter, $apiEndpoint);
   }
 
   protected function getDefaults()
@@ -47,7 +51,7 @@ class Mailgun extends \Mailgun\Mailgun
   public function sendMail($postData)
   {
     $data = array_filter(array_replace($this->getDefaults(),(array)$postData));
-    return $this->post("$this->domain/messages", $data, array());
+    return $this->sendMessage($this->domain, $data);
   }
 
     /**
