@@ -475,7 +475,7 @@ class UserAjax extends \erdiko\core\AjaxController
                 $data = (object) $_POST;
             }
             // Check required fields
-            $requiredParams = array('email', 'currentpass', 'newpass');
+            $requiredParams = array('email', 'newpass');
             $params = (array) $data;
             foreach ($requiredParams as $param) {
                 if (empty($params[$param])) {
@@ -487,16 +487,15 @@ class UserAjax extends \erdiko\core\AjaxController
                 throw new \Exception('Current pass and new pass should be different.');
             }
 
-            $authenticator = new BasicAuthenticator(new User());
-
-            if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->currentpass),'erdiko_user')) {
-                $currentUser = $authenticator->currentUser();
-                $currentUser->save(array('id' => $currentUser->getUserId(), 'password' => $data->newpass));
-
-                $response['success'] = true;
-            } else {
-                throw new \Exception("Username or password are wrong. Please try again.");
+            $user = new User();
+            $users = $user->getByParams(array('email' => $data->email));
+            if (empty($users)) {
+                throw new \Exception('User not found.');
             }
+
+            $userToChange = $users[0];
+            $user->save(array('id' => $userToChange->getId(), 'password' => $data->newpass));
+            $response['success'] = true;
             $this->setStatusCode(200);
         } catch (\Exception $e) {
             $response['error_message'] = $e->getMessage();
