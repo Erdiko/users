@@ -2,9 +2,8 @@
 /**
  * Role Model
  *
- * @category    app
- * @package     app\models
- * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
+ * @package     erdiko/users/models
+ * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
  */
 

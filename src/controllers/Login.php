@@ -2,8 +2,7 @@
 /**
  * Login
  *
- * @category    Erdiko
- * @package     User
+ * @package     erdiko/users/controllers
  * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  * @author      Leo Daidone, leo@arroyolabs.com
  */
