@@ -532,7 +532,8 @@ class UserAjax extends \erdiko\core\AjaxController
             $basicAuth = new BasicAuthenticator($user);
             $currentUser = $basicAuth->currentUser();
 
-            $logId = $logModel->create($currentUser->getId(), $data->event, $data->event_data);
+            $frontEndClarify = 'front_end_'; //we need to clarify from where is the creation log
+            $logId = $logModel->create($currentUser->getId(), $frontEndClarify.$data->event, $data->event_data);
 
             $entity = $logModel->findById($logId);
             $output = array('id'        => $entity->getId(),
@@ -554,7 +555,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
     /**
      *
-     * get event log activity for current user
+     * get event log activity for specified user user
      */
     public function getEventLogs()
     {
