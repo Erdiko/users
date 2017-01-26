@@ -16,6 +16,7 @@ use erdiko\authenticate\services\BasicAuthenticator;
 use erdiko\authorize\Authorizer;
 use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
+use erdiko\users\models\user\event\Log;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
