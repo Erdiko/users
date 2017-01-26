@@ -4,9 +4,8 @@
  *
  * Entity for the user table
  *
- * @category    Erdiko
- * @package     User
- * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
+ * @package     erdiko/users/entities
+ * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Leo Daidone, leo@arroyolabs.com
  */
 namespace erdiko\users\entities;
@@ -195,6 +194,7 @@ class User
 	{
 		$tmp = $this;
 		// unset sensitive fields
+		unset($tmp->token);
 		unset($tmp->password);
 		unset($tmp->created_at);
 		unset($tmp->updated_at);

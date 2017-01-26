@@ -4,9 +4,8 @@
  *
  * Entity for the Roles table
  *
- * @category    app
- * @package     entities
- * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
+ * @package     erdiko/users/entities
+ * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
  */
 namespace erdiko\users\entities;

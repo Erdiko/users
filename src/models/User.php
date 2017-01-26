@@ -3,9 +3,8 @@
  * User Model
  * @todo should refactor and move some of the get methods into a user service class (e.g. getUsers())
  *
- * @category    Erdiko
- * @package     User
- * @copyright   Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
+ * @package     erdiko/users/models
+ * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Leo Daidone, leo@arroyolabs.com
  */
 

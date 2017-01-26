@@ -12,7 +12,9 @@
 
 namespace erdiko\users\controllers\admin;
 
-use erdiko\authenticate\services\BasicAuthenticator;
+use erdiko\authenticate\services\JWTAuthenticator;
+use erdiko\authenticate\iErdikoUser;
+
 use erdiko\authorize\Authorizer;
 use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
@@ -20,33 +22,43 @@ use erdiko\users\models\user\event\Log;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
-	private $id = null;
+    private $id = null;
+
 	/**
 	 * @param $action
 	 * @param $resource
 	 *
 	 * @return bool
 	 */
-	protected function checkAuth()
+	protected function checkAuth($resource = null)
 	{
-        //remove after testing
-        //frisby test are not able to get a kind of "setUp" before each test.
-	    return true;
-		try {
-			$userModel  = new User();
-			$auth       = new BasicAuthenticator($userModel);
-			$user       = $auth->currentUser();
+        try {
 
-			if ($user instanceof UserInterface) {
-				$result = $user->isAdmin();
-			} else {
-				$result = false;
-			}
+            // get the JWT from the headers
+            list($jwt) = sscanf($_SERVER["HTTP_AUTHORIZATION"], 'Bearer %s');
+
+            // init the jwt auth class
+            $authenticator = new JWTAuthenticator(new User());
+
+            // get the application secret key
+            $config     = \Erdiko::getConfig();
+            $secretKey  = $config["site"]["secret_key"];
+
+            // collect login params
+            $params = array(
+                'secret_key'    =>  $secretKey, 
+                'jwt'           =>  $jwt
+            );
+
+            $user = $authenticator->verify($params, 'jwt_auth');
+
+            //TODO check the user's permissions via Resource & Authorization
+
+            // no exceptions? welp, this is a valid request
+            return true;
 		} catch (\Exception $e) {
-			\error_log($e->getMessage());
-			$result = false;
-		}
-		return $result;
+            return false;
+        }
 	}
 
 	/**
@@ -110,6 +122,25 @@ class UserAjax extends \erdiko\core\AjaxController
 			return $this->getNoop();
 		}
 	}
+
+    /**
+     * Return TRUE to allow CORS requests 
+     * 
+     * NOTE - this method facilitates local env testing with the node server.
+     *  we *could* get rid of this but I do not think its a bad idea to leave it.
+     * 
+     * @param null $var
+     *
+     * @return boolean
+     */
+    public function options($var = null) 
+    {
+        header('Access-Control-Allow-Credentials: true');    
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); 
+        header("Access-Control-Allow-Headers: Accept, Accept-CH, Accept-Charset, Accept-Datetime, Accept-Encoding, Accept-Ext, Accept-Features, Accept-Language, Accept-Params, Accept-Ranges, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin, Access-Control-Expose-Headers, Access-Control-Max-Age, Access-Control-Request-Headers, Access-Control-Request-Method, Age, Allow, Alternates, Authentication-Info, Authorization, C-Ext, C-Man, C-Opt, C-PEP, C-PEP-Info, CONNECT, Cache-Control, Compliance, Connection, Content-Base, Content-Disposition, Content-Encoding, Content-ID, Content-Language, Content-Length, Content-Location, Content-MD5, Content-Range, Content-Script-Type, Content-Security-Policy, Content-Style-Type, Content-Transfer-Encoding, Content-Type, Content-Version, Cookie, Cost, DAV, DELETE, DNT, DPR, Date, Default-Style, Delta-Base, Depth, Derived-From, Destination, Differential-ID, Digest, ETag, Expect, Expires, Ext, From, GET, GetProfile, HEAD, HTTP-date, Host, IM, If, If-Match, If-Modified-Since, If-None-Match, If-Range, If-Unmodified-Since, Keep-Alive, Label, Last-Event-ID, Last-Modified, Link, Location, Lock-Token, MIME-Version, Man, Max-Forwards, Media-Range, Message-ID, Meter, Negotiate, Non-Compliance, OPTION, OPTIONS, OWS, Opt, Optional, Ordering-Type, Origin, Overwrite, P3P, PEP, PICS-Label, POST, PUT, Pep-Info, Permanent, Position, Pragma, ProfileObject, Protocol, Protocol-Query, Protocol-Request, Proxy-Authenticate, Proxy-Authentication-Info, Proxy-Authorization, Proxy-Features, Proxy-Instruction, Public, RWS, Range, Referer, Refresh, Resolution-Hint, Resolver-Location, Retry-After, Safe, Sec-Websocket-Extensions, Sec-Websocket-Key, Sec-Websocket-Origin, Sec-Websocket-Protocol, Sec-Websocket-Version, Security-Scheme, Server, Set-Cookie, Set-Cookie2, SetProfile, SoapAction, Status, Status-URI, Strict-Transport-Security, SubOK, Subst, Surrogate-Capability, Surrogate-Control, TCN, TE, TRACE, Timeout, Title, Trailer, Transfer-Encoding, UA-Color, UA-Media, UA-Pixels, UA-Resolution, UA-Windowpixels, URI, Upgrade, User-Agent, Variant-Vary, Vary, Version, Via, Viewport-Width, WWW-Authenticate, Want-Digest, Warning, Width, X-Content-Duration, X-Content-Security-Policy, X-Content-Type-Options, X-CustomHeader, X-DNSPrefetch-Control, X-Forwarded-For, X-Forwarded-Port, X-Forwarded-Proto, X-Frame-Options, X-Modified, X-OTHER, X-PING, X-PINGOTHER, X-Powered-By, X-Requested-With");
+
+        exit;
+    }
 
 	/**
 	 * Default response for not Authorized requests
@@ -198,7 +229,9 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-
+    /**
+     *
+     */
     public function getList()
     {
         $response = array(
@@ -274,6 +307,9 @@ class UserAjax extends \erdiko\core\AjaxController
 
     }
 
+    /**
+     *
+     */
     public function getRetrieve()
     {
         $response = array(
@@ -303,6 +339,7 @@ class UserAjax extends \erdiko\core\AjaxController
                             'role'     => $this->getRoleInfo($user),
                             'name'     => $user->getName(),
                             'last_login' => $user->getLastLogin(),
+                            'created_at'    => $user->getCreatedAt(),
                             'gateway_customer_id'=> $user->getGatewayCustomerId()
             );
             $response['success'] = true;
@@ -316,6 +353,9 @@ class UserAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
+    /**
+     *
+     */
 	public function postUpdate()
 	{
 		$response = array(
@@ -365,7 +405,10 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->setContent($response);
 	}
 
-	public function getDelete()
+    /**
+     *
+     */
+	public function postDelete()
 	{
 		$response = array(
 			"method" => "delete",
@@ -376,22 +419,24 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
-            $params = (object) $_GET;
+            $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
+
             // Check required fields
-            if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
+            if (empty($data->id)) {
                 throw new \Exception("Id is required.");
-            } elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
-                $params->id = $this->id;
             }
 
 			$userModel = new User();
-			$result = $userModel->deleteUser($params->id);
+			$result = $userModel->deleteUser($data->id);
 
             if (false == $result) {
                 throw new \Exception('User could not be deleted.');
             }
 
-			$response['user'] = array('id' => $params->id);
+			$response['user'] = array('id' => $data->id);
 			$response['success'] = true;
 
 			$this->setStatusCode(200);
@@ -415,7 +460,7 @@ class UserAjax extends \erdiko\core\AjaxController
                      'name' => $roleEntity->getName()
         );
     }
-
+  
     /**
      *
      * get event log activity for current user
