@@ -9,7 +9,7 @@
  * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
  */
-namespace erdiko\users\entities;
+namespace erdiko\users\entities\user\event;
 
 /**
  * @Entity @Table(name="user_event_log") @HasLifecycleCallbacks
@@ -67,7 +67,7 @@ class Log
         $this->user_id = $userId;
     }
 
-    public function geEventLog()
+    public function getEventLog()
     {
         return $this->event_log;
     }
