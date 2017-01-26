@@ -438,9 +438,9 @@ class UserAjax extends \erdiko\core\AjaxController
             $data->page = $_GET['page'];
         }
 
-        $data->pagesize = 10;
-        if(array_key_exists("pagesize", $_GET)){
-            $data->pagesize = $_GET['pagesize'];
+        $data->page_size = 10;
+        if(array_key_exists("page_size", $_GET)){
+            $data->page_size = $_GET['page_size'];
         }
 
         $data->sort = 'created_at';
@@ -470,20 +470,21 @@ class UserAjax extends \erdiko\core\AjaxController
             $basicAuth = new BasicAuthenticator($user);
             $currentUser = $basicAuth->currentUser();
 
-            $logs = $logModel->getLogsByUserId($currentUser->getId(),$data->page, $data->pagesize, $data->sort, $data->direction);
+            $responseLog = $logModel->getLogsByUserId($currentUser->getUserId(),$data->page, $data->page_size, $data->sort, $data->direction);
+
             $output = array();
-            foreach ($logs as $log) {
-                $output[] = array('id'         => $log->getId(),
-                    'event'      => $log->getEventLog(),
-                    'event_data' => $log->getEventData(),
-                    'created_at' => $log->getCreatedAt()
+            foreach ($responseLog->logs as $log) {
+                $output[] = array('id' => $log->getId(),
+                                  'event'      => $log->getEventLog(),
+                                  'event_data' => $log->getEventData(),
+                                  'created_at' => $log->getCreatedAt()
                 );
             }
             $response['success'] = true;
-            $response['user_id'] = $currentUser->getId();
+            $response['user_id'] = $currentUser->getUserId();
             $response['activities'] = $output;
             $response['page'] = $data->page;
-            $response['page_size'] = $data->pagesize;
+            $response['page_size'] = $data->page_size;
             $response['sort'] = $data->sort;
             $response['direction'] = $data->direction;
             $this->setStatusCode(200);
@@ -506,6 +507,7 @@ class UserAjax extends \erdiko\core\AjaxController
             "method" => "adduserevent",
             "success" => false,
             "log" => "",
+            "user_id" => "",
             "error_code" => 0,
             "error_message" => ""
         );
@@ -533,8 +535,8 @@ class UserAjax extends \erdiko\core\AjaxController
             $basicAuth = new BasicAuthenticator($user);
             $currentUser = $basicAuth->currentUser();
 
-            $frontEndClarify = 'front_end_'; //we need to clarify from where is the creation log
-            $logId = $logModel->create($currentUser->getId(), $frontEndClarify.$data->event, $data->event_data);
+            $frontEndClarify = '[front_end] '; //we need to clarify from where is the creation log
+            $logId = $logModel->create($currentUser->getUserId(), $frontEndClarify.$data->event, $data->event_data);
 
             $entity = $logModel->findById($logId);
             $output = array('id'        => $entity->getId(),
@@ -544,6 +546,7 @@ class UserAjax extends \erdiko\core\AjaxController
             );
 
             $response['log'] = $output;
+            $response['user_id'] = $currentUser->getUserId();
             $response['success'] = true;
             $this->setStatusCode(200);
         } catch (\Exception $e) {
@@ -572,19 +575,14 @@ class UserAjax extends \erdiko\core\AjaxController
         // decode
         $data =  ( object) array();
 
-        if(!array_key_exists("user_id", $_GET)) {
-            throw  new \Exception('User_id is requerided.');
-        }
-        $user_id = $_GET['user_id'];
-
         $data->page = 0;
         if(array_key_exists("page", $_GET)) {
             $data->page = $_GET['page'];
         }
 
-        $data->pagesize = 10;
-        if(array_key_exists("pagesize", $_GET)){
-            $data->pagesize = $_GET['pagesize'];
+        $data->page_size = 10;
+        if(array_key_exists("page_size", $_GET)){
+            $data->page_size = $_GET['page_size'];
         }
 
         $data->sort = 'created_at';
@@ -593,6 +591,11 @@ class UserAjax extends \erdiko\core\AjaxController
         $validSort = array('created_at');
         $validDirection = array('asc', 'desc');
         try {
+            if(!array_key_exists("user_id", $_GET) || empty($_GET['user_id'])) {
+                throw  new \Exception('user_id is requerided.');
+            }
+            $user_id = $_GET['user_id'];
+
             if (array_key_exists("sort", $_GET)) {
                 $sort = strtolower($_GET["sort"]);
                 if (!in_array($sort, $validSort)) {
@@ -611,9 +614,9 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $logModel = new Log();
 
-            $logs = $logModel->getLogsByUserId($user_id,$data->page, $data->pagesize, $data->sort, $data->direction);
+            $responseLog = $logModel->getLogsByUserId($user_id,$data->page, $data->page_size, $data->sort, $data->direction);
             $output = array();
-            foreach ($logs as $log) {
+            foreach ($responseLog->logs as $log) {
                 $output[] = array('id'         => $log->getId(),
                                   'event'      => $log->getEventLog(),
                                   'event_data' => $log->getEventData(),
@@ -624,7 +627,7 @@ class UserAjax extends \erdiko\core\AjaxController
             $response['user_id'] = $user_id;
             $response['logs'] = $output;
             $response['page'] = $data->page;
-            $response['page_size'] = $data->pagesize;
+            $response['page_size'] = $data->page_size;
             $response['sort'] = $data->sort;
             $response['direction'] = $data->direction;
             $this->setStatusCode(200);

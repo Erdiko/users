@@ -83,7 +83,7 @@ class Log
         }
 
         $result->logs = $repo->findBy(
-            array('user_id' => $id),
+            array("user_id" => $id),
             array(
                 $sort => $direction
             ),
