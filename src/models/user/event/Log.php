@@ -26,6 +26,7 @@ class Log
     {
         $this->_em->persist($logEntity);
         $this->_em->flush();
+        return $logEntity->getId();
     }
 
     protected function generateEntity($uid, $event_log, $event_data = null)
@@ -53,13 +54,73 @@ class Log
         return $this->getRepository('\erdiko\users\entities\user\event\Log')->findAll();
     }
 
-    public function getLogsById($id)
+
+    /**
+     * @param int $page
+     * @param int $pagesize
+     * @param string $sort
+     * @param string $direction
+     * @return object
+     *
+     * return all the logs entries paginated by parameters.
+     */
+    public function getLogsByUserId($id, $page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc')
     {
         if(is_null($id)) {
             throw new \Exception('User ID is required.');
-        } else {
-            return $this->getRepository('\erdiko\users\entities\user\event\Log')->findBy(array('user_id'=>$id));
         }
+
+        $result = (Object)array(
+            "logs" =>  array(),
+            "total" => 0
+        );
+
+        $repo = $this->getRepository('\erdiko\users\entities\user\event\Log');
+
+        $offset = 0;
+        if ($page > 0) {
+            $offset = ($page - 1) * $pagesize;
+        }
+
+        $result->logs = $repo->findBy(
+            array('user_id' => $id),
+            array(
+                $sort => $direction
+            ),
+            $pagesize,
+            $offset
+        );
+
+        // get total log count
+        $result->total = (int)$repo->createQueryBuilder('u')
+            ->select('count(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result;
+    }
+
+
+    /**
+     * @param $id
+     * @return null|object
+     * @throws \Exception
+     *
+     * return a Log entity by id
+     */
+    public function findById($id)
+    {
+        if( is_null($id)) {
+            throw new \Exception('ID is required');
+        }
+
+        try {
+            $log = $this->getRepository('\erdiko\users\entities\user\event\Log');
+            $result = $log->find($id);
+        }catch (\Exception $e) {
+            \error_log($e->getMessage());
+        }
+        return $result;
     }
 
 
@@ -69,7 +130,8 @@ class Log
         if(is_null($event_log)) throw new \Exception('Event Log is required.');
         if(!is_numeric($user_id)) throw new \Exception("Invalid User ID.");
 
-        $this->save($this->generateEntity(intval($user_id), $event_log, $event_data));
+        $id = $this->save($this->generateEntity(intval($user_id), $event_log, $event_data));
+        return $id;
     }
 
 }

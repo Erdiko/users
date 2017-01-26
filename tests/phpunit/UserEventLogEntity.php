@@ -41,7 +41,7 @@ class UserEventLogEntity extends \tests\ErdikoTestCase
      */
     function testCreate()
     {
-        $logEntity = new $this->namespaceEntity;
+        $logEntity = new \erdiko\users\entities\user\event\Log();
         $logEntity->setUserId($this->logArray['user_id']);
         $logEntity->setEventLog($this->logArray['event_log']);
         $logEntity->setEventData($this->logArray['event_data']);

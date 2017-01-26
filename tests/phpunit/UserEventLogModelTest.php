@@ -73,46 +73,71 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     {
         $uid = 1;
         $data = array('email'=>'test@mail.com');
-        $this->_logs->create($uid, 'backend-test-profile-create', $data);
-        $result = $this->_logs->getLogsById(1);
+        $entityId = $this->_logs->create($uid, 'backend-test-profile-create', $data);
+        $result = $this->_logs->getLogsByUserId(1)->logs;
 
+        $this->assertGreaterThan(0, $entityId);
         $this->assertEquals(1,$result[0]->getUserId(),"Result has correct User ID.");
 
-        $this->id = $result[0]->getId();
+        $this->id = $entityId;
     }
+
+
+    /**
+     * @expectedException \Exception
+     */
+    public function testFindByIdNull()
+    {
+        $this->_logs->findById(null);
+    }
+
 
     /**
      * @depends testCreate
      * @expectedException \Exception
      */
-    public function testLogByIdNull()
+    public function testLogByUserIdNull()
     {
-        $this->_logs->getLogsById(null);
+        $this->_logs->getLogsByUserId(null);
     }
 
     /**
      * @depends testCreate
      */
-    public function testLogByIdMissing()
+    public function testLogByUserIdMissing()
     {
-        $result  = $this->_logs->getLogsById(99999999999999);
-        $this->assertEmpty($result);
+        $result  = $this->_logs->getLogsByUserId(99999999999999);
+        $this->assertEmpty($result->logs);
     }
 
     /**
      *
-     * @depends testLogByIdMissing
+     * @depends testLogByUserIdMissing
      */
     public function testGetAllLogs()
     {
         $uid = 1;
         $data = array('email'=>'test@mail.com');
         $this->_logs->create($uid, 'backend-test-profile-create', $data);
-        $result = $this->_logs->getLogsById(1);
+        $result = $this->_logs->getLogsByUserId(1)->logs;
         $this->id = $result[0]->getId();
 
         $result = $this->_logs->getAllLogs();
         $this->assertTrue(is_array($result), "Returned value is an array");
         $this->assertInstanceOf('\erdiko\users\entities\user\event\Log', $result[0], 'Returned value is a \erdiko\users\entities\Log Object');
+    }
+
+    /**
+     * test findById method
+     */
+    public function testFindById()
+    {
+        $uid = 1;
+        $data = array('email'=>'test@mail.com');
+        $this->id = $this->_logs->create($uid, 'backend-test-profile-create', $data);
+
+        $result = $this->_logs->findById($this->id);
+        $this->assertEquals($this->id, $result->getId());
+        $this->assertInstanceOf('\erdiko\users\entities\user\event\Log', $result, 'Returned value is a \erdiko\users\entities\Log Object');
     }
 }
