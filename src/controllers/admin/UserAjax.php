@@ -490,6 +490,10 @@ class UserAjax extends \erdiko\core\AjaxController
             }
 
             $userToChange = $users[0];
+            if (!$userToChange instanceof \erdiko\users\models\User) {
+                throw new \Exception('Object is not an instance of User.');
+            }
+
             $user->save(array('id' => $userToChange->getId(), 'password' => $data->newpass));
             $response['success'] = true;
             $this->setStatusCode(200);
