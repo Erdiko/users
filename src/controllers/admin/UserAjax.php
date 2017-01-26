@@ -520,7 +520,7 @@ class UserAjax extends \erdiko\core\AjaxController
             // Check required fields
             $requiredParams = array('event');
             $params = (array) $data;
-            foreach ($requiredParams as $param){
+            foreach ($requiredParams as $param) {
                 if (empty($params[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
@@ -591,7 +591,7 @@ class UserAjax extends \erdiko\core\AjaxController
         $validSort = array('created_at');
         $validDirection = array('asc', 'desc');
         try {
-            if(!array_key_exists("user_id", $_GET) || empty($_GET['user_id'])) {
+            if (!array_key_exists("user_id", $_GET) || empty($_GET['user_id'])) {
                 throw  new \Exception('user_id is requerided.');
             }
             $user_id = $_GET['user_id'];
