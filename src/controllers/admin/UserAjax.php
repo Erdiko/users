@@ -559,7 +559,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
     /**
      *
-     * get event log activity for specified user user
+     * get event log activity for specified user_id
      */
     public function getEventLogs()
     {
