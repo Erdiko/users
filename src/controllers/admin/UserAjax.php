@@ -479,12 +479,8 @@ class UserAjax extends \erdiko\core\AjaxController
             $params = (array) $data;
             foreach ($requiredParams as $param) {
                 if (empty($params[$param])) {
-                    throw new \Exception(ucfirst($param) .' is required.');
+                    throw new \Exception($param .' is required.');
                 }
-            }
-
-            if ($data->currentpass == $data->newpass) {
-                throw new \Exception('Current pass and new pass should be different.');
             }
 
             $user = new User();
