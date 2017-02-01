@@ -460,7 +460,7 @@ class UserAjax extends \erdiko\core\AjaxController
         );
     }
 
-    public function postChangePass()
+    public function postChangepass()
     {
         $response = array(
             "method" => "changepass",
@@ -484,15 +484,14 @@ class UserAjax extends \erdiko\core\AjaxController
             }
 
             $user = new User();
-            $users = $user->getByParams(array('email' => $data->email));
-            if (empty($users)) {
+
+            //TODO we should also provide method to get user by ID
+            $userResult = $user->getByParams(array('email' => $data->email));
+            if (empty($userResult) || !is_a($userResult[0], 'erdiko\users\entities\User')) {
                 throw new \Exception('User not found.');
             }
 
-            $userToChange = $users[0];
-            if (!$userToChange instanceof \erdiko\users\models\User) {
-                throw new \Exception('Object is not an instance of User.');
-            }
+            $userToChange = $userResult[0];
 
             $user->save(array('id' => $userToChange->getId(), 'password' => $data->newpass));
             $response['success'] = true;
