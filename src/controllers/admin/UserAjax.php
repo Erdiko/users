@@ -683,4 +683,5 @@ class UserAjax extends \erdiko\core\AjaxController
 
         $this->setContent($response);
     }
+
 }
