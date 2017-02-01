@@ -470,23 +470,29 @@ class UserAjax extends \erdiko\core\AjaxController
         );
 
         try {
-            $data = json_decode(file_get_contents("php://input"));
+            $params = json_decode(file_get_contents("php://input"));
             if (empty($data)) {
-                $data = (object) $_POST;
+                $params = (object) $_POST;
             }
+
             // Check required fields
-            $requiredParams = array('email', 'newpass');
-            $params = (array) $data;
-            foreach ($requiredParams as $param) {
-                if (empty($params[$param])) {
-                    throw new \Exception($param .' is required.');
-                }
+            if(empty($params->email) && empty($params->id)) {
+                throw new \Exception('User Email or ID is required.');
+            }
+
+            if(empty($params->newpass)) {
+                throw new \Exception('New password is required.');
             }
 
             $user = new User();
 
-            //TODO we should also provide method to get user by ID
-            $userResult = $user->getByParams(array('email' => $data->email));
+            if(!empty($params->id)) {
+                $userParams = array('id' => $params->id);
+            } else {
+                $userParams = array('email' => $params->email);
+            }
+
+            $userResult = $user->getByParams($userParams);
             if (empty($userResult) || !is_a($userResult[0], 'erdiko\users\entities\User')) {
                 throw new \Exception('User not found.');
             }
