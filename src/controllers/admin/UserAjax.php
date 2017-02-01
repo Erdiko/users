@@ -460,6 +460,10 @@ class UserAjax extends \erdiko\core\AjaxController
         );
     }
 
+    /**
+     * postChangepass
+     *
+     */
     public function postChangepass()
     {
         $response = array(
@@ -471,7 +475,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
         try {
             $params = json_decode(file_get_contents("php://input"));
-            if (empty($data)) {
+            if (empty($params)) {
                 $params = (object) $_POST;
             }
 
