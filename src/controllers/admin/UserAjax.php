@@ -14,6 +14,7 @@ namespace erdiko\users\controllers\admin;
 
 use erdiko\authenticate\services\JWTAuthenticator;
 use erdiko\authenticate\iErdikoUser;
+use erdiko\authenticate\services\BasicAuthenticator;
 
 use erdiko\authorize\Authorizer;
 use erdiko\authorize\UserInterface;
@@ -567,12 +568,16 @@ class UserAjax extends \erdiko\core\AjaxController
             $params = (array) $data;
             foreach ($requiredParams as $param) {
                 if (empty($params[$param])) {
-                    throw new \Exception(ucfirst($param) .' is required.');
+                    throw new \Exception($param .' is required.');
                 }
             }
 
-            if(!array_key_exists("event_data", $params)){
+            if (!array_key_exists("event_data", $params)) {
                 $data->event_data = "";
+            }
+
+            if (!array_key_exists("event_source", $params)) {
+                $data->event_source = "front_end";//we need to clarify from where is the creation log
             }
 
             $logModel = new Log();
@@ -580,14 +585,15 @@ class UserAjax extends \erdiko\core\AjaxController
             $basicAuth = new BasicAuthenticator($user);
             $currentUser = $basicAuth->currentUser();
 
-            $frontEndClarify = '[front_end] '; //we need to clarify from where is the creation log
-            $logId = $logModel->create($currentUser->getUserId(), $frontEndClarify.$data->event, $data->event_data);
+            //remember $data->event is just a String. $data->event_data will be json
+            $event_type = "[{$data->event_source}] {$data->event}";
+            $logId = $logModel->create($currentUser->getUserId(), $event_type, $data->event_data);
 
             $entity = $logModel->findById($logId);
             $output = array('id'        => $entity->getId(),
-                'event'     => $entity->getEventLog(),
-                'event_data'=> $entity->getEventData(),
-                'created_at'=> $entity->getCreatedAt()
+                            'event'     => $entity->getEventLog(),
+                            'event_data'=> $entity->getEventData(),
+                            'created_at'=> $entity->getCreatedAt()
             );
 
             $response['log'] = $output;
