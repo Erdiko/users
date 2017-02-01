@@ -684,4 +684,58 @@ class UserAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
+    /**
+     *
+     *
+     */
+    public function postChangepass()
+    {
+        $response = array(
+            "method" => "changepass",
+            "success" => false,
+            "error_code" => 0,
+            "error_message" => ""
+        );
+
+        try {
+            $params = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $params = (object) $_POST;
+            }
+
+            // Check required fields
+            if(empty($params->email) && empty($params->id)) {
+                throw new \Exception('User Email or ID is required.');
+            }
+
+            if(empty($params->newpass)) {
+                throw new \Exception('New password is required.');
+            }
+
+            $user = new User();
+
+            if(!empty($params->id)) {
+                $userParams = array('id' => $params->id);
+            } else {
+                $userParams = array('email' => $params->email);
+            }
+
+            $userResult = $user->getByParams($userParams);
+            if (empty($userResult) || !is_a($userResult[0], 'erdiko\users\entities\User')) {
+                throw new \Exception('User not found.');
+            }
+
+            $userToChange = $userResult[0];
+
+            $user->save(array('id' => $userToChange->getId(), 'password' => $data->newpass));
+            $response['success'] = true;
+            $this->setStatusCode(200);
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+
+        $this->setContent($response);
+    }
+
 }
