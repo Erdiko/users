@@ -503,7 +503,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userToChange = $userResult[0];
 
-            $user->save(array('id' => $userToChange->getId(), 'password' => $data->newpass));
+            $res = $user->save(array('id' => $userToChange->getId(), 'password' => $params->newpass));
+
             $response['success'] = true;
             $this->setStatusCode(200);
         } catch (\Exception $e) {
