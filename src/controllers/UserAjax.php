@@ -27,7 +27,6 @@ class UserAjax extends \erdiko\core\AjaxController
 	 */
 	protected function checkAuth($action,$resource)
 	{
-		return true; // remove after testing
 		try {
 			$userModel  = new User();
 			$auth       = new BasicAuthenticator($userModel);
@@ -121,6 +120,7 @@ class UserAjax extends \erdiko\core\AjaxController
 			"error_message" => "Sorry, you don't have permission for this action"
 		);
 
+        $this->setStatusCode($response["error_code"]);
 		$this->setContent($response);
 	}
 
@@ -136,6 +136,7 @@ class UserAjax extends \erdiko\core\AjaxController
 			"error_message" => 'Sorry, you need to specify a valid action'
 		);
 
+        $this->setStatusCode($response["error_code"]);
 		$this->setContent($response);
 	}
 
@@ -417,20 +418,26 @@ class UserAjax extends \erdiko\core\AjaxController
                 $data->event_data = "";
             }
 
-            if (!array_key_exists("event_source", $params)) {
-                $data->event_source = "front_end";//we need to clarify from where is the creation log
+            if(!is_array($data->event_data)) {
+                $data->event_data = array("data" => $data->event_data);
             }
+
+            if (!array_key_exists("event_source", $params)) {
+                $data->event_source = "front_end";
+            }
+
+            $data->event_type = $params['event'];
+            $data->event_data = array_merge($data->event_data, array("source" => $data->event_source));
 
             $logModel = new Log();
             $user = new User();
             $basicAuth = new BasicAuthenticator($user);
             $currentUser = $basicAuth->currentUser();
 
-            //remember $data->event is just a String. $data->event_data will be json
-            $event_type = "[{$data->event_source}] {$data->event}";
-            $logId = $logModel->create($currentUser->getUserId(), $event_type, $data->event_data);
+            $logId = $logModel->create($currentUser->getUserId(), $data->event_type, $data->event_data);
 
             $entity = $logModel->findById($logId);
+
             $output = array('id'        => $entity->getId(),
                 'event'     => $entity->getEventLog(),
                 'event_data'=> $entity->getEventData(),
