@@ -14,10 +14,12 @@ namespace erdiko\users\controllers\admin;
 
 use erdiko\authenticate\services\JWTAuthenticator;
 use erdiko\authenticate\iErdikoUser;
+use erdiko\authenticate\services\BasicAuthenticator;
 
 use erdiko\authorize\Authorizer;
 use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
+use erdiko\users\models\user\event\Log;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
@@ -153,6 +155,7 @@ class UserAjax extends \erdiko\core\AjaxController
 			"error_message" => "Sorry, you don't have permission for this action"
 		);
 
+        $this->setStatusCode($response["error_code"]);
 		$this->setContent($response);
 	}
 
@@ -168,6 +171,7 @@ class UserAjax extends \erdiko\core\AjaxController
 			"error_message" => 'Sorry, you need to specify a valid action'
 		);
 
+        $this->setStatusCode($response["error_code"]);
 		$this->setContent($response);
 	}
 
@@ -461,6 +465,241 @@ class UserAjax extends \erdiko\core\AjaxController
     }
 
     /**
+     *
+     * get event log activity for current user
+     */
+    public function getUserActivity()
+    {
+        $response = array(
+            "method" => "useractivity",
+            "success" => false,
+            "activities" => "",
+            "error_code" => 0,
+            "error_message" => ""
+        );
+
+        // decode
+        $data =  ( object) array();
+
+        $data->page = 0;
+        if(array_key_exists("page", $_GET)) {
+            $data->page = $_GET['page'];
+        }
+
+        $data->page_size = 10;
+        if(array_key_exists("page_size", $_GET)){
+            $data->page_size = $_GET['page_size'];
+        }
+
+        $data->sort = 'created_at';
+        $data->direction = 'asc';
+
+        $validSort = array('created_at');
+        $validDirection = array('asc', 'desc');
+        try {
+            if (array_key_exists("sort", $_GET)) {
+                $sort = strtolower($_GET["sort"]);
+                if (!in_array($sort, $validSort)) {
+                    throw new \Exception('The attribute used to sort is invalid.');
+                }
+                $data->sort = $sort;
+            }
+
+            if (array_key_exists("direction", $_GET)) {
+                $direction = strtolower($_GET["direction"]);
+                if (!in_array($direction, $validDirection)) {
+                    throw new \Exception('The attribute used to direction is invalid.');
+                }
+                $data->direction = $direction;
+            }
+
+            $logModel = new Log();
+            $user = new User();
+            $basicAuth = new BasicAuthenticator($user);
+            $currentUser = $basicAuth->currentUser();
+
+            $responseLog = $logModel->getLogsByUserId($currentUser->getUserId(),$data->page, $data->page_size, $data->sort, $data->direction);
+
+            $output = array();
+            foreach ($responseLog->logs as $log) {
+                $output[] = array('id' => $log->getId(),
+                                  'event'      => $log->getEventLog(),
+                                  'event_data' => $log->getEventData(),
+                                  'created_at' => $log->getCreatedAt()
+                );
+            }
+            $response['success'] = true;
+            $response['user_id'] = $currentUser->getUserId();
+            $response['activities'] = $output;
+            $response['page'] = $data->page;
+            $response['page_size'] = $data->page_size;
+            $response['sort'] = $data->sort;
+            $response['direction'] = $data->direction;
+            $this->setStatusCode(200);
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+
+        $this->setContent($response);
+    }
+
+    /**
+     *
+     * create a new event Log for current user
+     *
+     */
+    public function postAddUserEvent()
+    {
+        $response = array(
+            "method" => "adduserevent",
+            "success" => false,
+            "log" => "",
+            "user_id" => "",
+            "error_code" => 0,
+            "error_message" => ""
+        );
+
+        try {
+            $data = json_decode(file_get_contents("php://input"));
+            if (empty($data)) {
+                $data = (object) $_POST;
+            }
+            // Check required fields
+            $requiredParams = array('event');
+            $params = (array) $data;
+            foreach ($requiredParams as $param) {
+                if (empty($params[$param])) {
+                    throw new \Exception($param .' is required.');
+                }
+            }
+
+            if (!array_key_exists("event_data", $params)) {
+                $data->event_data = "";
+            }
+
+            if(!is_array($data->event_data)) {
+                $data->event_data = array("data" => $data->event_data);
+            }
+
+            if (!array_key_exists("event_source", $params)) {
+                $data->event_source = "front_end";
+            }
+
+            $data->event_type = $params['event'];
+            $data->event_data = array_merge($data->event_data, array("source" => $data->event_source));
+
+            $logModel = new Log();
+            $user = new User();
+            $basicAuth = new BasicAuthenticator($user);
+            $currentUser = $basicAuth->currentUser();
+
+            $logId = $logModel->create($currentUser->getUserId(), $data->event_type, $data->event_data);
+
+            $entity = $logModel->findById($logId);
+            $output = array('id'        => $entity->getId(),
+                            'event'     => $entity->getEventLog(),
+                            'event_data'=> $entity->getEventData(),
+                            'created_at'=> $entity->getCreatedAt()
+            );
+
+            $response['log'] = $output;
+            $response['user_id'] = $currentUser->getUserId();
+            $response['success'] = true;
+            $this->setStatusCode(200);
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+
+        $this->setContent($response);
+    }
+
+    /**
+     *
+     * get event log activity for specified user_id
+     */
+    public function getEventLogs()
+    {
+        $response = array(
+            "method" => "geteventlogs",
+            "success" => false,
+            "user_id" => "",
+            "logs" => "",
+            "error_code" => 0,
+            "error_message" => ""
+        );
+
+        // decode
+        $data =  ( object) array();
+
+        $data->page = 0;
+        if(array_key_exists("page", $_GET)) {
+            $data->page = $_GET['page'];
+        }
+
+        $data->page_size = 10;
+        if(array_key_exists("page_size", $_GET)){
+            $data->page_size = $_GET['page_size'];
+        }
+
+        $data->sort = 'created_at';
+        $data->direction = 'asc';
+
+        $validSort = array('created_at');
+        $validDirection = array('asc', 'desc');
+        try {
+            if (!array_key_exists("user_id", $_GET) || empty($_GET['user_id'])) {
+                throw  new \Exception('user_id is requerided.');
+            }
+            $user_id = $_GET['user_id'];
+
+            if (array_key_exists("sort", $_GET)) {
+                $sort = strtolower($_GET["sort"]);
+                if (!in_array($sort, $validSort)) {
+                    throw new \Exception('The attribute used to sort is invalid.');
+                }
+                $data->sort = $sort;
+            }
+
+            if (array_key_exists("direction", $_GET)) {
+                $direction = strtolower($_GET["direction"]);
+                if (!in_array($direction, $validDirection)) {
+                    throw new \Exception('The attribute used to direction is invalid.');
+                }
+                $data->direction = $direction;
+            }
+
+            $logModel = new Log();
+
+            $responseLog = $logModel->getLogsByUserId($user_id,$data->page, $data->page_size, $data->sort, $data->direction);
+            $output = array();
+            foreach ($responseLog->logs as $log) {
+                $output[] = array('id'         => $log->getId(),
+                                  'event'      => $log->getEventLog(),
+                                  'event_data' => $log->getEventData(),
+                                  'created_at' => $log->getCreatedAt()
+                );
+            }
+            $response['success'] = true;
+            $response['user_id'] = $user_id;
+            $response['logs'] = $output;
+            $response['page'] = $data->page;
+            $response['page_size'] = $data->page_size;
+            $response['sort'] = $data->sort;
+            $response['direction'] = $data->direction;
+            $this->setStatusCode(200);
+        } catch (\Exception $e) {
+            $response['error_message'] = $e->getMessage();
+            $response['error_code'] = $e->getCode();
+        }
+
+        $this->setContent($response);
+    }
+
+
+    
+    /**
      * postChangepass
      *
      */
@@ -514,5 +753,5 @@ class UserAjax extends \erdiko\core\AjaxController
 
         $this->setContent($response);
     }
-}
 
+}

@@ -78,7 +78,6 @@ class UserModelTest extends \tests\ErdikoTestCase
         }
 
 
-
         $roleEntity = $this->roleModel->findByName('user');
         if (empty($roleEntity)) {
             $id = $this->roleModel->create($this->roleUserArrayData);
