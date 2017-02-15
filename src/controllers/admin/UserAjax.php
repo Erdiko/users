@@ -461,8 +461,8 @@ class UserAjax extends \erdiko\core\AjaxController
                      'name' => $roleEntity->getName()
         );
     }
-  
-    /**
+
+ /**
      *
      * get event log activity for current user
      */
@@ -690,8 +690,10 @@ class UserAjax extends \erdiko\core\AjaxController
         $this->setContent($response);
     }
 
+
+    
     /**
-     *
+     * postChangepass
      *
      */
     public function postChangepass()
@@ -705,7 +707,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
         try {
             $params = json_decode(file_get_contents("php://input"));
-            if (empty($data)) {
+            if (empty($params)) {
                 $params = (object) $_POST;
             }
 
@@ -733,7 +735,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userToChange = $userResult[0];
 
-            $user->save(array('id' => $userToChange->getId(), 'password' => $data->newpass));
+            $res = $user->save(array('id' => $userToChange->getId(), 'password' => $params->newpass));
+
             $response['success'] = true;
             $this->setStatusCode(200);
         } catch (\Exception $e) {
