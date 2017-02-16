@@ -140,4 +140,22 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
         $this->assertEquals($this->id, $result->getId());
         $this->assertInstanceOf('\erdiko\users\entities\user\event\Log', $result, 'Returned value is a \erdiko\users\entities\Log Object');
     }
+
+    /**
+     *
+     *
+     */
+    public function testGetLogs() 
+    {
+        $uid = 1;
+        $data = array('email'=>'test@mail.com');
+        $entityId = $this->_logs->create($uid, 'backend-test-profile-create', $data);
+        $result = $this->_logs->getLogs()->logs;
+
+        $this->assertGreaterThan(0, $entityId);
+        $this->assertEquals(1,$result[0]->getUserId(),"Result has correct User ID.");
+
+        $this->id = $entityId;
+    }
+
 }

@@ -54,6 +54,47 @@ class Log
         return $this->getRepository('\erdiko\users\entities\user\event\Log')->findAll();
     }
 
+    /**
+     * @param int $page
+     * @param int $pagesize
+     * @param string $sort
+     * @param string $direction
+     * @return object
+     *
+     * return all the logs entries paginated by parameters.
+     */
+    public function getLogs($page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc')
+    {
+
+        $result = (Object)array(
+            "logs" =>  array(),
+            "total" => 0
+        );
+
+        $repo = $this->getRepository('\erdiko\users\entities\user\event\Log');
+
+        $offset = 0;
+        if ($page > 0) {
+            $offset = ($page - 1) * $pagesize;
+        }
+
+        $result->logs = $repo->findBy(
+            array(),
+            array(
+                $sort => $direction
+            ),
+            $pagesize,
+            $offset
+        );
+
+        // get total log count
+        $result->total = (int)$repo->createQueryBuilder('u')
+            ->select('count(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result;
+    }
 
     /**
      * @param int $page

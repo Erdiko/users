@@ -32,7 +32,7 @@ class UserAjax extends \erdiko\core\AjaxController
 	 * @return bool
 	 */
 	protected function checkAuth($resource = null)
-	{
+    {
         try {
 
             // get the JWT from the headers
@@ -546,77 +546,6 @@ class UserAjax extends \erdiko\core\AjaxController
 
     /**
      *
-     * create a new event Log for current user
-     *
-     */
-    public function postAddUserEvent()
-    {
-        $response = array(
-            "method" => "adduserevent",
-            "success" => false,
-            "log" => "",
-            "user_id" => "",
-            "error_code" => 0,
-            "error_message" => ""
-        );
-
-        try {
-            $data = json_decode(file_get_contents("php://input"));
-            if (empty($data)) {
-                $data = (object) $_POST;
-            }
-            // Check required fields
-            $requiredParams = array('event');
-            $params = (array) $data;
-            foreach ($requiredParams as $param) {
-                if (empty($params[$param])) {
-                    throw new \Exception($param .' is required.');
-                }
-            }
-
-            if (!array_key_exists("event_data", $params)) {
-                $data->event_data = "";
-            }
-
-            if(!is_array($data->event_data)) {
-                $data->event_data = array("data" => $data->event_data);
-            }
-
-            if (!array_key_exists("event_source", $params)) {
-                $data->event_source = "front_end";
-            }
-
-            $data->event_type = $params['event'];
-            $data->event_data = array_merge($data->event_data, array("source" => $data->event_source));
-
-            $logModel = new Log();
-            $user = new User();
-            $basicAuth = new BasicAuthenticator($user);
-            $currentUser = $basicAuth->currentUser();
-
-            $logId = $logModel->create($currentUser->getUserId(), $data->event_type, $data->event_data);
-
-            $entity = $logModel->findById($logId);
-            $output = array('id'        => $entity->getId(),
-                            'event'     => $entity->getEventLog(),
-                            'event_data'=> $entity->getEventData(),
-                            'created_at'=> $entity->getCreatedAt()
-            );
-
-            $response['log'] = $output;
-            $response['user_id'] = $currentUser->getUserId();
-            $response['success'] = true;
-            $this->setStatusCode(200);
-        } catch (\Exception $e) {
-            $response['error_message'] = $e->getMessage();
-            $response['error_code'] = $e->getCode();
-        }
-
-        $this->setContent($response);
-    }
-
-    /**
-     *
      * get event log activity for specified user_id
      */
     public function getEventLogs()
@@ -649,10 +578,11 @@ class UserAjax extends \erdiko\core\AjaxController
         $validSort = array('created_at');
         $validDirection = array('asc', 'desc');
         try {
-            if (!array_key_exists("user_id", $_GET) || empty($_GET['user_id'])) {
-                throw  new \Exception('user_id is requerided.');
+
+            $user_id = null;
+            if (array_key_exists("user_id", $_GET)) {
+                $user_id = $_GET['user_id'];
             }
-            $user_id = $_GET['user_id'];
 
             if (array_key_exists("sort", $_GET)) {
                 $sort = strtolower($_GET["sort"]);
@@ -672,7 +602,12 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $logModel = new Log();
 
-            $responseLog = $logModel->getLogsByUserId($user_id,$data->page, $data->page_size, $data->sort, $data->direction);
+            if(!is_null($user_id)) {
+                $responseLog = $logModel->getLogsByUserId($user_id, $data->page, $data->page_size, $data->sort, $data->direction);
+            } else {
+                $responseLog = $logModel->getLogs($data->page, $data->page_size, $data->sort, $data->direction);
+            }
+
             $output = array();
             foreach ($responseLog->logs as $log) {
                 $output[] = array('id'         => $log->getId(),
@@ -696,8 +631,6 @@ class UserAjax extends \erdiko\core\AjaxController
 
         $this->setContent($response);
     }
-
-
     
     /**
      * postChangepass
