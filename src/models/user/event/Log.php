@@ -39,7 +39,7 @@ class Log
 
         // only record event data if value is passed
         if(!empty($event_data)) {
-            $entity->setEventData(serialize($event_data));
+            $entity->setEventData($event_data);
         }
 
         // make sure we set a created at TS, else we get weird results!

@@ -79,12 +79,12 @@ class Log
 
     public function getEventData()
     {
-        return $this->event_data;
+        return json_decode($this->event_data);
     }
 
     public function setEventData($eventData)
     {
-        $this->event_data = $eventData;
+        $this->event_data = json_encode($eventData);
     }
 
     public function getCreatedAt()
