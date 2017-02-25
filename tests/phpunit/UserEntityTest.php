@@ -19,16 +19,22 @@ class UserEntityTest extends \tests\ErdikoTestCase
     protected $entityManager = null;
     protected $userArray = null;
     protected $id = null;
+    private static $ts;
+
+    public static function setUpBeforeClass()
+    {
+        self::$ts = time();
+    }
 
     function setUp()
     {
         $this->entityManager = \erdiko\doctrine\EntityManager::getEntityManager();
         $this->userArray = array(
-            'email' => 'user+'.time().'@email.com',
-            'password' => 'booyah_'.time(),
-            'name' => 'user+'.time(),
+            'email' => 'user+'.self::$ts.'@email.com',
+            'password' => 'booyah_'.self::$ts,
+            'name' => 'user+'.self::$ts,
             'role' => '1',
-            'gateway_customer_id' => time() 
+            'gateway_customer_id' => self::$ts
             );
     }
 
