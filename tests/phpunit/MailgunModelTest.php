@@ -3,7 +3,7 @@
  * Mailgun model test cases
  *
  * @category   UnitTests
- * @package    app
+ * @package    tests
  * @copyright  Copyright (c) 2016, Arroyo Labs, http://www.arroyolabs.com
  *
  * @author     Julian Diaz, julian@arroyolabs.com
