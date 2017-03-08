@@ -1,17 +1,17 @@
 /*
  Navicat MySQL Data Transfer
 
- Source Server         : User Admin
+ Source Server         : User Admin (local)
  Source Server Type    : MySQL
- Source Server Version : 50713
+ Source Server Version : 50717
  Source Host           : localhost
  Source Database       : user-admin
 
  Target Server Type    : MySQL
- Target Server Version : 50713
+ Target Server Version : 50717
  File Encoding         : utf-8
 
- Date: 02/17/2017 18:19:21 PM
+ Date: 02/19/2017 01:29:58 AM
 */
 
 SET NAMES utf8mb4;
@@ -24,12 +24,19 @@ DROP TABLE IF EXISTS `roles`;
 CREATE TABLE `roles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `active` int(1) DEFAULT NULL,
-  `created` datetime NOT NULL,
-  `updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `active` tinyint(4) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+--  Records of `roles`
+-- ----------------------------
+BEGIN;
+INSERT INTO `roles` VALUES ('1', 'anonymous', '1', '2017-02-19 09:29:23', null);
+COMMIT;
 
 -- ----------------------------
 --  Table structure for `user_event_log`
@@ -39,10 +46,10 @@ CREATE TABLE `user_event_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `event_log` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `event_data` text COLLATE utf8_unicode_ci,
-  `created_at` datetime NOT NULL,
+  `event_data` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 --  Table structure for `users`
@@ -57,9 +64,9 @@ CREATE TABLE `users` (
   `gateway_customer_id` varchar(16) DEFAULT NULL,
   `last_login` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_email` (`email`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 SET FOREIGN_KEY_CHECKS = 1;
