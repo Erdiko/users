@@ -611,6 +611,7 @@ class UserAjax extends \erdiko\core\AjaxController
             $output = array();
             foreach ($responseLog->logs as $log) {
                 $output[] = array('id'         => $log->getId(),
+                                  'user_id'    => $log->getUserId(),
                                   'event'      => $log->getEventLog(),
                                   'event_data' => $log->getEventData(),
                                   'created_at' => $log->getCreatedAt()
