@@ -16,6 +16,8 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     protected $_logs = null;
     protected $id = null;
 
+    const EVENT_LOG_NAME = "backend-test-profile-create";
+
     /**
      *
      *
@@ -38,6 +40,14 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
             $this->entityManager->remove($entity);
             $this->entityManager->flush();
         }
+
+        // delete all remaining test log entries
+        $records = $this->entityManager->getRepository('\erdiko\users\entities\user\event\Log')
+                        ->findBy(array("event_log" => self::EVENT_LOG_NAME));
+        foreach($records as $record) {
+            $this->entityManager->remove($record);
+            $this->entityManager->flush();
+    }
     }
 
     /**
@@ -73,7 +83,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     {
         $uid = 1;
         $data = array('email'=>'test@mail.com');
-        $entityId = $this->_logs->create($uid, 'backend-test-profile-create', $data);
+        $entityId = $this->_logs->create($uid, self::EVENT_LOG_NAME, $data);
         $result = $this->_logs->getLogsByUserId(1)->logs;
 
         $this->assertGreaterThan(0, $entityId);
@@ -118,7 +128,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     {
         $uid = 1;
         $data = array('email'=>'test@mail.com');
-        $this->_logs->create($uid, 'backend-test-profile-create', $data);
+        $this->_logs->create($uid, self::EVENT_LOG_NAME, $data);
         $result = $this->_logs->getLogsByUserId(1)->logs;
         $this->id = $result[0]->getId();
 
@@ -134,7 +144,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     {
         $uid = 1;
         $data = array('email'=>'test@mail.com');
-        $this->id = $this->_logs->create($uid, 'backend-test-profile-create', $data);
+        $this->id = $this->_logs->create($uid, self::EVENT_LOG_NAME, $data);
 
         $result = $this->_logs->findById($this->id);
         $this->assertEquals($this->id, $result->getId());
@@ -149,11 +159,11 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     {
         $uid = 1;
         $data = array('email'=>'test@mail.com');
-        $entityId = $this->_logs->create($uid, 'backend-test-profile-create', $data);
-        $result = $this->_logs->getLogs()->logs;
+        $entityId = $this->_logs->create($uid, self::EVENT_LOG_NAME, $data);
+        $result = $this->_logs->getLogs();
 
         $this->assertGreaterThan(0, $entityId);
-        $this->assertEquals(1,$result[0]->getUserId(),"Result has correct User ID.");
+        $this->assertEquals($result->total, count($result->logs), "Result has log counts");
 
         $this->id = $entityId;
     }
