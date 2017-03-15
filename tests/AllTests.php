@@ -10,9 +10,12 @@ class AllTests
 {
     public static function suite()
     {
+        $suite = new \PHPUnit_Framework_TestSuite('ErdikoTests');
         $testFiles = AllTests::_getTestFiles();
-        $suite = new \PHPUnit_Framework_TestSuite(array_shift($testFiles),'ErdikoUsersTest');
-        $suite->addTestFiles($testFiles);
+
+        foreach ($testFiles as $file) {
+            $suite->addTestFile($file);
+        }
 
         return $suite;
     }

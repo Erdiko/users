@@ -7,7 +7,7 @@ namespace tests;
 
 require_once 'bootstrap.php';
 
-class ErdikoTestCase extends \PHPUnit_Framework_TestCase
+abstract class ErdikoTestCase extends \PHPUnit_Framework_TestCase
 {
 
 }
