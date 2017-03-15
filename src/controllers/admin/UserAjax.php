@@ -617,13 +617,14 @@ class UserAjax extends \erdiko\core\AjaxController
                                   'created_at' => $log->getCreatedAt()
                 );
             }
-            $response['success'] = true;
-            $response['user_id'] = $user_id;
-            $response['logs'] = $output;
-            $response['page'] = $data->page;
-            $response['page_size'] = $data->page_size;
-            $response['sort'] = $data->sort;
-            $response['direction'] = $data->direction;
+            $response['success']    = true;
+            $response['user_id']    = $user_id;
+            $response['logs']       = $output;
+            $response['page']       = $data->page;
+            $response['page_size']  = $data->page_size;
+            $response['sort']       = $data->sort;
+            $response['direction']  = $data->direction;
+            $response['total']      = $responseLog->total;
             $this->setStatusCode(200);
         } catch (\Exception $e) {
             $response['error_message'] = $e->getMessage();

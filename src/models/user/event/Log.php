@@ -135,6 +135,8 @@ class Log
         // get total log count
         $result->total = (int)$repo->createQueryBuilder('u')
             ->select('count(u.id)')
+            ->where('u.user_id = :user_id')
+            ->setParameter("user_id", $id)
             ->getQuery()
             ->getSingleScalarResult();
 
