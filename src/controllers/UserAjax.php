@@ -169,6 +169,14 @@ class UserAjax extends \erdiko\core\AjaxController
             }
 
 			$userModel = new User();
+            // Check Dupe email [ER-155]
+            if(!empty($params->email)){
+                $uniqueEmail = $userModel->isEmailUnique($params->email);
+                if(!$uniqueEmail){
+                    throw new \Exception("The email you entered already exists.");
+                }
+            }
+
 			$userId = $userModel->save($data);
             if (empty($userId)) {
                 throw  new \Exception('Could not create new user.');
@@ -311,6 +319,14 @@ class UserAjax extends \erdiko\core\AjaxController
             if (empty($params)) {
                 $params = (object) $_POST;
             }
+            $userModel = new User();
+            // Check Dupe email [ER-155]
+            if(!empty($params->email)){
+                $uniqueEmail = $userModel->isEmailUnique($params->email);
+                if(!$uniqueEmail){
+                    throw new \Exception("The email you entered already exists.");
+                }
+            }
 
 			// Check required fields
 			if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
@@ -319,7 +335,6 @@ class UserAjax extends \erdiko\core\AjaxController
 				$params->id = $this->id;
 			}
 
-			$userModel = new User();
 			$entity = $userModel->getById($params->id);
             if (empty($entity)) {
                 throw new \Exception('User not found.');
