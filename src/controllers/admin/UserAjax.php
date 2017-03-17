@@ -194,7 +194,14 @@ class UserAjax extends \erdiko\core\AjaxController
             if (empty($data)) {
                 $data = (object) $_POST;
             }
-            // Check required fields
+			$userModel = new User();
+            // Check Dupe email [ER-155]
+            if(!empty($data->email)) {
+                if (false === $userModel->isEmailUnique($data->email)) {
+                    throw new \Exception("The email you entered already exists.");
+                }
+            }
+                // Check required fields
             $requiredParams = array('email', 'name', 'role');
             $params = (array) $data;
             foreach ($requiredParams as $param){
@@ -206,7 +213,6 @@ class UserAjax extends \erdiko\core\AjaxController
             // default password, user will need to update on login
             $data->password = "changeme";
 
-			$userModel = new User();
             $userId = $userModel->save($data);
 
             if (empty($userId)) {
@@ -374,15 +380,20 @@ class UserAjax extends \erdiko\core\AjaxController
             if (empty($params)) {
                 $params = (object) $_POST;
             }
-
-			// Check required fields
+			$userModel = new User();
+            // Check Dupe email [ER-155]
+            if(!empty($params->email)) {
+                if (false === $userModel->isEmailUnique($params->email)) {
+                    throw new \Exception("The email you entered already exists.");
+                }
+            }
+                // Check required fields
 			if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
 				throw new \Exception("Id is required.");
 			} elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
 				$params->id = $this->id;
 			}
 
-			$userModel = new User();
 			$entity = $userModel->getById($params->id);
             if (empty($entity)) {
                 throw new \Exception('User not found.');
