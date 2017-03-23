@@ -195,16 +195,13 @@ class UserAjax extends \erdiko\core\AjaxController
                 $data = (object) $_POST;
             }
             // Check required fields
-            $requiredParams = array('email', 'name', 'role');
+            $requiredParams = array('email', 'name', 'role', 'password');
             $params = (array) $data;
             foreach ($requiredParams as $param){
                 if (empty($params[$param])) {
                     throw new \Exception(ucfirst($param) .' is required.');
                 }
             }
-
-            // default password, user will need to update on login
-            $data->password = "changeme";
 
 			$userModel = new User();
             $userId = $userModel->save($data);
