@@ -195,7 +195,7 @@ class UserAjax extends \erdiko\core\AjaxController
                 $data = (object) $_POST;
             }
 
-	    $userModel = new User();
+            $userModel = new User();
 
             // Check required fields
             $requiredParams = array('email', 'name', 'role', 'password');
@@ -375,19 +375,23 @@ class UserAjax extends \erdiko\core\AjaxController
 			"error_message" => ""
 		);
 
-		try {
+        try {
+
             $params = json_decode(file_get_contents("php://input"));
             if (empty($params)) {
                 $params = (object) $_POST;
             }
-			$userModel = new User();
+
+            $userModel = new User();
+
             // Check Dupe email [ER-155]
             if(!empty($params->email)) {
                 if (false === $userModel->isEmailUnique($params->email)) {
-                    throw new \Exception("The email you entered already exists.");
+                    //throw new \Exception("The email you entered already exists.");
                 }
             }
-                // Check required fields
+
+            // Check required fields
 			if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
 				throw new \Exception("Id is required.");
 			} elseif (empty($params->id) && (!empty($this->id) || ($this->id >= 1))) {
