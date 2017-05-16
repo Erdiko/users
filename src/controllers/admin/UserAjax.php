@@ -267,7 +267,7 @@ class UserAjax extends \erdiko\core\AjaxController
         $data->sort         = 'id';
         $data->direction    = 'desc';
 
-        $validSort = array('id', 'name','email','created_at', 'updated_at');
+        $validSort = array('id', 'name', 'email', 'created_at', 'updated_at');
         try {
             if (array_key_exists("sort", $_GET)) {
                 $sort = strtolower($_GET["sort"]);
@@ -583,7 +583,7 @@ class UserAjax extends \erdiko\core\AjaxController
         $data->sort = 'created_at';
         $data->direction = 'asc';
 
-        $validSort = array('id', 'created_at');
+        $validSort = array('id', 'created_at', 'user_id');
         $validDirection = array('asc', 'desc');
         try {
 
