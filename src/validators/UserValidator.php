@@ -5,9 +5,9 @@ namespace erdiko\users\validators;
 class UserValidator implements erdiko\authorize\ValidatorInterface
 {
 	private static $_attributes = [
-		'CAN_CREATE_USER',
-		'CAN_DELETE_USER',
-		'CAN_SAVE_USER',
+		'USER_CAN_CREATE',
+		'USER_CAN_DELETE',
+		'USER_CAN_SAVE',
 	];
 
 
@@ -48,13 +48,13 @@ class UserValidator implements erdiko\authorize\ValidatorInterface
 		}
 		$role = $user->getRole();
 		switch ($attribute) {
-			case 'CAN_CREATE_USER':
+			case 'USER_CAN_CREATE':
 				$result = in_array($role,array('admin','super_admin'));
 				break;
-			case 'CAN_DELETE_USER':
+			case 'USER_CAN_DELETE':
 				$result = $role=='super_admin';
 				break;
-			case 'CAN_SAVE_USER':
+			case 'USER_CAN_SAVE':
 				$result = in_array($role,array('admin','super_admin')) || $ownData;
 				break;
 			default:

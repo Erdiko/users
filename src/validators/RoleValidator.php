@@ -5,8 +5,8 @@ namespace erdiko\users\validators;
 class RoleValidator implements erdiko\authorize\ValidatorInterface
 {
 	private static $_attributes = [
-		'CAN_CREATE_ROLE',
-		'CAN_DELETE_ROLE'
+		'ROLE_CAN_CREATE',
+		'ROLE_CAN_DELETE'
 	];
 
 
@@ -43,10 +43,10 @@ class RoleValidator implements erdiko\authorize\ValidatorInterface
 		}
 		$role = $user->getRole();
 		switch ($attribute) {
-			case 'CAN_CREATE_ROLE':
+			case 'ROLE_CAN_CREATE':
 				$result = $role=='super_admin';
 				break;
-			case 'CAN_DELETE_ROLE':
+			case 'ROLE_CAN_DELETE':
 				$result = $role=='super_admin';
 				break;
 			default:

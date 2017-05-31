@@ -28,8 +28,8 @@ class RoleValidatorTest extends \tests\ErdikoTestCase
 	{
 		$userValidator = new erdiko\users\validators\RoleValidator();
 
-		$this->assertTrue($userValidator->supportsAttribute('CAN_CREATE_ROLE'));
-		$this->assertTrue($userValidator->supportsAttribute('CAN_DELETE_ROLE'));
+		$this->assertTrue($userValidator->supportsAttribute('ROLE_CAN_CREATE'));
+		$this->assertTrue($userValidator->supportsAttribute('ROLE_CAN_DELETE'));
 
 		$this->assertFalse($userValidator->supportsAttribute('INVALID_ONE'));
 	}

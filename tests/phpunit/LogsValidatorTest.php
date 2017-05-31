@@ -27,9 +27,9 @@ class LogsValidatorTest extends \tests\ErdikoTestCase
 	{
 		$userValidator = new erdiko\users\validators\LogsValidator();
 
-		$this->assertTrue($userValidator->supportsAttribute('CAN_LIST_LOGS'));
-		$this->assertTrue($userValidator->supportsAttribute('CAN_CREATE_LOGS'));
-		$this->assertTrue($userValidator->supportsAttribute('CAN_FILTER_LOGS'));
+		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_LIST'));
+		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_CREATE'));
+		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_FILTER'));
 
 		$this->assertFalse($userValidator->supportsAttribute('INVALID_ONE'));
 	}

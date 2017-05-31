@@ -28,9 +28,9 @@ class UserValidatorTest extends \tests\ErdikoTestCase
 	{
 		$userValidator = new erdiko\users\validators\UserValidator();
 
-		$this->assertTrue($userValidator->supportsAttribute('CAN_CREATE_USER'));
-		$this->assertTrue($userValidator->supportsAttribute('CAN_DELETE_USER'));
-		$this->assertTrue($userValidator->supportsAttribute('CAN_SAVE_USER'));
+		$this->assertTrue($userValidator->supportsAttribute('USER_CAN_CREATE'));
+		$this->assertTrue($userValidator->supportsAttribute('USER_CAN_DELETE'));
+		$this->assertTrue($userValidator->supportsAttribute('USER_CAN_SAVE'));
 		$this->assertFalse($userValidator->supportsAttribute('INVALID_ONE'));
 	}
 }

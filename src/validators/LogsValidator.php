@@ -5,9 +5,9 @@ namespace erdiko\users\validators;
 class LogsValidator implements erdiko\authorize\ValidatorInterface
 {
 	private static $_attributes = [
-		'CAN_LIST_LOGS',
-		'CAN_CREATE_LOGS',
-		'CAN_FILTER_LOGS'
+		'LOGS_CAN_LIST',
+		'LOGS_CAN_CREATE',
+		'LOGS_CAN_FILTER'
 	];
 
 
@@ -48,13 +48,13 @@ class LogsValidator implements erdiko\authorize\ValidatorInterface
 		}
 		$role = $user->getRole();
 		switch ($attribute) {
-			case 'CAN_LIST_LOGS':
+			case 'LOGS_CAN_LIST':
 				$result = in_array($role,array('admin','super_admin'));
 				break;
-			case 'CAN_CREATE_LOGS':
+			case 'LOGS_CAN_CREATE':
 				$result = in_array($role,array('admin','super_admin')) || $ownData;
 				break;
-			case 'CAN_FILTER_LOGS':
+			case 'LOGS_CAN_FILTER':
 				$result = in_array($role,array('admin','super_admin')) || $ownData;
 				break;
 			default:
