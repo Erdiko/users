@@ -2,7 +2,7 @@
 
 namespace erdiko\users\validators;
 
-class RoleValidator implements erdiko\authorize\ValidatorInterface
+class RoleValidator implements \erdiko\authorize\ValidatorInterface
 {
 	private static $_attributes = [
 		'ROLE_CAN_CREATE',
@@ -35,7 +35,7 @@ class RoleValidator implements erdiko\authorize\ValidatorInterface
 	 * @param $token
 	 * @return bool
 	 */
-	public function validate($token, $attribute, $object=null)
+	public function validate($token, $attribute='', $object=null)
 	{
 		$user = $token->getUser();
 		if (!$user instanceof UserInterface) {

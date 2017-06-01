@@ -2,7 +2,7 @@
 
 namespace erdiko\users\validators;
 
-class LogsValidator implements erdiko\authorize\ValidatorInterface
+class LogsValidator implements \erdiko\authorize\ValidatorInterface
 {
 	private static $_attributes = [
 		'LOGS_CAN_LIST',
@@ -36,7 +36,7 @@ class LogsValidator implements erdiko\authorize\ValidatorInterface
 	 * @param $token
 	 * @return bool
 	 */
-	public function validate($token, $attribute, $object=null)
+	public function validate($token, $attribute='', $object=null)
 	{
 		$user = $token->getUser();
 		if (!$user instanceof UserInterface) {

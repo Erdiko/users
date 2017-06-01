@@ -19,14 +19,14 @@ class UserValidatorTest extends \tests\ErdikoTestCase
 
 	public function testSupportedAttributes()
 	{
-		$attribs = erdiko\users\validators\UserValidator::supportedAttributes();
+		$attribs = \erdiko\users\validators\UserValidator::supportedAttributes();
 		$this->assertNotEmpty($attribs);
 		$this->assertInternalType('array',$attribs);
 	}
 
 	public function testSupportsAttribute()
 	{
-		$userValidator = new erdiko\users\validators\UserValidator();
+		$userValidator = new \erdiko\users\validators\UserValidator();
 
 		$this->assertTrue($userValidator->supportsAttribute('USER_CAN_CREATE'));
 		$this->assertTrue($userValidator->supportsAttribute('USER_CAN_DELETE'));

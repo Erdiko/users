@@ -18,14 +18,14 @@ class LogsValidatorTest extends \tests\ErdikoTestCase
 {
 	public function testSupportedAttributes()
 	{
-		$attribs = erdiko\users\validators\LogsValidator::supportedAttributes();
+		$attribs = \erdiko\users\validators\LogsValidator::supportedAttributes();
 		$this->assertNotEmpty($attribs);
 		$this->assertInternalType('array',$attribs);
 	}
 
 	public function testSupportsAttribute()
 	{
-		$userValidator = new erdiko\users\validators\LogsValidator();
+		$userValidator = new \erdiko\users\validators\LogsValidator();
 
 		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_LIST'));
 		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_CREATE'));

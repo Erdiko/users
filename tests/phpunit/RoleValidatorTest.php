@@ -19,14 +19,14 @@ class RoleValidatorTest extends \tests\ErdikoTestCase
 
 	public function testSupportedAttributes()
 	{
-		$attribs = erdiko\users\validators\RoleValidator::supportedAttributes();
+		$attribs = \erdiko\users\validators\RoleValidator::supportedAttributes();
 		$this->assertNotEmpty($attribs);
 		$this->assertInternalType('array',$attribs);
 	}
 
 	public function testSupportsAttribute()
 	{
-		$userValidator = new erdiko\users\validators\RoleValidator();
+		$userValidator = new \erdiko\users\validators\RoleValidator();
 
 		$this->assertTrue($userValidator->supportsAttribute('ROLE_CAN_CREATE'));
 		$this->assertTrue($userValidator->supportsAttribute('ROLE_CAN_DELETE'));
