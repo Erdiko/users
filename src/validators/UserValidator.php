@@ -39,7 +39,7 @@ class UserValidator implements \erdiko\authorize\ValidatorInterface
 	public function validate($token, $attribute='', $object=null)
 	{
 		$user = $token->getUser();
-		if (!$user instanceof UserInterface) {
+		if (!$user instanceof \erdiko\authorize\UserInterface) {
 			return false;
 		}
 		$ownData = false;

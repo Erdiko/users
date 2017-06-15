@@ -11,6 +11,8 @@
 namespace erdiko\users\models;
 
 use \erdiko\users\entities\User as entity;
+use \erdiko\users\models\user\UserProvider;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements 
 	\erdiko\authenticate\UserStorageInterface, 
@@ -23,6 +25,7 @@ class User implements
 	const PASSWORDSALT = "FOO"; // @todo add salt to config instead
 	protected $_user;
 	private $_em;
+	protected $authorizer;
 
 	public function __construct( $em = null )
     {
@@ -30,6 +33,11 @@ class User implements
 		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
+	    // Authorize
+	    $provider = new UserProvider();
+	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
+	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
+
 		$this->_user = self::createAnonymous();
 	}
 
@@ -136,6 +144,10 @@ class User implements
      */
 	public function createUser($data = array())
     {
+    	if(!$this->authorizer->can('USER_CAN_CREATE')){
+		    throw new \Exception('You are not allowed');
+	    }
+
 		if (empty($data)) {
 			throw new \Exception( "User data is missing" );
 		}
@@ -356,6 +368,9 @@ class User implements
 	public function deleteUser($id)
     {
 		try {
+		    if(!$this->authorizer->can('USER_CAN_DELETE')){
+			    throw new \Exception('You are not allowed');
+		    }
 			$_user = $this->_em->getRepository( 'erdiko\users\entities\User' )->findOneBy(array('id'=>$id));
 
 			if (! is_null($_user)) {
@@ -391,6 +406,9 @@ class User implements
      */
 	public function save($data)
     {
+	    if(!$this->authorizer->can('USER_CAN_SAVE')){
+		    throw new \Exception('You are not allowed');
+	    }
 		$data = (object) $data;
 		$new  = false;
 		if (isset($data->id)) {

@@ -33,4 +33,9 @@ class UserValidatorTest extends \tests\ErdikoTestCase
 		$this->assertTrue($userValidator->supportsAttribute('USER_CAN_SAVE'));
 		$this->assertFalse($userValidator->supportsAttribute('INVALID_ONE'));
 	}
+
+	public function testValidate()
+	{
+
+	}
 }
