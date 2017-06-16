@@ -14,8 +14,8 @@ use \erdiko\users\entities\User as entity;
 use \erdiko\users\models\user\UserProvider;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class User implements 
-	\erdiko\authenticate\UserStorageInterface, 
+class User implements
+	\erdiko\authenticate\UserStorageInterface,
 	\erdiko\authorize\UserInterface
 {
 
@@ -57,6 +57,7 @@ class User implements
 	/**
 	 * iErdikoUser Interface inherited - start
 	 */
+
 	/**
 	 * @param $encoded
 	 *
@@ -88,10 +89,10 @@ class User implements
      */
 	protected static function createAnonymous()
 	{
-	    $roleModel = new \erdiko\users\models\Role();
+	    $roleModel = new \erdiko\users\models\Role;
         $roleAnonymous = $roleModel->findByName('anonymous');
         if (empty($roleAnonymous)) {
-            throw  new \Exception('Error, role anonymous not found.');
+            throw  new \Exception('Role anonymous not found.');
         }
 
 		$entity = new entity();
@@ -161,7 +162,7 @@ class User implements
                 $roleModel = new \erdiko\users\models\Role();
                 $roleAnonymous = $roleModel->findByName('anonymous');
                 if (empty($roleAnonymous)) {
-                    throw  new \Exception('Error, role anonymous not found.');
+                    throw  new \Exception('Role anonymous not found.');
                 }
 				$data['role'] = $roleAnonymous->getId();
 			}
@@ -212,19 +213,19 @@ class User implements
 
 		if (!empty($result)) {
 		    //update last_login
-            $result->setLastLogin();
-            $this->_em->merge($result);
-            $this->_em->flush();
+        $result->setLastLogin();
+        $this->_em->merge($result);
+        $this->_em->flush();
 
 			$this->setEntity( $result );
 			return $this;
 		}
-		
+
 		return false;
 	}
 
 	/**
-	 * @todo: should use "\erdiko\authenticate" sutff
+	 * @todo update to use "\erdiko\authenticate" classes
 	 *
 	 * isLoggedIn
 	 *
@@ -232,9 +233,10 @@ class User implements
 	 */
 	public function isLoggedIn()
     {
-        $roleModel = new \erdiko\users\models\Role();
+        $roleModel = new \erdiko\users\models\Role;
         $roleAnonymous = $roleModel->findByName('user');
 
+		// @todo update exception message for clarity
         if (empty($roleAnonymous)){
             throw  new \Exception('Error, role user not found.');
         }
@@ -268,7 +270,7 @@ class User implements
 	 */
 	public function getRoles()
     {
-        $roleModel = new \erdiko\users\models\Role();
+        $roleModel = new \erdiko\users\models\Role;
         $roleEntity = $roleModel->findById($this->_user->getRole());
 		return array( $roleEntity->getName());
 	}
@@ -303,10 +305,10 @@ class User implements
 	 */
 	public function hasRole($role = "anonymous")
 	{
-        $roleModel = new \erdiko\users\models\Role();
+        $roleModel = new \erdiko\users\models\Role;
         $roleEntity = $roleModel->findByName($role);
         if (empty($roleEntity)) {
-            throw  new \Exception('Error, role anonymous not found.');
+            throw  new \Exception("Error, role {$role} not found.");
         }
         $result = $this->_user->getRole() == $roleEntity->getId();
 
@@ -327,7 +329,7 @@ class User implements
      *
      * return all the users paginated by parameters.
      */
-    public function getUsers($page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc') 
+    public function getUsers($page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc')
     {
         $result = (Object)array(
             "users" =>  array(),
@@ -345,8 +347,8 @@ class User implements
                                         array(),
                                         array(
                                             $sort => $direction
-                                        ), 
-                                        $pagesize, 
+                                        ),
+                                        $pagesize,
                                         $offset
                                     );
 
@@ -460,7 +462,6 @@ class User implements
 	 * getByParams
 	 *
 	 * @param $params
-	 *
 	 * @return array
 	 * @throws \Exception
      *
@@ -470,7 +471,7 @@ class User implements
 	{
 		try {
 			//validate
-			$obj    = new \erdiko\users\entities\User();
+			$obj    = new \erdiko\users\entities\User;
 			$params = (array) $params;
 			$filter = array();
 			foreach ($params as $key => $value) {
