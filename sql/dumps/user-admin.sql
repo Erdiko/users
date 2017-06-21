@@ -14,6 +14,8 @@
  Date: 02/19/2017 01:29:58 AM
 */
 
+CREATE DATABASE IF NOT EXISTS `user-admin`;
+
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -29,14 +31,7 @@ CREATE TABLE `roles` (
   `updated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- ----------------------------
---  Records of `roles`
--- ----------------------------
-BEGIN;
-INSERT INTO `roles` VALUES ('1', 'anonymous', '1', '2017-02-19 09:29:23', null);
-COMMIT;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 --  Table structure for `user_event_log`

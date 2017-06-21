@@ -24,6 +24,9 @@ class User implements
 	protected $_user;
 	private $_em;
 
+    /**
+     *
+     */
 	public function __construct( $em = null )
     {
 		$this->_em = $em;
@@ -33,6 +36,9 @@ class User implements
 		$this->_user = self::createAnonymous();
 	}
 
+    /**
+     *
+     */
 	public function setEntity($entity)
 	{
 	    if (!($entity instanceof  entity)) {
@@ -41,6 +47,9 @@ class User implements
 		$this->_user = $entity;
 	}
 
+    /**
+     *
+     */
 	public function getEntity()
 	{
 		return $this->_user;
@@ -109,24 +118,30 @@ class User implements
 		return $user;
 	}
 
-	public function marshall($type="json") {
+    /**
+     *
+     */
+	public function marshall($type="json") 
+    {
 		$_user = $this->getEntity()->marshall($type);
 		return $_user;
 	}
+
 	/**
 	 * iErdikoUser Interface inherited - end
 	 */
-
 	public function getUsername()
 	{
 		return $this->_user->getName();
 	}
 
+    /**
+     *
+     */
 	public function getDisplayName()
 	{
 		return $this->_user->getName();
 	}
-
 
     /**
      * @param array $data
