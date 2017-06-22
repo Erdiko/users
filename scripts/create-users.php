@@ -1,5 +1,4 @@
 <?php
-
 /**
  * create-users.php
  *
@@ -9,12 +8,8 @@
  */
 
 
-/**
- *
- *
- */
 class ErdikoUsersInstall {
- 
+
     private $_roleService = null;
     private $_userService = null;
 
@@ -25,16 +20,16 @@ class ErdikoUsersInstall {
      *
      *
      */
-    public function __construct($rolesArray, $usersArray) 
+    public function __construct($rolesArray, $usersArray)
     {
         $this->_rolesArray = $rolesArray;
         $this->_usersArray = $usersArray;
     }
-   
+
     /**
      * loop through the roles array and create records
      */
-    public function installRoles() 
+    public function installRoles()
     {
         $this->_roleService = new erdiko\users\models\Role();
 
@@ -52,11 +47,11 @@ class ErdikoUsersInstall {
             } catch(\Exception $e) {
                 // TODO do we need to log this elsewhere?
             }
-    
+
             if(true !== $createResult) {
-                $results["failures"][] = $role; 
+                $results["failures"][] = $role;
             } else {
-                $results["successes"][] = $role; 
+                $results["successes"][] = $role;
             }
         }
 
@@ -74,7 +69,7 @@ class ErdikoUsersInstall {
     /**
      * loop through the users array and create records
      */
-    public function installUsers() 
+    public function installUsers()
     {
         $this->_userService = new erdiko\users\models\User();
 
@@ -90,13 +85,13 @@ class ErdikoUsersInstall {
 
             // create the user
             $createResult = $this->_userService->createUser($user);
-    
+
             unset($user["password"]);
 
             if(true !== $createResult) {
-                $results["failures"][] = $user; 
+                $results["failures"][] = $user;
             } else {
-                $results["successes"][] = $user; 
+                $results["successes"][] = $user;
             }
         }
 
@@ -140,16 +135,10 @@ $users = array(
         "name"      => "Bar Erdiko, Esq",
         "password"  => "barpassword",
         "role"      => "anonymous",
-    ),
-    array(
-        "email"     => "user.foo@arroyolabs.com",
-        "name"      => "Foo User, Jr",
-        "password"  => "foopassword",
-        "role"      => "anonymous",
-    ),
+    )
 );
 
-echo "\033[32mDB Installation Start \033[0m\n\r";
+echo "\033[32mDatabase installation start \033[0m\n\r";
 
 try {
 
@@ -167,7 +156,7 @@ try {
     // require the bootstrap file
     if(!file_exists($bootstrap) || !is_file($bootstrap)) {
         throw new \Exception("Erdiko bootstrap file was not found at `" . $bootstrap . "`");
-    }    
+    }
 
     require_once $bootstrap;
 
@@ -183,11 +172,10 @@ try {
     $userResults = $erdikoUsersInstall->installUsers();
 
     if(!$quiet) {
-        echo "\n\r\033[32m  Successful Roles: " . count($roleResults["successes"]) . " \033[0m";
-        echo "\n\r\033[31m  Role Failure: " . count($roleResults["failures"]) . " \033[0m";
-
-        echo "\n\r\033[32m  Successful Users: " . count($userResults["successes"]) . " \033[0m";
-        echo "\n\r\033[31m  User Failure: " . count($userResults["failures"]) . " \033[0m\n\r";
+        echo "\033[32mRoles added: " . count($roleResults["successes"]) . " \033[0m\n\r";
+        echo "\033[31mRoles failed: " . count($roleResults["failures"]) . " \033[0m\n\r";
+        echo "\033[32mUsers added: " . count($userResults["successes"]) . " \033[0m\n\r";
+        echo "\033[31mUsers failed: " . count($userResults["failures"]) . " \033[0m\n\r";
     }
 
 } catch(ErrorException $e) {
@@ -199,7 +187,7 @@ try {
 }
 
 if(!$quiet) {
-    echo "\n\r\033[32mDB Installation Complete \033[0m\n\r";
+    echo "\033[32mDatabase installation complete \033[0m\n\r";
 }
 
 die(0);
