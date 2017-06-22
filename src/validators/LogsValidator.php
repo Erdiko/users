@@ -2,6 +2,8 @@
 
 namespace erdiko\users\validators;
 
+use erdiko\users\helpers\CommonHelper;
+
 class LogsValidator implements \erdiko\authorize\ValidatorInterface
 {
 	private static $_attributes = [
@@ -38,15 +40,18 @@ class LogsValidator implements \erdiko\authorize\ValidatorInterface
 	 */
 	public function validate($token, $attribute='', $object=null)
 	{
-		$user = $token->getUser();
-		if (!$user instanceof \erdiko\authorize\UserInterface) {
-			return false;
-		}
+		$user = CommonHelper::extractUser($token);
+
+		$roleCode = (!empty($user) && is_callable(array($user,'getRole')))
+			? $user->getRole()
+			: -1;
+		$role = CommonHelper::getRoleName($roleCode);
+
 		$ownData = false;
 		if(!empty($object)){
-			$ownData = ($object->getUserId()==$user->getUserId());
+			$ownData = ($object->getUserId()==$user->getId());
 		}
-		$role = $user->getRole();
+
 		switch ($attribute) {
 			case 'LOGS_CAN_LIST':
 				$result = in_array($role,array('admin','super_admin'));

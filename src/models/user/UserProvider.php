@@ -37,7 +37,7 @@ class UserProvider implements \Symfony\Component\Security\Core\User\UserProvider
 		if(empty($user)){
 			throw new UsernameNotFoundException();
 		}
-		return new User($user->getEmail(), null, $user->getRoles(), true, false, true, false);
+		return $user->getEntity();
 	}
 
 	public function refreshUser( UserInterface $user ) {
@@ -45,7 +45,7 @@ class UserProvider implements \Symfony\Component\Security\Core\User\UserProvider
 	}
 
 	public function supportsClass( $class ) {
-		return $class === 'Symfony\Component\Security\Core\User\User';
+		return $class === '\erdiko\users\entities\User';
 	}
 
 }

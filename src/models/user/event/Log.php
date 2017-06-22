@@ -31,7 +31,7 @@ class Log
 
     protected function save($logEntity)
     {
-	    if(!$this->authorizer->can('LOGS_CAN_CREATE')){
+	    if(!$this->authorizer->can('LOGS_CAN_CREATE', $logEntity)){
 		    throw new \Exception('You are not allowed');
 	    }
         $this->_em->persist($logEntity);
@@ -169,9 +169,10 @@ class Log
      */
     public function findById($id)
     {
-	    if(!$this->authorizer->can('LOGS_CAN_FILTER')){
+    	// @todo: reevaluate next block, it does not make sense as it is. Leo.
+	    /*if(!$this->authorizer->can('LOGS_CAN_FILTER')){
 		    throw new \Exception('You are not allowed');
-	    }
+	    }*/
         if( is_null($id)) {
             throw new \Exception('ID is required');
         }

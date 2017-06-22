@@ -37,25 +37,30 @@ class Role
      */
     public function create($data)
     {
-	    if(!$this->authorizer->can('ROLE_CAN_CREATE')){
-		    throw new \Exception('You are not allowed');
+    	try {
+		    if ( ! $this->authorizer->can( 'ROLE_CAN_CREATE' ) ) {
+			    throw new \Exception( 'You are not allowed' );
+		    }
+		    $data = is_object( $data ) ? $data : (object) $data;
+		    $id   = 0;
+		    try {
+			    $entity = new \erdiko\users\entities\Role();
+			    $entity->setName( $data->name );
+			    $entity->setActive( $data->active );
+
+			    $this->_em->persist( $entity );
+			    $this->_em->flush();
+
+			    $id = intval( $entity->getId() );
+		    } catch ( \Exception $e ) {
+			    \error_log( $e->getMessage() );
+			    throw new \Exception( "Could not create Role." );
+		    }
+
+		    return (int) $id;
+	    } catch (\Exception $e) {
+    		throw new \Exception($e->getMessage());
 	    }
-        $data = is_object($data) ? $data : (object)$data;
-        $id=0;
-        try {
-            $entity = new \erdiko\users\entities\Role();
-            $entity->setName($data->name);
-            $entity->setActive($data->active);
-
-            $this->_em->persist($entity);
-            $this->_em->flush();
-
-            $id = intval($entity->getId());
-        } catch (\Exception $e) {
-            \error_log($e->getMessage());
-            throw new \Exception("Could not create Role.");
-        }
-        return (int)$id;
     }
 
     /**
