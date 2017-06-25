@@ -28,3 +28,7 @@ cd ../
 rm -rf repos/users
 cp -R /code repos/users
 mv /user-admin /code
+
+# Debug
+pwd
+ls -al

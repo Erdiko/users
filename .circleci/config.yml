@@ -14,6 +14,19 @@ jobs:
 
       - run: mkdir -p $TEST_RESULTS
 
+      - run:
+          name: Prep code (parent and sibling repos)
+          command: |
+            set -x
+
+            chmod 770 scripts/ci/*.sh
+            ./scripts/ci/install-user-admin.sh
+
+            cd /code/user-admin
+
+            pwd
+            ls -al
+
       - setup_remote_docker
 
       - run:
@@ -21,13 +34,6 @@ jobs:
           command: |
             set -x
 
-            chmod 770 scripts/ci/*.sh
-            ./scripts/ci/install-user-admin.sh
-
-            pwd
-            ls -al
-
-            cd /code/user-admin
             docker-compose -f docker-compose-ci.yml up -d
 
             docker cp ./ erdiko_users_php:/code
