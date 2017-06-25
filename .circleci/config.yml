@@ -27,20 +27,20 @@ jobs:
             pwd
             ls -al
 
+            cd /code/user-admin
             docker-compose -f docker-compose-ci.yml up -d
 
             docker cp ./ erdiko_users_php:/code
             docker cp ./ erdiko_users_web:/code
 
             docker exec -it erdiko_users_php /code/scripts/ci/install.sh
-            # docker exec -it erdiko_users_web /code/scripts/ci/install-web.sh
 
       - run:
           name: Run PHPUnit tests
           command: |
             set -x
 
-            docker exec -it erdiko_users_php /code/scripts/ci/run-php-tests.sh
+            docker exec -it erdiko_users_php /code/vendor/erdiko/users/scripts/ci-tests.sh
 
       - store_artifacts:
           path: /tmp/test-results
