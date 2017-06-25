@@ -15,14 +15,12 @@ jobs:
       - run: mkdir -p $TEST_RESULTS
 
       - run:
-          name: Prep code (parent and sibling repos)
+          name: Prep environment (related repos)
           command: |
             set -x
 
             chmod 770 scripts/ci/*.sh
             ./scripts/ci/install-user-admin.sh
-
-            cd /code/user-admin
 
             pwd
             ls -al
@@ -33,6 +31,8 @@ jobs:
           name: Build container environment
           command: |
             set -x
+
+            cd /code/user-admin
 
             pwd
             ls -al
