@@ -1,6 +1,8 @@
 # Users
 
 [![Package version](https://img.shields.io/packagist/v/erdiko/users.svg?style=flat-square)](https://packagist.org/packages/erdiko/users)
+[![CircleCI](https://img.shields.io/circleci/project/github/Erdiko/users/develop.svg?style=flat-square)](https://circleci.com/gh/Erdiko/users)
+[![license](https://img.shields.io/github/license/erdiko/users.svg?style=flat-square)](https://github.com/Erdiko/users/blob/master/LICENSE)
 
 **Erdiko Users**
 
@@ -13,7 +15,7 @@ Erdiko users leverages our authenticate and authorization packages.
 
 Installation
 ------------
-Add package using composer 
+Add package using composer
 
 `composer require erdiko/users`
 
@@ -22,8 +24,8 @@ Add required tables into your database running in order the `.sql` files placed 
 How to Use
 ----------
 1. Add Login controller's route.
- 
- It provides a self-contained login/logout actions and views, to have it accessible, edit your 
+
+ It provides a self-contained login/logout actions and views, to have it accessible, edit your
  `routes.json` like this:
 
 ```
@@ -37,8 +39,8 @@ How to Use
 ```
 
 2. Add UserAuthenticationAjax controller's route.
- 
- It provides actions to manage login/logout and password related situations as forgotpass and changePass, 
+
+ It provides actions to manage login/logout and password related situations as forgotpass and changePass,
  to have it accessible, edit your `routes.json` like this:
 
 ```
@@ -51,8 +53,8 @@ How to Use
 }
 ```
 3. Add \admin\Userajax controller's route.
- 
- It provides actions relative to manage users as admin level. All the actions requires to be in session firts, 
+
+ It provides actions relative to manage users as admin level. All the actions requires to be in session firts,
  to have it accessible, edit your `routes.json` like this:
 
 ```
@@ -66,7 +68,7 @@ How to Use
 ```
 
 4. Add Userajax controller's route.
- 
+
  It provides actions relative to manage users without privileges, to have it accessible, edit your `routes.json` like this:
 
 ```
@@ -77,7 +79,7 @@ How to Use
         "/users/:action": "\erdiko\users\controllers\Userajax"
     }
 }
-``` 
+```
 
 Special Thanks
 --------------
