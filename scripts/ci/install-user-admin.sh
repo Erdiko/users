@@ -24,6 +24,7 @@ chmod 770 scripts/ci/*.sh
 ./scripts/ci/install-repos.sh
 
 # Swap in the recent ci build code
+cd ../
 rm -rf repos/users
 mv /code repos/users
 mv /user-admin /code
