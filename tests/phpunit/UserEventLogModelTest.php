@@ -7,7 +7,17 @@
  * @copyright  Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author     Julian Diaz, julian@arroyolabs.com
  */
+namespace tests\phpunit;
+
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
+
+use Symfony\Component\Security\Core\Authentication\AuthenticationProviderManager;
+use Symfony\Component\Security\Core\Authentication\Provider\DaoAuthenticationProvider;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Encoder\PlaintextPasswordEncoder;
+use Symfony\Component\Security\Core\User\InMemoryUserProvider;
+use Symfony\Component\Security\Core\User\UserChecker;
 
 class UserEventLogModelTest extends \tests\ErdikoTestCase
 {
@@ -25,6 +35,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     function setUp()
     {
         $this->entityManager = \erdiko\doctrine\EntityManager::getEntityManager();
+	    $this->doLogin('super@mail.com');
         $this->_logs = new \erdiko\users\models\user\event\Log();
     }
 
@@ -168,4 +179,62 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
         $this->id = $entityId;
     }
 
+	protected function doLogin($type='bar@mail.com')
+	{
+		$_userProvider = new InMemoryUserProvider(
+			array(
+				'super@mail.com' => array(
+					'password' => 'asdf1234',
+					'roles'    => array('super_admin'),
+				),
+				'bar@mail.com' => array(
+					'password' => 'asdf1234',
+					'roles'    => array('admin'),
+				),
+				'foo@mail.com' => array(
+					'password' => 'asdf1234',
+					'roles'    => array('user'),
+				),
+			)
+		);
+		$encoderFactory = new \Symfony\Component\Security\Core\Encoder\EncoderFactory(array(
+			// We simply use plaintext passwords for users from this specific class
+			'Symfony\Component\Security\Core\User\User' => new PlaintextPasswordEncoder(),
+		));
+		// The user checker is a simple class that allows to check against different elements (user disabled, account expired etc)
+		$userChecker = new UserChecker();
+		$userProvider = array(
+			new DaoAuthenticationProvider($_userProvider, $userChecker, 'main', $encoderFactory, true),
+		);
+
+		$authenticationManager = new AuthenticationProviderManager($userProvider, false);
+
+		$token = new UsernamePasswordToken($type, "asdf1234", "main", array());
+
+		$tokenStorage = new TokenStorage();
+		$authToken = $authenticationManager->authenticate($token);
+
+		$tokenStorage->setToken($authToken);
+		$_SESSION['tokenstorage'] = $tokenStorage;
+	}
+
+	private function startSession()
+	{
+		if(session_id() == '') {
+			@session_start();
+		} else {
+			if (session_status() === PHP_SESSION_NONE) {
+				@session_start();
+			}
+		}
+	}
+
+	protected function invalidateToken()
+	{
+		$this->startSession();
+		if(array_key_exists('tokenstorage',$_SESSION) && !empty($_SESSION['tokenstorage'])) {
+			$_SESSION['tokenstorage'] = null;
+			session_destroy();
+		}
+	}
 }

@@ -249,10 +249,10 @@ class Role
     public function delete($id)
     {
 	    if(!$this->authorizer->can('ROLE_CAN_DELETE')){
-		    throw new \Exception('You are not allowed');
+		    throw new \Exception('You are not allowed to delete this role');
 	    }
         if (empty($id)) {
-            throw new \Exception('There is no data to save.');
+            throw new \Exception('ID is required.');
         }
         try{
             $entity = $this->_em->getRepository('\erdiko\users\entities\Role')

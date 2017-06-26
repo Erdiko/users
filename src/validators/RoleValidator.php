@@ -40,11 +40,23 @@ class RoleValidator implements \erdiko\authorize\ValidatorInterface
 	public function validate($token, $attribute='', $object=null)
 	{
 		$user = CommonHelper::extractUser($token);
+		$roleCode = -1;
+		if(!empty($user)){
+			if(is_callable(array($user,'getRole'))){
+				$roleCode = $user->getRole();
+				$role = CommonHelper::getRoleName($roleCode);
+			} elseif (is_callable(array($user,'getRoles'))){
+				$roleCode = $user->getRoles();
 
-		$roleCode = (!empty($user) && is_callable(array($user,'getRole')))
-			? $user->getRole()
-			: -1;
-		$role = CommonHelper::getRoleName($roleCode);
+			}
+		}
+		if(is_array($roleCode)) {
+			foreach ($roleCode as $code) {
+				$role = CommonHelper::getRoleName($code);
+			}
+		} else {
+			$role = CommonHelper::getRoleName($roleCode);
+		}
 
 		switch ($attribute) {
 			case 'ROLE_CAN_CREATE':

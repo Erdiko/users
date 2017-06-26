@@ -390,7 +390,7 @@ class User implements
 
 			// checks authorization
 			if(!$this->authorizer->can('USER_CAN_DELETE',$_user)){
-				throw new \Exception("You are not allowed",113);
+				throw new \Exception("You are not allowed to delete this user",113);
 			}
 
 			if (! is_null($_user)) {

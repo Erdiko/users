@@ -17,6 +17,11 @@ require_once dirname(__DIR__).'/ErdikoTestCase.php';
 class LogsValidatorTest extends \tests\ErdikoTestCase
 {
 	private $logsValidator;
+	private $attribs = [
+		'LOGS_CAN_LIST',
+		'LOGS_CAN_CREATE',
+		'LOGS_CAN_FILTER'
+	];
 
 	function setUp()
 	{
@@ -37,11 +42,9 @@ class LogsValidatorTest extends \tests\ErdikoTestCase
 
 	public function testSupportsAttribute()
 	{
-		$userValidator = new \erdiko\users\validators\LogsValidator();
-
-		$this->assertTrue($this->logsValidator->supportsAttribute('LOGS_CAN_LIST'));
-		$this->assertTrue($this->logsValidator->supportsAttribute('LOGS_CAN_CREATE'));
-		$this->assertTrue($this->logsValidator->supportsAttribute('LOGS_CAN_FILTER'));
+		foreach ($this->attribs as $item) {
+			$this->assertTrue($this->logsValidator->supportsAttribute($item));
+		}
 
 		$this->assertFalse($this->logsValidator->supportsAttribute('INVALID_ONE'));
 	}
@@ -49,5 +52,6 @@ class LogsValidatorTest extends \tests\ErdikoTestCase
 	public function testValidate()
 	{
 
+		//$this->logsValidator->validate($token, 'LOGS_CAN_LIST', $object=null);
 	}
 }
