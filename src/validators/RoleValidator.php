@@ -2,6 +2,8 @@
 
 namespace erdiko\users\validators;
 
+use erdiko\users\helpers\CommonHelper;
+
 class RoleValidator implements \erdiko\authorize\ValidatorInterface
 {
 	private static $_attributes = [
@@ -37,11 +39,25 @@ class RoleValidator implements \erdiko\authorize\ValidatorInterface
 	 */
 	public function validate($token, $attribute='', $object=null)
 	{
-		$user = $token->getUser();
-		if (!$user instanceof UserInterface) {
-			return false;
+		$user = CommonHelper::extractUser($token);
+		$roleCode = -1;
+		if(!empty($user)){
+			if(is_callable(array($user,'getRole'))){
+				$roleCode = $user->getRole();
+				$role = CommonHelper::getRoleName($roleCode);
+			} elseif (is_callable(array($user,'getRoles'))){
+				$roleCode = $user->getRoles();
+
+			}
 		}
-		$role = $user->getRole();
+		if(is_array($roleCode)) {
+			foreach ($roleCode as $code) {
+				$role = CommonHelper::getRoleName($code);
+			}
+		} else {
+			$role = CommonHelper::getRoleName($roleCode);
+		}
+
 		switch ($attribute) {
 			case 'ROLE_CAN_CREATE':
 				$result = $role=='super_admin';

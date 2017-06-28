@@ -33,4 +33,9 @@ class RoleValidatorTest extends \tests\ErdikoTestCase
 
 		$this->assertFalse($userValidator->supportsAttribute('INVALID_ONE'));
 	}
+
+	public function testValidate()
+	{
+
+	}
 }

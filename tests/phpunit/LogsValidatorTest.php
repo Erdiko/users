@@ -16,6 +16,23 @@ require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
 class LogsValidatorTest extends \tests\ErdikoTestCase
 {
+	private $logsValidator;
+	private $attribs = [
+		'LOGS_CAN_LIST',
+		'LOGS_CAN_CREATE',
+		'LOGS_CAN_FILTER'
+	];
+
+	function setUp()
+	{
+		$this->logsValidator = new \erdiko\users\validators\LogsValidator();
+	}
+
+	function tearDown()
+	{
+		unset($this->logsValidator);
+	}
+
 	public function testSupportedAttributes()
 	{
 		$attribs = \erdiko\users\validators\LogsValidator::supportedAttributes();
@@ -25,12 +42,16 @@ class LogsValidatorTest extends \tests\ErdikoTestCase
 
 	public function testSupportsAttribute()
 	{
-		$userValidator = new \erdiko\users\validators\LogsValidator();
+		foreach ($this->attribs as $item) {
+			$this->assertTrue($this->logsValidator->supportsAttribute($item));
+		}
 
-		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_LIST'));
-		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_CREATE'));
-		$this->assertTrue($userValidator->supportsAttribute('LOGS_CAN_FILTER'));
+		$this->assertFalse($this->logsValidator->supportsAttribute('INVALID_ONE'));
+	}
 
-		$this->assertFalse($userValidator->supportsAttribute('INVALID_ONE'));
+	public function testValidate()
+	{
+
+		//$this->logsValidator->validate($token, 'LOGS_CAN_LIST', $object=null);
 	}
 }

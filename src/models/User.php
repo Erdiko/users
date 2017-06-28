@@ -11,6 +11,8 @@
 namespace erdiko\users\models;
 
 use \erdiko\users\entities\User as entity;
+use \erdiko\users\models\user\UserProvider;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements
 	\erdiko\authenticate\UserStorageInterface,
@@ -23,6 +25,7 @@ class User implements
 	const PASSWORDSALT = "FOO"; // @todo add salt to config instead
 	protected $_user;
 	private $_em;
+	protected $authorizer;
 
     /**
      *
@@ -33,6 +36,11 @@ class User implements
 		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
+	    // Authorize
+	    $provider = new UserProvider();
+	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
+	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
+
 		$this->_user = self::createAnonymous();
 	}
 
@@ -177,6 +185,11 @@ class User implements
 			$entity->setName($data['name']);
 			$entity->setRole($data['role']);
 			$entity->setPassword($password);
+
+			// checks authorization
+			if(!$this->authorizer->can('USER_CAN_CREATE',$entity)){
+				throw new \Exception("You are not allowed",112);
+			}
 
 			$this->_em->persist($entity);
 			$this->_em->flush();
@@ -375,6 +388,11 @@ class User implements
 		try {
 			$_user = $this->_em->getRepository( 'erdiko\users\entities\User' )->findOneBy(array('id'=>$id));
 
+			// checks authorization
+			if(!$this->authorizer->can('USER_CAN_DELETE',$_user)){
+				throw new \Exception("You are not allowed to delete this user",113);
+			}
+
 			if (! is_null($_user)) {
 				$this->_em->remove($_user);
 				$this->_em->flush();
@@ -400,12 +418,14 @@ class User implements
 		return $this->_user->getId();
 	}
 
-    /**
-     * @param $data
-     * @return int
-     *
-     * update or return a new user with a new or updated entity.
-     */
+	/**
+	 * update or return a new user with a new or updated entity.
+	 *
+	 * @param $data
+	 *
+	 * @return int
+	 * @throws \Exception
+	 */
 	public function save($data)
     {
 		$data = (object) $data;
@@ -431,6 +451,11 @@ class User implements
 		if (isset($data->gateway_customer_id)) {
 			$entity->setGatewayCustomerId($data->gateway_customer_id);
 		}
+		// checks authorization
+	    if(!$this->authorizer->can('USER_CAN_SAVE',$entity)){
+		    throw new \Exception("You are not allowed",111);
+	    }
+
 		if ($new) {
 			$this->_em->persist($entity);
 		} else {
