@@ -14,6 +14,7 @@ use erdiko\authenticate\iErdikoUser;
 
 use erdiko\users\models\User;
 use erdiko\users\models\Mailgun;
+use erdiko\users\models\user\event\Log;
 
 class UserAuthenticationAjax extends \erdiko\core\AjaxController
 {
@@ -147,18 +148,28 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 'password'      =>  $data->password
             );
 
+            $auth = new JWTAuthenticator(new User());
+            $authUser = $auth->currentUser();
+
             // attempt to login
             if ($result = $authenticator->login($authParams, 'jwt_auth')) {
 
                 // if successful, return the JWT token
                 $response['token']      = $result->token;
                 $response['success']    = true;
-            } else{
-                throw new \Exception("Username or password are wrong. Please try again.");
+
+                $logModel = new Log();
+                $logModel->create($authUser->getUserId(), Log::EVENT_LOGIN, $authParams);
             }
 
             $this->setStatusCode(200);
         } catch (\Exception $e) {
+            $userModel = new User();
+            $users = $userModel->getByParams(['username'=>$authParams['username']]);
+            if (count($users->users) >= 1) {
+                $logModel = new Log();
+                $logModel->create($users->users[0]->getId(), Log::EVENT_ATTEMPT, $authParams);
+            }
             $this->setStatusCode(500);
             $response['error_message'] = $e->getMessage();
             $response['error_code'] = $e->getCode();

@@ -14,6 +14,14 @@ class Log
 {
     use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
 
+    const EVENT_LOGIN = 'event-user-login';
+    const EVENT_ATTEMPT = 'event-user-attempt';
+    const EVENT_LOGOUT = 'event-user-logout';
+    const EVENT_CREATE = 'event-user-create';
+    const EVENT_DELETE = 'event-user-delete';
+    const EVENT_UPDATE = 'event-user-update';
+    const EVENT_PASSWORD = 'event-user-change-password';
+
     private $_em;
 
     public function __construct()

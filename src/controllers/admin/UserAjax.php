@@ -229,6 +229,13 @@ class UserAjax extends \erdiko\core\AjaxController
 
 			$response['user'] = $output;
 			$response['success'] = true;
+
+            $auth = new JWTAuthenticator(new User());
+            $authUser = $auth->currentUser();
+
+            $logModel = new Log();
+            $logModel->create($authUser->getUserId(), Log::EVENT_CREATE, $data);
+
 			$this->setStatusCode(200);
 		} catch (\Exception $e) {
 			$response['error_message'] = $e->getMessage();
@@ -403,7 +410,14 @@ class UserAjax extends \erdiko\core\AjaxController
             );
 			$response['success'] = true;
 			$response['user'] = $output;
-			$this->setStatusCode(200);
+
+            $auth = new JWTAuthenticator(new User());
+            $authUser = $auth->currentUser();
+
+            $logModel = new Log();
+            $logModel->create($authUser->getUserId(), Log::EVENT_UPDATE, $params);
+
+            $this->setStatusCode(200);
 		} catch (\Exception $e) {
 			$response['error_message'] = $e->getMessage();
 			$response['error_code'] = $e->getCode();
@@ -446,7 +460,13 @@ class UserAjax extends \erdiko\core\AjaxController
 			$response['user'] = array('id' => $data->id);
 			$response['success'] = true;
 
-			$this->setStatusCode(200);
+            $auth = new JWTAuthenticator(new User());
+            $authUser = $auth->currentUser();
+
+            $logModel = new Log();
+            $logModel->create($authUser->getUserId(), Log::EVENT_DELETE, $data);
+
+            $this->setStatusCode(200);
 		} catch (\Exception $e) {
 			$response['error_message'] = $e->getMessage();
 			$response['error_code'] = $e->getCode();
@@ -676,6 +696,14 @@ class UserAjax extends \erdiko\core\AjaxController
             $res = $user->save(array('id' => $userToChange->getId(), 'password' => $params->newpass));
 
             $response['success'] = true;
+
+            $auth = new JWTAuthenticator(new User());
+            $authUser = $auth->currentUser();
+
+            $logModel = new Log();
+            $logModel->create($authUser->getUserId(), Log::EVENT_PASSWORD, $params);
+
+
             $this->setStatusCode(200);
         } catch (\Exception $e) {
             $response['error_message'] = $e->getMessage();
