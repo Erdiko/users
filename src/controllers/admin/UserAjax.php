@@ -234,6 +234,7 @@ class UserAjax extends \erdiko\core\AjaxController
             $authUser = $auth->currentUser();
 
             $logModel = new Log();
+            unset($data->password);
             $logModel->create($authUser->getUserId(), Log::EVENT_CREATE, $data);
 
 			$this->setStatusCode(200);
@@ -701,6 +702,7 @@ class UserAjax extends \erdiko\core\AjaxController
             $authUser = $auth->currentUser();
 
             $logModel = new Log();
+            unset($params->newpass);
             $logModel->create($authUser->getUserId(), Log::EVENT_PASSWORD, $params);
 
 

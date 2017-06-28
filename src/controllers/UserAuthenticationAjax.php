@@ -159,6 +159,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 $response['success']    = true;
 
                 $logModel = new Log();
+                unset($authParams['password']);
                 $logModel->create($authUser->getUserId(), Log::EVENT_LOGIN, $authParams);
             }
 
@@ -168,6 +169,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
             $users = $userModel->getByParams(['username'=>$authParams['username']]);
             if (count($users->users) >= 1) {
                 $logModel = new Log();
+                unset($authParams['password']);
                 $logModel->create($users->users[0]->getId(), Log::EVENT_ATTEMPT, $authParams);
             }
             $this->setStatusCode(500);
