@@ -198,6 +198,7 @@ class User implements
 			$this->_em->persist($entity);
 			$this->_em->flush();
 			
+			unset($data['password']);
 			$this->createUserEventLog(Log::EVENT_CREATE, $data);
 
 			$this->setEntity($entity);

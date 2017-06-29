@@ -39,6 +39,10 @@ class Log
 
     protected function save($logEntity)
     {
+        //@TODO: reevaluate next block, it does not make sense as it is. Leo.
+//	    if(!$this->authorizer->can('LOGS_CAN_CREATE', $logEntity)){
+//		    throw new \Exception('You are not allowed');
+//	    }
         $this->_em->persist($logEntity);
         $this->_em->flush();
         return $logEntity->getId();
@@ -66,9 +70,10 @@ class Log
     // general log stuff
     public function getAllLogs()
     {
-	    if(!$this->authorizer->can('LOGS_CAN_LIST')){
-		    throw new \Exception('You are not allowed');
-	    }
+        //@TODO: reevaluate next block, it does not make sense as it is. Leo.
+//	    if(!$this->authorizer->can('LOGS_CAN_LIST')){
+//		    throw new \Exception('You are not allowed');
+//	    }
         return $this->getRepository('\erdiko\users\entities\user\event\Log')->findAll();
     }
 
@@ -83,10 +88,10 @@ class Log
      */
     public function getLogs($page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc')
     {
-
-	    if(!$this->authorizer->can('LOGS_CAN_LIST')){
-		    throw new \Exception('You are not allowed');
-	    }
+        //@TODO: reevaluate next block, it does not make sense as it is. Leo.
+//	    if(!$this->authorizer->can('LOGS_CAN_LIST')){
+//		    throw new \Exception('You are not allowed');
+//	    }
         $result = (Object)array(
             "logs" =>  array(),
             "total" => 0
