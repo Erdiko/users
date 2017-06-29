@@ -24,6 +24,7 @@ class ErdikoUsersInstall {
     {
         $this->_rolesArray = $rolesArray;
         $this->_usersArray = $usersArray;
+        $this->bypassAdminCreds();
     }
 
     /**
@@ -98,6 +99,13 @@ class ErdikoUsersInstall {
         return $results;
     }
 
+    private function bypassAdminCreds()
+    {
+	    //\erdiko\users\helpers\CommonHelper::startSession();
+	    global $_SESSION;
+	    $expire = time() + 60;
+	    $_SESSION['setup_hash'] = $expire . ':' . hash_hmac('sha1', 'erdiko_users_setup', $expire);
+    }
 }
 
 // convert all error messages into exceptions so we can handle with some sanity
@@ -114,6 +122,10 @@ set_error_handler("exception_error_handler");
 
 $roles = array(
     (Object)array(
+        "name"      => "super_admin",
+        "active"    => "1",
+    ),
+	(Object)array(
         "name"      => "admin",
         "active"    => "1",
     ),
@@ -125,6 +137,12 @@ $roles = array(
 
 $users = array(
     array(
+        "email"     => "erdiko.super@arroyolabs.com",
+        "name"      => "Erdiko SuperAdmin",
+        "password"  => "master_password",
+        "role"      => "super_admin",
+    ),
+	array(
         "email"     => "erdiko@arroyolabs.com",
         "name"      => "Erdiko Admin",
         "password"  => "password",
@@ -182,7 +200,7 @@ try {
     echo ("\033[31mDB Installation ErrorException: " . $e->getMessage() . "\033[0m\n\r");
     die(2);
 } catch(\Exception $e) {
-    echo ("\033[31mDB Installation Exception: " . $e->getMessage() . "\033[0m\n\r");
+    echo ("\033[31mDB Installation Exception: " . $e->getTraceAsString() . "\033[0m\n\r");
     die(1);
 }
 

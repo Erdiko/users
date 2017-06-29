@@ -11,6 +11,7 @@
 namespace erdiko\users\models;
 
 use \erdiko\users\entities\User as entity;
+use erdiko\users\helpers\CommonHelper;
 use \erdiko\users\models\user\UserProvider;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -186,11 +187,12 @@ class User implements
 			$entity->setRole($data['role']);
 			$entity->setPassword($password);
 
-			// checks authorization
-			if(!$this->authorizer->can('USER_CAN_CREATE',$entity)){
-				throw new \Exception("You are not allowed",112);
+			if(!CommonHelper::verifyHash()) {
+				// checks authorization
+				if ( ! $this->authorizer->can( 'USER_CAN_CREATE', $entity ) ) {
+					throw new \Exception( "You are not allowed", 112 );
+				}
 			}
-
 			$this->_em->persist($entity);
 			$this->_em->flush();
 

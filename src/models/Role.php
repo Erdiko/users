@@ -9,6 +9,7 @@
 
 namespace erdiko\users\models;
 
+use erdiko\users\helpers\CommonHelper;
 use \erdiko\users\models\user\UserProvider;
 
 class Role
@@ -38,8 +39,10 @@ class Role
     public function create($data)
     {
     	try {
-		    if ( ! $this->authorizer->can( 'ROLE_CAN_CREATE' ) ) {
-			    throw new \Exception( 'You are not allowed' );
+    		if(!CommonHelper::verifyHash()) {
+			    if ( ! $this->authorizer->can( 'ROLE_CAN_CREATE' ) ) {
+				    throw new \Exception( 'You are not allowed' );
+			    }
 		    }
 		    $data = is_object( $data ) ? $data : (object) $data;
 		    $id   = 0;

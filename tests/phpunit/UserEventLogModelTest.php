@@ -35,7 +35,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     function setUp()
     {
         $this->entityManager = \erdiko\doctrine\EntityManager::getEntityManager();
-	    $this->doLogin('super@mail.com');
+	    $this->doLogin('erdiko.super@arroyolabs.com');
         $this->_logs = new \erdiko\users\models\user\event\Log();
     }
 
@@ -93,7 +93,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     public function testCreate()
     {
         $uid = 1;
-        $data = array('email'=>'test@mail.com');
+        $data = array('email'=>'erdiko.super@arroyolabs.com');
         $entityId = $this->_logs->create($uid, self::EVENT_LOG_NAME, $data);
         $result = $this->_logs->getLogsByUserId(1)->logs;
 
@@ -183,17 +183,17 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
 	{
 		$_userProvider = new InMemoryUserProvider(
 			array(
-				'super@mail.com' => array(
-					'password' => 'asdf1234',
+				'erdiko.super@arroyolabs.com' => array(
+					'password' => '0ce44ca7610894b8da8f2968d42623b3',
 					'roles'    => array('super_admin'),
 				),
-				'bar@mail.com' => array(
-					'password' => 'asdf1234',
+				'erdiko@arroyolabs.com' => array(
+					'password' => '0acc6ce8fdc230b30c6f1982be61e331',
 					'roles'    => array('admin'),
 				),
-				'foo@mail.com' => array(
-					'password' => 'asdf1234',
-					'roles'    => array('user'),
+				'user.bar@arroyolabs.com' => array(
+					'password' => '9fc9499787385f63da57293c71bb6aef',
+					'roles'    => array('anonymous'),
 				),
 			)
 		);
@@ -209,7 +209,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
 
 		$authenticationManager = new AuthenticationProviderManager($userProvider, false);
 
-		$token = new UsernamePasswordToken($type, "asdf1234", "main", array());
+		$token = new UsernamePasswordToken($type, "0ce44ca7610894b8da8f2968d42623b3", "main", array());
 
 		$tokenStorage = new TokenStorage();
 		$authToken = $authenticationManager->authenticate($token);

@@ -48,7 +48,7 @@ class RoleTest extends \tests\ErdikoTestCase
             'gateway_customer_id' => time()
         );
 
-	    $this->doLogin('super@mail.com');
+	    $this->doLogin('erdiko.super@arroyolabs.com');
 
         try {
 	        $this->roleModel = new \erdiko\users\models\Role();
@@ -75,7 +75,7 @@ class RoleTest extends \tests\ErdikoTestCase
      */
     function testCreate()
     {
-	    $this->doLogin('super@mail.com');
+	    $this->doLogin('erdiko.super@arroyolabs.com');
 	    $this->id = $this->roleModel->create( $this->modelArray );
 	    $this->assertGreaterThan( 0, $this->id );
 	}
@@ -222,17 +222,17 @@ class RoleTest extends \tests\ErdikoTestCase
     {
 	    $_userProvider = new InMemoryUserProvider(
 		    array(
-			    'super@mail.com' => array(
-				    'password' => 'asdf1234',
+			    'erdiko.super@arroyolabs.com' => array(
+				    'password' => '0ce44ca7610894b8da8f2968d42623b3',
 				    'roles'    => array('super_admin'),
 			    ),
-			    'bar@mail.com' => array(
-				    'password' => 'asdf1234',
+			    'erdiko@arroyolabs.com' => array(
+				    'password' => '0acc6ce8fdc230b30c6f1982be61e331',
 				    'roles'    => array('admin'),
 			    ),
-			    'foo@mail.com' => array(
-				    'password' => 'asdf1234',
-				    'roles'    => array('user'),
+			    'user.bar@arroyolabs.com' => array(
+				    'password' => '9fc9499787385f63da57293c71bb6aef',
+				    'roles'    => array('anonymous'),
 			    ),
 		    )
 	    );
@@ -248,7 +248,7 @@ class RoleTest extends \tests\ErdikoTestCase
 
 	    $authenticationManager = new AuthenticationProviderManager($userProvider, false);
 
-	    $token = new UsernamePasswordToken($type, "asdf1234", "main", array());
+	    $token = new UsernamePasswordToken($type, "0ce44ca7610894b8da8f2968d42623b3", "main", array());
 
 	    $tokenStorage = new TokenStorage();
 	    $authToken = $authenticationManager->authenticate($token);

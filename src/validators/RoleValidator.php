@@ -50,6 +50,7 @@ class RoleValidator implements \erdiko\authorize\ValidatorInterface
 
 			}
 		}
+		$role = '';
 		if(is_array($roleCode)) {
 			foreach ($roleCode as $code) {
 				$role = CommonHelper::getRoleName($code);
