@@ -11,6 +11,11 @@
 namespace erdiko\users\models;
 
 use \erdiko\users\entities\User as entity;
+use \erdiko\users\models\user\event\Log;
+use \erdiko\authenticate\services\JWTAuthenticator;
+use \erdiko\users\helpers\CommonHelper;
+use \erdiko\users\models\user\UserProvider;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements
 	\erdiko\authenticate\UserStorageInterface,
@@ -23,6 +28,7 @@ class User implements
 	const PASSWORDSALT = "FOO"; // @todo add salt to config instead
 	protected $_user;
 	private $_em;
+	protected $authorizer;
 
     /**
      *
@@ -33,6 +39,11 @@ class User implements
 		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
+	    // Authorize
+	    $provider = new UserProvider();
+	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
+	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
+
 		$this->_user = self::createAnonymous();
 	}
 
@@ -178,8 +189,16 @@ class User implements
 			$entity->setRole($data['role']);
 			$entity->setPassword($password);
 
+			if(!CommonHelper::verifyHash()) {
+				// checks authorization
+				if ( ! $this->authorizer->can( 'USER_CAN_CREATE', $entity ) ) {
+					throw new \Exception( "You are not allowed", 112 );
+				}
+			}
 			$this->_em->persist($entity);
 			$this->_em->flush();
+			
+			$this->createUserEventLog(Log::EVENT_CREATE, $data);
 
 			$this->setEntity($entity);
 		} catch ( \Exception $e ) {
@@ -216,14 +235,17 @@ class User implements
 
 		if (!empty($result)) {
 		    //update last_login
-        $result->setLastLogin();
-        $this->_em->merge($result);
-        $this->_em->flush();
+            $result->setLastLogin();
+            $this->_em->merge($result);
+            $this->_em->flush();
 
 			$this->setEntity( $result );
+			$this->createUserEventLog(Log::EVENT_LOGIN, ['email' => $email]);
+
 			return $this;
 		}
 
+        $this->createUserEventLog(Log::EVENT_ATTEMPT, ['email' => $email]);
 		return false;
 	}
 
@@ -375,11 +397,17 @@ class User implements
 		try {
 			$_user = $this->_em->getRepository( 'erdiko\users\entities\User' )->findOneBy(array('id'=>$id));
 
+			// checks authorization
+			if(!$this->authorizer->can('USER_CAN_DELETE',$_user)){
+				throw new \Exception("You are not allowed to delete this user",113);
+			}
+
 			if (! is_null($_user)) {
 				$this->_em->remove($_user);
 				$this->_em->flush();
 				$this->_user = null;
 				$_user = null;
+				$this->createUserEventLog(Log::EVENT_DELETE, ['id' => $id]);
 			} else {
 				return false;
 			}
@@ -400,12 +428,14 @@ class User implements
 		return $this->_user->getId();
 	}
 
-    /**
-     * @param $data
-     * @return int
-     *
-     * update or return a new user with a new or updated entity.
-     */
+	/**
+	 * update or return a new user with a new or updated entity.
+	 *
+	 * @param $data
+	 *
+	 * @return int
+	 * @throws \Exception
+	 */
 	public function save($data)
     {
 		$data = (object) $data;
@@ -431,11 +461,22 @@ class User implements
 		if (isset($data->gateway_customer_id)) {
 			$entity->setGatewayCustomerId($data->gateway_customer_id);
 		}
+		// checks authorization
+	    if(!$this->authorizer->can('USER_CAN_SAVE',$entity)){
+		    throw new \Exception("You are not allowed",111);
+	    }
+
 		if ($new) {
 			$this->_em->persist($entity);
 		} else {
 			$this->_em->merge($entity);
 		}
+		$eventType = $new ? Log::EVENT_CREATE : Log::EVENT_UPDATE;
+		if (isset($data->password) && $eventType != Log::EVENT_CREATE) {
+		    $eventType = Log::EVENT_PASSWORD;
+		    unset($data->password);
+        }
+		$this->createUserEventLog($eventType, $data);
 		$this->_em->flush();
 		$this->setEntity($entity);
 		return $entity->getId();
@@ -502,4 +543,21 @@ class User implements
 
 		return $result;
 	}
+
+	protected function createUserEventLog($eventType, $eventData)
+    {
+        if ($eventType == Log::EVENT_LOGIN || $eventType == Log::EVENT_ATTEMPT) {
+            $users = $this->getByParams(['email' => $eventData['email']]);
+            $userId = count($users) >= 1 ? $users[0]->getId() : 0;
+            if ($eventType == Log::EVENT_ATTEMPT) {
+                $eventData['message'] = !$userId ? "User {$eventData['email']} not found." : "Invalid Password";
+            }
+        }else {
+            $auth = new JWTAuthenticator(new self());
+            $userId = $auth->currentUser()->getUserId();
+        }
+        $logModel = new Log();
+        $logModel->create($userId, $eventType, $eventData);
+    }
+
 }

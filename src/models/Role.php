@@ -9,15 +9,23 @@
 
 namespace erdiko\users\models;
 
+use erdiko\users\helpers\CommonHelper;
+use \erdiko\users\models\user\UserProvider;
+
 class Role
 {
     use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
 
     private $_em;
+	protected $authorizer;
 
     public function __construct()
     {
         $this->_em    =  $this->getEntityManager();
+	    // Authorize
+	    $provider = new UserProvider();
+	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
+	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
     }
 
 
@@ -30,23 +38,32 @@ class Role
      */
     public function create($data)
     {
+    	try {
+    		if(!CommonHelper::verifyHash()) {
+			    if ( ! $this->authorizer->can( 'ROLE_CAN_CREATE' ) ) {
+				    throw new \Exception( 'You are not allowed' );
+			    }
+		    }
+		    $data = is_object( $data ) ? $data : (object) $data;
+		    $id   = 0;
+		    try {
+			    $entity = new \erdiko\users\entities\Role();
+			    $entity->setName( $data->name );
+			    $entity->setActive( $data->active );
 
-        $data = is_object($data) ? $data : (object)$data;
-        $id=0;
-        try {
-            $entity = new \erdiko\users\entities\Role();
-            $entity->setName($data->name);
-            $entity->setActive($data->active);
+			    $this->_em->persist( $entity );
+			    $this->_em->flush();
 
-            $this->_em->persist($entity);
-            $this->_em->flush();
+			    $id = intval( $entity->getId() );
+		    } catch ( \Exception $e ) {
+			    \error_log( $e->getMessage() );
+			    throw new \Exception( "Could not create Role." );
+		    }
 
-            $id = intval($entity->getId());
-        } catch (\Exception $e) {
-            \error_log($e->getMessage());
-            throw new \Exception("Could not create Role.");
-        }
-        return (int)$id;
+		    return (int) $id;
+	    } catch (\Exception $e) {
+    		throw new \Exception($e->getMessage());
+	    }
     }
 
     /**
@@ -234,8 +251,11 @@ class Role
 
     public function delete($id)
     {
+	    if(!$this->authorizer->can('ROLE_CAN_DELETE')){
+		    throw new \Exception('You are not allowed to delete this role');
+	    }
         if (empty($id)) {
-            throw new \Exception('There is no data to save.');
+            throw new \Exception('ID is required.');
         }
         try{
             $entity = $this->_em->getRepository('\erdiko\users\entities\Role')

@@ -10,6 +10,8 @@
 
 namespace erdiko\users\models\user\event;
 
+use \erdiko\users\models\user\UserProvider;
+
 class Log
 {
     use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
@@ -23,15 +25,23 @@ class Log
     const EVENT_PASSWORD = 'event-user-change-password';
 
     private $_em;
+	protected $authorizer;
 
     public function __construct()
     {
         $this->_em    =  $this->getEntityManager();
+	    // Authorize
+	    $provider = new UserProvider();
+	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
+	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
     }
 
 
     protected function save($logEntity)
     {
+	    if(!$this->authorizer->can('LOGS_CAN_CREATE', $logEntity)){
+		    throw new \Exception('You are not allowed');
+	    }
         $this->_em->persist($logEntity);
         $this->_em->flush();
         return $logEntity->getId();
@@ -59,6 +69,9 @@ class Log
     // general log stuff
     public function getAllLogs()
     {
+	    if(!$this->authorizer->can('LOGS_CAN_LIST')){
+		    throw new \Exception('You are not allowed');
+	    }
         return $this->getRepository('\erdiko\users\entities\user\event\Log')->findAll();
     }
 
@@ -74,6 +87,9 @@ class Log
     public function getLogs($page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc')
     {
 
+	    if(!$this->authorizer->can('LOGS_CAN_LIST')){
+		    throw new \Exception('You are not allowed');
+	    }
         $result = (Object)array(
             "logs" =>  array(),
             "total" => 0
@@ -161,6 +177,10 @@ class Log
      */
     public function findById($id)
     {
+    	// @todo: reevaluate next block, it does not make sense as it is. Leo.
+	    /*if(!$this->authorizer->can('LOGS_CAN_FILTER')){
+		    throw new \Exception('You are not allowed');
+	    }*/
         if( is_null($id)) {
             throw new \Exception('ID is required');
         }

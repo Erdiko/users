@@ -13,6 +13,13 @@ namespace tests\phpunit;
 
 require_once dirname(__DIR__).'/ErdikoTestCase.php';
 
+use Symfony\Component\Security\Core\Authentication\AuthenticationProviderManager;
+use Symfony\Component\Security\Core\Authentication\Provider\DaoAuthenticationProvider;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Encoder\PlaintextPasswordEncoder;
+use Symfony\Component\Security\Core\User\InMemoryUserProvider;
+use Symfony\Component\Security\Core\User\UserChecker;
 
 class UserModelTest extends \tests\ErdikoTestCase
 {
@@ -65,6 +72,8 @@ class UserModelTest extends \tests\ErdikoTestCase
             "active" => 1
         );
 
+		$this->doLogin('erdiko.super@arroyolabs.com');
+
         //create Roles needed to tests.
         $this->roleModel = new \erdiko\users\models\Role();
 
@@ -95,7 +104,6 @@ class UserModelTest extends \tests\ErdikoTestCase
         } else{
             $this->anonymousId = $roleEntity->getId();
         }
-
 
         $this->model = new \erdiko\users\models\User();
 	}
@@ -433,5 +441,64 @@ class UserModelTest extends \tests\ErdikoTestCase
        if(!empty(self::$lastID)){
            $this->model->deleteUser(self::$lastID);
        }
+	}
+
+	protected function doLogin($type='bar@mail.com')
+	{
+		$_userProvider = new InMemoryUserProvider(
+			array(
+				'erdiko.super@arroyolabs.com' => array(
+					'password' => '0ce44ca7610894b8da8f2968d42623b3',
+					'roles'    => array('super_admin'),
+				),
+				'erdiko@arroyolabs.com' => array(
+					'password' => '0acc6ce8fdc230b30c6f1982be61e331',
+					'roles'    => array('admin'),
+				),
+				'user.bar@arroyolabs.com' => array(
+					'password' => '9fc9499787385f63da57293c71bb6aef',
+					'roles'    => array('anonymous'),
+				),
+			)
+		);
+		$encoderFactory = new \Symfony\Component\Security\Core\Encoder\EncoderFactory(array(
+			// We simply use plaintext passwords for users from this specific class
+			'Symfony\Component\Security\Core\User\User' => new PlaintextPasswordEncoder(),
+		));
+		// The user checker is a simple class that allows to check against different elements (user disabled, account expired etc)
+		$userChecker = new UserChecker();
+		$userProvider = array(
+			new DaoAuthenticationProvider($_userProvider, $userChecker, 'main', $encoderFactory, true),
+		);
+
+		$authenticationManager = new AuthenticationProviderManager($userProvider, false);
+
+		$token = new UsernamePasswordToken($type, "0ce44ca7610894b8da8f2968d42623b3", "main", array());
+
+		$tokenStorage = new TokenStorage();
+		$authToken = $authenticationManager->authenticate($token);
+
+		$tokenStorage->setToken($authToken);
+		$_SESSION['tokenstorage'] = $tokenStorage;
+	}
+
+	private function startSession()
+	{
+		if(session_id() == '') {
+			@session_start();
+		} else {
+			if (session_status() === PHP_SESSION_NONE) {
+				@session_start();
+			}
+		}
+	}
+
+	protected function invalidateToken()
+	{
+		$this->startSession();
+		if(array_key_exists('tokenstorage',$_SESSION) && !empty($_SESSION['tokenstorage'])) {
+			$_SESSION['tokenstorage'] = null;
+			session_destroy();
+		}
 	}
 }
