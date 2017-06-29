@@ -14,6 +14,7 @@ use erdiko\authenticate\iErdikoUser;
 
 use erdiko\users\models\User;
 use erdiko\users\models\Mailgun;
+use erdiko\users\models\user\event\Log;
 
 class UserAuthenticationAjax extends \erdiko\core\AjaxController
 {
@@ -153,8 +154,6 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
                 // if successful, return the JWT token
                 $response['token']      = $result->token;
                 $response['success']    = true;
-            } else{
-                throw new \Exception("Username or password are wrong. Please try again.");
             }
 
             $this->setStatusCode(200);

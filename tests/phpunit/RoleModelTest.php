@@ -11,7 +11,15 @@
 
 namespace tests\phpunit;
 
-require_once dirname(__DIR__).'/ErdikoTestCase.php';
+use Symfony\Component\Security\Core\Authentication\AuthenticationProviderManager;
+use Symfony\Component\Security\Core\Authentication\Provider\DaoAuthenticationProvider;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Encoder\PlaintextPasswordEncoder;
+use Symfony\Component\Security\Core\User\InMemoryUserProvider;
+use Symfony\Component\Security\Core\User\UserChecker;
+
+require_once dirname(__DIR__) . '/ErdikoTestCase.php';
 
 class RoleTest extends \tests\ErdikoTestCase
 {
@@ -24,6 +32,8 @@ class RoleTest extends \tests\ErdikoTestCase
 
     function setUp()
     {
+	    $this->startSession();
+    	$_SESSION = [];
         $this->entityManager = \erdiko\doctrine\EntityManager::getEntityManager();
         $this->modelArray = array(
             'id'=>0,
@@ -37,7 +47,27 @@ class RoleTest extends \tests\ErdikoTestCase
             'role' => 1,
             'gateway_customer_id' => time()
         );
-        $this->roleModel = new \erdiko\users\models\Role();
+
+	    $this->doLogin('erdiko.super@arroyolabs.com');
+
+        try {
+	        $this->roleModel = new \erdiko\users\models\Role();
+        } catch (\Exception $e) {
+        	var_dump($e->getMessage());
+        }
+    }
+
+    /**
+     * test the Role is created.
+     *
+     * @expectedException \Exception
+     * @expectedExceptionMessage You are not allowed
+     */
+    function testCreateUnauthorized()
+    {
+	    $this->invalidateToken();
+	    $this->id = $this->roleModel->create( $this->modelArray );
+	    $this->assertGreaterThan( 0, $this->id );
     }
 
     /**
@@ -45,9 +75,10 @@ class RoleTest extends \tests\ErdikoTestCase
      */
     function testCreate()
     {
-        $this->id = $this->roleModel->create($this->modelArray);
-        $this->assertGreaterThan(0, $this->id);
-    }
+	    $this->doLogin('erdiko.super@arroyolabs.com');
+	    $this->id = $this->roleModel->create( $this->modelArray );
+	    $this->assertGreaterThan( 0, $this->id );
+	}
 
 
     /**
@@ -179,6 +210,70 @@ class RoleTest extends \tests\ErdikoTestCase
     function tearDown()
     {
         $this->removeEntities();
-        unset($this->entityManager);
+        $this->invalidateToken();
+        unset(
+        	$this->entityManager,
+	        $this->roleModel,
+	        $_SESSION
+        );
     }
+
+    protected function doLogin($type='bar@mail.com')
+    {
+	    $_userProvider = new InMemoryUserProvider(
+		    array(
+			    'erdiko.super@arroyolabs.com' => array(
+				    'password' => '0ce44ca7610894b8da8f2968d42623b3',
+				    'roles'    => array('super_admin'),
+			    ),
+			    'erdiko@arroyolabs.com' => array(
+				    'password' => '0acc6ce8fdc230b30c6f1982be61e331',
+				    'roles'    => array('admin'),
+			    ),
+			    'user.bar@arroyolabs.com' => array(
+				    'password' => '9fc9499787385f63da57293c71bb6aef',
+				    'roles'    => array('anonymous'),
+			    ),
+		    )
+	    );
+	    $encoderFactory = new \Symfony\Component\Security\Core\Encoder\EncoderFactory(array(
+		    // We simply use plaintext passwords for users from this specific class
+		    'Symfony\Component\Security\Core\User\User' => new PlaintextPasswordEncoder(),
+	    ));
+	    // The user checker is a simple class that allows to check against different elements (user disabled, account expired etc)
+	    $userChecker = new UserChecker();
+	    $userProvider = array(
+		    new DaoAuthenticationProvider($_userProvider, $userChecker, 'main', $encoderFactory, true),
+	    );
+
+	    $authenticationManager = new AuthenticationProviderManager($userProvider, false);
+
+	    $token = new UsernamePasswordToken($type, "0ce44ca7610894b8da8f2968d42623b3", "main", array());
+
+	    $tokenStorage = new TokenStorage();
+	    $authToken = $authenticationManager->authenticate($token);
+
+	    $tokenStorage->setToken($authToken);
+	    $_SESSION['tokenstorage'] = $tokenStorage;
+    }
+
+	private function startSession()
+	{
+		if(session_id() == '') {
+			@session_start();
+		} else {
+			if (session_status() === PHP_SESSION_NONE) {
+				@session_start();
+			}
+		}
+	}
+
+	protected function invalidateToken()
+	{
+		$this->startSession();
+		if(array_key_exists('tokenstorage',$_SESSION) && !empty($_SESSION['tokenstorage'])) {
+			$_SESSION['tokenstorage'] = null;
+			session_destroy();
+		}
+	}
 }
