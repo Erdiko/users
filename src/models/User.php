@@ -489,7 +489,7 @@ class User implements
      * @return null|object
      *
      * return a user by id.
-     */		    $eventType =
+     */
 
 	public function getById($id)
     {
