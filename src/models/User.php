@@ -198,6 +198,7 @@ class User implements
 			$this->_em->persist($entity);
 			$this->_em->flush();
 			
+			unset($data['password']);
 			$this->createUserEventLog(Log::EVENT_CREATE, $data);
 
 			$this->setEntity($entity);
@@ -472,8 +473,10 @@ class User implements
 			$this->_em->merge($entity);
 		}
 		$eventType = $new ? Log::EVENT_CREATE : Log::EVENT_UPDATE;
-		if (isset($data->password) && $eventType != Log::EVENT_CREATE) {
-		    $eventType = Log::EVENT_PASSWORD;
+		if (isset($data->password)) {
+		    if ($eventType == Log::EVENT_UPDATE) {
+                $eventType = Log::EVENT_PASSWORD;
+            }
 		    unset($data->password);
         }
 		$this->createUserEventLog($eventType, $data);
@@ -488,6 +491,7 @@ class User implements
      *
      * return a user by id.
      */
+
 	public function getById($id)
     {
 		$repo   = $this->getRepository('erdiko\users\entities\User');
@@ -554,7 +558,7 @@ class User implements
             }
         }else {
             $auth = new JWTAuthenticator(new self());
-            $userId = $auth->currentUser()->getUserId();
+            $userId = $auth->currentUser()->getId();
         }
         $logModel = new Log();
         $logModel->create($userId, $eventType, $eventData);
