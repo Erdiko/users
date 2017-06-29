@@ -11,6 +11,8 @@
 namespace erdiko\users\models;
 
 use \erdiko\users\entities\User as entity;
+use \erdiko\users\models\user\event\Log;
+use \erdiko\authenticate\services\JWTAuthenticator;
 
 class User implements
 	\erdiko\authenticate\UserStorageInterface,
@@ -180,6 +182,8 @@ class User implements
 
 			$this->_em->persist($entity);
 			$this->_em->flush();
+			
+			$this->createUserEventLog(Log::EVENT_CREATE, $data);
 
 			$this->setEntity($entity);
 		} catch ( \Exception $e ) {
@@ -216,14 +220,17 @@ class User implements
 
 		if (!empty($result)) {
 		    //update last_login
-        $result->setLastLogin();
-        $this->_em->merge($result);
-        $this->_em->flush();
+            $result->setLastLogin();
+            $this->_em->merge($result);
+            $this->_em->flush();
 
 			$this->setEntity( $result );
+			$this->createUserEventLog(Log::EVENT_LOGIN, ['email' => $email]);
+
 			return $this;
 		}
 
+        $this->createUserEventLog(Log::EVENT_ATTEMPT, ['email' => $email]);
 		return false;
 	}
 
@@ -380,6 +387,7 @@ class User implements
 				$this->_em->flush();
 				$this->_user = null;
 				$_user = null;
+				$this->createUserEventLog(Log::EVENT_DELETE, ['id' => $id]);
 			} else {
 				return false;
 			}
@@ -436,6 +444,12 @@ class User implements
 		} else {
 			$this->_em->merge($entity);
 		}
+		$eventType = $new ? Log::EVENT_CREATE : Log::EVENT_UPDATE;
+		if (isset($data->password) && $eventType != Log::EVENT_CREATE) {
+		    $eventType = Log::EVENT_PASSWORD;
+		    unset($data->password);
+        }
+		$this->createUserEventLog($eventType, $data);
 		$this->_em->flush();
 		$this->setEntity($entity);
 		return $entity->getId();
@@ -502,4 +516,21 @@ class User implements
 
 		return $result;
 	}
+
+	protected function createUserEventLog($eventType, $eventData)
+    {
+        if ($eventType == Log::EVENT_LOGIN || $eventType == Log::EVENT_ATTEMPT) {
+            $users = $this->getByParams(['email' => $eventData['email']]);
+            $userId = count($users) >= 1 ? $users[0]->getId() : 0;
+            if ($eventType == Log::EVENT_ATTEMPT) {
+                $eventData['message'] = !$userId ? "User {$eventData['email']} not found." : "Invalid Password";
+            }
+        }else {
+            $auth = new JWTAuthenticator(new self());
+            $userId = $auth->currentUser()->getUserId();
+        }
+        $logModel = new Log();
+        $logModel->create($userId, $eventType, $eventData);
+    }
+
 }
