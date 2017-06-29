@@ -39,9 +39,6 @@ class Log
 
     protected function save($logEntity)
     {
-	    if(!$this->authorizer->can('LOGS_CAN_CREATE', $logEntity)){
-		    throw new \Exception('You are not allowed');
-	    }
         $this->_em->persist($logEntity);
         $this->_em->flush();
         return $logEntity->getId();
