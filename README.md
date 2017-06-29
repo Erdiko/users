@@ -6,80 +6,72 @@
 
 **Erdiko Users**
 
-A users package to add user functionality to your application.  It will allow you to authenticate and authorize your users as well as create a user entity stored in a database.
+The `erdiko/users` is a package adding Service Models and AJAX endpoints for user management in a Erdiko application or your custom application. It will allow you to authenticate and authorize your users as well as create a user entity stored in a database.
 
-Erdiko users leverages our authenticate and authorization packages.
-
-**@note do not use in production yet, under heavy development**
-
+Erdiko users leverages our [authenticate](https://github.com/Erdiko/authenticate) and [authorization](https://github.com/Erdiko/authorize) packages.
 
 Installation
 ------------
+### Install the package via Composer
+
 Add package using composer
 
 `composer require erdiko/users`
 
-Add required tables into your database running in order the `.sql` files placed in `sql` directory inside the package.
+### Create / Install the DB
 
-How to Use
-----------
-1. Add Login controller's route.
+This package relies upon a number of database tables to store user records. You must create the database & tables before you can use this package.
 
- It provides a self-contained login/logout actions and views, to have it accessible, edit your
- `routes.json` like this:
+**Please Note**: If you are using this package along with our [erdiko/user-admin](https://github.com/Erdiko/user-admin) package, these tables will be created for you with our installation/quick start process.
 
-```
-{
-    "routes": {
-        "/": "\app\controllers\Front",
-        ...
-        "/users/:action": "\erdiko\users\controllers\Login"
-    }
-}
-```
+Add required tables into your database running in order the .sql files placed in sql directory inside the package:
 
-2. Add UserAuthenticationAjax controller's route.
+### Create the Database
 
- It provides actions to manage login/logout and password related situations as forgotpass and changePass,
- to have it accessible, edit your `routes.json` like this:
+1. Log in to you Database server with a user that has permissions to create databases
+2. Create the database: 
 
-```
-{
-    "routes": {
-        "/": "\app\controllers\Front",
-        ...
-        "/users/authentication/:action": "\erdiko\users\controllers\UserAuthenticationAjax"
-    }
-}
-```
-3. Add \admin\Userajax controller's route.
+	`mysql> CREATE DATABASE 'users';`
+3. Run the SQL script to create the required tables: 
+   
+   `mysql> source [PATH TO LOCAL REPO]\sql\dumps\user-admin.sql;`
 
- It provides actions relative to manage users as admin level. All the actions requires to be in session firts,
- to have it accessible, edit your `routes.json` like this:
+### Add the required routes to your Erdiko application
 
-```
-{
-    "routes": {
-        "/": "\app\controllers\Front",
-        ...
-        "/users/:action": "\erdiko\users\controllers\admin\Userajax"
-    }
-}
-```
+Below are examples of the minimum required routes to interact with the `users` package:
 
-4. Add Userajax controller's route.
+* Login Controller OR UserAuthenticationAjax Controller Route
+    * The Login Controller exposes self-contained login/logout actions and views, these methods expose an HTML form to allow users to login
+        * `"/[ROUTE NAME]/:action": "\erdiko\users\controllers\admin\UserAjax"`
+    * The UserAuthenticationAjax controller provides actions to manage login/logout and password related situations as forgotPass and changePassword. This route is for AJAX login & logout.
+        * `"/[ROUTE NAME]/:action": "\erdiko\users\controllers\UserAuthenticationAjax"`
+* Userajax Controller Route
+    * Provides actions relative to manage users without privileges, to have it accessible.
+        * `"/[ROUTE NAME]]/:action": "\erdiko\users\controllers\UserAjax"`
+* admin\Userajax Controller Route
+    * Provides actions relative to manage users as admin level
+        * `"/ROUTE NAME]/:action": "\erdiko\users\controllers\admin\Userajax"`
 
- It provides actions relative to manage users without privileges, to have it accessible, edit your `routes.json` like this:
+##### Example Route Config
+
+Below is an example config containing all the AJAX endpoints exposed by the package:
 
 ```
-{
-    "routes": {
-        "/": "\app\controllers\Front",
-        ...
-        "/users/:action": "\erdiko\users\controllers\Userajax"
-    }
-}
+ {
+     "routes": {
+         "/ajax/users/admin/:action": "\erdiko\users\controllers\admin\UserAjax",
+         "/ajax/users/:action": "\erdiko\users\controllers\UserAjax",
+         "/ajax/roles/:action": "\erdiko\users\controllers\RoleAjax",
+         "/ajax/auth/:action": "\erdiko\users\controllers\UserAuthenticationAjax",
+         "/users/:action": "\erdiko\users\controllers\Login"
+     }
+ }
 ```
+
+Project Documentation
+---------------------
+
+Complete project documentation can be found on our Erdiko documentation site (coming soon). 
 
 Special Thanks
 --------------
