@@ -18,23 +18,13 @@ Add package using composer
 
 `composer require erdiko/users`
 
-### Create / Install the DB
+### Create & Install the DB
 
 This package relies upon a number of database tables to store user records. You must create the database & tables before you can use this package.
 
-**Please Note**: If you are using this package along with our [erdiko/user-admin](https://github.com/Erdiko/user-admin) package, these tables will be created for you with our installation/quick start process.
+We highly recomend installing the DB and tables with our install scripts found in the erdiko/user-admin repo (`scripts/install-db.sh`). More information can be found on the erdiko/user-admin README file.
 
-Add required tables into your database running in order the .sql files placed in sql directory inside the package:
-
-### Create the Database
-
-1. Log in to you Database server with a user that has permissions to create databases
-2. Create the database: 
-
-	`mysql> CREATE DATABASE 'users';`
-3. Run the SQL script to create the required tables: 
-   
-   `mysql> source [PATH TO LOCAL REPO]\sql\dumps\user-admin.sql;`
+If you would like to install the database manually, please use the `users\sql\dumps\user-admin.sql` to create the database defintion.
 
 ### Add the required routes to your Erdiko application
 
