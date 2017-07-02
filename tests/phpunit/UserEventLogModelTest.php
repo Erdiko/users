@@ -21,12 +21,11 @@ use Symfony\Component\Security\Core\User\UserChecker;
 
 class UserEventLogModelTest extends \tests\ErdikoTestCase
 {
-
     protected $entityManager = null;
     protected $_logs = null;
     protected $id = null;
 
-    const EVENT_LOG_NAME = "backend-test-profile-create";
+    const EVENT_LOG_NAME = "unittest-event-log";
 
     /**
      *
@@ -36,7 +35,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     {
         $this->entityManager = \erdiko\doctrine\EntityManager::getEntityManager();
 	    $this->doLogin('erdiko.super@arroyolabs.com');
-        $this->_logs = new \erdiko\users\models\user\event\Log();
+        $this->_logs = new \erdiko\users\models\user\event\Log;
     }
 
     /**
@@ -58,7 +57,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
         foreach($records as $record) {
             $this->entityManager->remove($record);
             $this->entityManager->flush();
-    }
+        }
     }
 
     /**
@@ -102,7 +101,6 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
 
         $this->id = $entityId;
     }
-
 
     /**
      * @expectedException \Exception
@@ -163,10 +161,9 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
     }
 
     /**
-     *
-     *
+     * @todo test the function paramaters, getLogs($page = 0, $pagesize = 100, $sort = 'id', $direction = 'asc')
      */
-    public function testGetLogs() 
+    public function testGetLogs()
     {
         $uid = 1;
         $data = array('email'=>'test@mail.com');
@@ -174,7 +171,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
         $result = $this->_logs->getLogs();
 
         $this->assertGreaterThan(0, $entityId);
-        $this->assertEquals($result->total, count($result->logs), "Result has log counts");
+        $this->assertGreaterThan(0, count($result->logs));
 
         $this->id = $entityId;
     }
