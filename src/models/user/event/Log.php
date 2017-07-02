@@ -196,14 +196,20 @@ class Log
         return $result;
     }
 
-
-    public function create($user_id=null, $event_log=null, $event_data=null)
+    /**
+     * Create user log entry
+     * @param int $userId
+     * @param string $eventLog
+     * @param string $eventData
+     * @return int $id
+     */
+    public function create($userId=null, $eventLog=null, $eventData=null)
     {
-        if(is_null($user_id)) throw new \Exception('User ID is required.');
-        if(is_null($event_log)) throw new \Exception('Event Log is required.');
-        if(!is_numeric($user_id)) throw new \Exception("Invalid User ID.");
+        if(is_null($userId)) throw new \Exception('User ID is required.');
+        if(is_null($eventLog)) throw new \Exception('Event Log is required.');
+        if(!is_numeric($userId)) throw new \Exception("Invalid User ID.");
 
-        $id = $this->save($this->generateEntity(intval($user_id), $event_log, $event_data));
+        $id = $this->save($this->generateEntity(intval($userId), $eventLog, $eventData));
         return $id;
     }
 
