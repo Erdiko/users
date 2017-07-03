@@ -1,9 +1,9 @@
 ## insert each of basic roles if not exists in roles table.
 
 INSERT INTO roles (name, active, created)
-  SELECT 'anonymous','1',NOW() FROM DUAL
+  SELECT 'general','1',NOW() FROM DUAL
   WHERE NOT EXISTS
-  (SELECT name FROM roles WHERE name='anonymous');
+  (SELECT name FROM roles WHERE name='general');
 
 INSERT INTO roles (name, active, created)
   SELECT 'super','1',NOW() FROM DUAL

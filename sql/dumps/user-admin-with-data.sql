@@ -35,7 +35,7 @@ CREATE TABLE `roles` (
 --  Records of `roles`
 -- ----------------------------
 BEGIN;
-INSERT INTO `roles` VALUES ('1', 'anonymous', '1', '2017-02-19 09:29:23', null), ('2', 'admin', '1', '2017-06-18 07:50:47', null);
+INSERT INTO `roles` VALUES ('1', 'general', '1', '2017-02-19 09:29:23', null), ('2', 'admin', '1', '2017-06-18 07:50:47', null);
 COMMIT;
 
 -- ----------------------------

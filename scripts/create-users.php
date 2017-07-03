@@ -130,7 +130,7 @@ $roles = array(
         "active"    => "1",
     ),
     (Object)array(
-        "name"      => "anonymous",
+        "name"      => "general",
         "active"    => "1",
     ),
 );
@@ -152,7 +152,7 @@ $users = array(
         "email"     => "user.bar@arroyolabs.com",
         "name"      => "Bar Erdiko, Esq",
         "password"  => "barpassword",
-        "role"      => "anonymous",
+        "role"      => "general",
     )
 );
 

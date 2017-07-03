@@ -44,7 +44,7 @@ class User implements
 	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
 	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
 
-		$this->_user = self::createAnonymous();
+		$this->_user = self::createGeneral();
 	}
 
     /**
@@ -79,7 +79,7 @@ class User implements
     {
 		$decode = json_decode( $encoded, true );
 		if (empty($decode)) {
-			$entity = self::createAnonymous();
+			$entity = self::createGeneral();
 		} else {
 			$entity = new entity();
 			foreach ($decode as $key => $value) {
@@ -97,19 +97,19 @@ class User implements
      * @return entity
      * @throws \Exception
      *
-     * returns a new anonymous user entity.
+     * returns a new general user entity.
      */
-	protected static function createAnonymous()
+	protected static function createGeneral()
 	{
 	    $roleModel = new \erdiko\users\models\Role;
-        $roleAnonymous = $roleModel->findByName('anonymous');
-        if (empty($roleAnonymous)) {
-            throw  new \Exception('Role anonymous not found.');
+        $roleGeneral = $roleModel->findByName('general');
+        if (empty($roleGeneral)) {
+            throw  new \Exception('Role general not found.');
         }
 
 		$entity = new entity();
 		$entity->setId( 0 );
-		$entity->setRole( $roleAnonymous->getId() );
+		$entity->setRole( $roleGeneral->getId() );
 		$entity->setName( 'user' );
 		$entity->setEmail( 'user' );
 		return $entity;
@@ -119,12 +119,12 @@ class User implements
     /**
      * @return User
      *
-     * returns a new User model with entity anonymous
+     * returns a new User model with entity general
      */
-	public static function getAnonymous()
+	public static function getGeneral()
 	{
 		$user = new User();
-		$entity = self::createAnonymous();
+		$entity = self::createGeneral();
 		$user->setEntity($entity);
 		return $user;
 	}
@@ -174,11 +174,11 @@ class User implements
 		try {
 			if (empty($data['role'])) {
                 $roleModel = new \erdiko\users\models\Role();
-                $roleAnonymous = $roleModel->findByName('anonymous');
-                if (empty($roleAnonymous)) {
-                    throw  new \Exception('Role anonymous not found.');
+                $roleGeneral = $roleModel->findByName('general');
+                if (empty($roleGeneral)) {
+                    throw  new \Exception('Role general not found.');
                 }
-				$data['role'] = $roleAnonymous->getId();
+				$data['role'] = $roleGeneral->getId();
 			}
 
 			$password = $this->getSalted($data['password']);
@@ -260,14 +260,14 @@ class User implements
 	public function isLoggedIn()
     {
         $roleModel = new \erdiko\users\models\Role;
-        $roleAnonymous = $roleModel->findByName('user');
+        $roleGeneral = $roleModel->findByName('user');
 
 		// @todo update exception message for clarity
-        if (empty($roleAnonymous)){
+        if (empty($roleGeneral)){
             throw  new \Exception('Error, role user not found.');
         }
 
-		return ( ( $this->_user->getId() > 0 ) && ( $this->_user->getRole() !== $roleAnonymous->getId() ) );
+		return ( ( $this->_user->getId() > 0 ) && ( $this->_user->getRole() !== $roleGeneral->getId() ) );
 	}
 
 	/**
@@ -312,11 +312,11 @@ class User implements
 	}
 
 	/**
-	 * isAnonymous
+	 * isGeneral
 	 *
-	 * returns true if current user's role is anonymous
+	 * returns true if current user's role is general
 	 */
-	public function isAnonymous()
+	public function isGeneral()
 	{
 		return $this->hasRole();
 	}
@@ -329,7 +329,7 @@ class User implements
 	 *
 	 * @return bool
 	 */
-	public function hasRole($role = "anonymous")
+	public function hasRole($role = "general")
 	{
         $roleModel = new \erdiko\users\models\Role;
         $roleEntity = $roleModel->findByName($role);
@@ -552,13 +552,17 @@ class User implements
     {
         if ($eventType == Log::EVENT_LOGIN || $eventType == Log::EVENT_ATTEMPT) {
             $users = $this->getByParams(['email' => $eventData['email']]);
-            $userId = count($users) >= 1 ? $users[0]->getId() : 0;
+            $userId = 0;
+            if (count($users) >= 1) {
+                $userId = $users[0] instanceof entity ? $users[0]->getId() : $users[0]->getUserId();
+            }
             if ($eventType == Log::EVENT_ATTEMPT) {
                 $eventData['message'] = !$userId ? "User {$eventData['email']} not found." : "Invalid Password";
             }
         }else {
             $auth = new JWTAuthenticator(new self());
-            $userId = $auth->currentUser()->getId();
+            $user = $auth->currentUser();
+            $userId = $user instanceof entity ? $user->getId() : $user->getUserId();
         }
         $logModel = new Log();
         $logModel->create($userId, $eventType, $eventData);
