@@ -132,7 +132,7 @@ class User implements
     /**
      *
      */
-	public function marshall($type="json") 
+	public function marshall($type="json")
     {
 		$_user = $this->getEntity()->marshall($type);
 		return $_user;
@@ -197,7 +197,7 @@ class User implements
 			}
 			$this->_em->persist($entity);
 			$this->_em->flush();
-			
+
 			unset($data['password']);
 			$this->createUserEventLog(Log::EVENT_CREATE, $data);
 
@@ -422,10 +422,20 @@ class User implements
 	/**
 	 * getUserId
 	 *
-	 *
+	 * @return int $id
 	 */
 	public function getUserId()
     {
+		return $this->getId();
+	}
+
+	/**
+	 * getId
+	 *
+	 * @return int $id
+	 */
+	public function getId()
+	{
 		return $this->_user->getId();
 	}
 

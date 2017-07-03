@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\User\UserChecker;
 
 require_once dirname(__DIR__) . '/ErdikoTestCase.php';
 
-class RoleTest extends \tests\ErdikoTestCase
+class RoleModelTest extends \tests\ErdikoTestCase
 {
     protected $entityManager = null;
     protected $roleModel = null;
@@ -36,9 +36,8 @@ class RoleTest extends \tests\ErdikoTestCase
     	$_SESSION = [];
         $this->entityManager = \erdiko\doctrine\EntityManager::getEntityManager();
         $this->modelArray = array(
-            'id'=>0,
             'active' => 1,
-            'name' => 1,
+            'name' => "test_role",
         );
         $this->userArray = array(
             'email' => 'user+'.time().'@email.com',

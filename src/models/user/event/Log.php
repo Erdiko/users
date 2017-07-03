@@ -6,6 +6,7 @@
  * @package     app\models
  * @copyright   Copyright (c) 2017, Arroyo Labs, http://www.arroyolabs.com
  * @author      Julian Diaz, julian@arroyolabs.com
+ * @author      John Arroyo, john@arroyolabs.com
  */
 
 namespace erdiko\users\models\user\event;
@@ -16,13 +17,13 @@ class Log
 {
     use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
 
-    const EVENT_LOGIN = 'event-user-login';
-    const EVENT_ATTEMPT = 'event-user-attempt';
-    const EVENT_LOGOUT = 'event-user-logout';
-    const EVENT_CREATE = 'event-user-create';
-    const EVENT_DELETE = 'event-user-delete';
-    const EVENT_UPDATE = 'event-user-update';
-    const EVENT_PASSWORD = 'event-user-change-password';
+    const EVENT_LOGIN = 'login';
+    const EVENT_ATTEMPT = 'login-attempt';
+    const EVENT_LOGOUT = 'logout';
+    const EVENT_CREATE = 'create';
+    const EVENT_DELETE = 'delete';
+    const EVENT_UPDATE = 'update';
+    const EVENT_PASSWORD = 'update-password';
 
     private $_em;
 	protected $authorizer;
@@ -196,14 +197,20 @@ class Log
         return $result;
     }
 
-
-    public function create($user_id=null, $event_log=null, $event_data=null)
+    /**
+     * Create user log entry
+     * @param int $userId
+     * @param string $eventLog
+     * @param string $eventData
+     * @return int $id
+     */
+    public function create($userId=null, $eventLog=null, $eventData=null)
     {
-        if(is_null($user_id)) throw new \Exception('User ID is required.');
-        if(is_null($event_log)) throw new \Exception('Event Log is required.');
-        if(!is_numeric($user_id)) throw new \Exception("Invalid User ID.");
+        if(is_null($userId)) throw new \Exception('User ID is required.');
+        if(is_null($eventLog)) throw new \Exception('Event Log is required.');
+        if(!is_numeric($userId)) throw new \Exception("Invalid User ID.");
 
-        $id = $this->save($this->generateEntity(intval($user_id), $event_log, $event_data));
+        $id = $this->save($this->generateEntity(intval($userId), $eventLog, $eventData));
         return $id;
     }
 
