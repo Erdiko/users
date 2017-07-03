@@ -40,7 +40,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 	function setUp()
 	{
-		$pass = time();
+		$pass = microtime();
 		$email = "test+{$pass}@arroyolabs.com";
 		$emailUpdate = "test+{$pass}+update@arroyolabs.com";
 
@@ -263,9 +263,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 		$this->assertGreaterThan(0, $result);
 
-		$newEntity = $this->model->getEntity();
-		$this->userArrayUpdate['id'] = $newEntity->getId();
-		self::$lastID = $newEntity->getId();
+		$this->userArrayUpdate['id'] = $result;
+		self::$lastID = $result;
 	}
 
 	/**
@@ -329,9 +328,7 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
-
+        self::$lastID = $result;
 
         $email = $this->userArrayData['email'];
         $password = $this->userArrayData['password'];
@@ -340,7 +337,6 @@ class UserModelTest extends \tests\ErdikoTestCase
 
         $entity = $this->model->getEntity();
         $this->assertNotEmpty($entity->getLastLogin());
-
     }
 
 
@@ -353,8 +349,7 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
+        self::$lastID = $result;
 
         $results = $this->model->getUsers();
 
@@ -412,8 +407,7 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
+        self::$lastID = $result;
 
         $params['id'] = self::$lastID;
         $params['password'] = $this->model->getSalted($this->userArrayUpdate['password']);
@@ -443,8 +437,7 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
+        self::$lastID = $result;
 
 		$result = $this->model->deleteUser(self::$lastID );
 
