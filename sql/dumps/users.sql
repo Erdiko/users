@@ -1,20 +1,18 @@
 /*
  Navicat MySQL Data Transfer
 
- Source Server         : User Admin (local)
+ Source Server         : user admin (local) 2
  Source Server Type    : MySQL
- Source Server Version : 50717
- Source Host           : localhost
- Source Database       : user-admin
+ Source Server Version : 50718
+ Source Host           : 0.0.0.0
+ Source Database       : users
 
  Target Server Type    : MySQL
- Target Server Version : 50717
+ Target Server Version : 50718
  File Encoding         : utf-8
 
- Date: 02/19/2017 01:29:58 AM
+ Date: 07/03/2017 15:41:24 PM
 */
-
-CREATE DATABASE IF NOT EXISTS `users`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -44,7 +42,7 @@ CREATE TABLE `user_event_log` (
   `event_data` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
 --  Table structure for `users`
@@ -61,7 +59,7 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_email` (`email`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  UNIQUE KEY `idx_email` (`email`) USING BTREE COMMENT 'Unique email constraint'
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 SET FOREIGN_KEY_CHECKS = 1;
