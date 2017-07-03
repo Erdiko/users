@@ -154,61 +154,6 @@ class User implements
 		return $this->_user->getName();
 	}
 
-    /**
-     * @param array $data
-     * @return bool
-     * @throws \Exception
-     *
-     * create a new entity and set it to current user model.
-     */
-	public function createUser($data = array())
-    {
-		if (empty($data)) {
-			throw new \Exception( "User data is missing" );
-		}
-
-		if (empty($data['email']) || empty($data['password'])) {
-			throw new \Exception( "email & password are required" );
-		}
-
-		try {
-			if (empty($data['role'])) {
-                $roleModel = new \erdiko\users\models\Role();
-                $roleAnonymous = $roleModel->findByName('anonymous');
-                if (empty($roleAnonymous)) {
-                    throw  new \Exception('Role anonymous not found.');
-                }
-				$data['role'] = $roleAnonymous->getId();
-			}
-
-			$password = $this->getSalted($data['password']);
-
-			$entity = new entity();
-			$entity->setEmail($data['email']);
-			$entity->setName($data['name']);
-			$entity->setRole($data['role']);
-			$entity->setPassword($password);
-
-			if(!CommonHelper::verifyHash()) {
-				// checks authorization
-				if ( ! $this->authorizer->can( 'USER_CAN_CREATE', $entity ) ) {
-					throw new \Exception( "You are not allowed", 112 );
-				}
-			}
-			$this->_em->persist($entity);
-			$this->_em->flush();
-
-			unset($data['password']);
-			$this->createUserEventLog(Log::EVENT_CREATE, $data);
-
-			$this->setEntity($entity);
-		} catch ( \Exception $e ) {
-			throw new \Exception( $e->getMessage() );
-		}
-
-		return true;
-	}
-
 	/**
 	 * getSalted
 	 *
@@ -440,15 +385,48 @@ class User implements
 	}
 
 	/**
-	 * update or return a new user with a new or updated entity.
+	 * Create user
+     * @param array $data
+     * @return int
+     * @throws \Exception
+	 *
+	 * @todo deprecate this function
+     *
+     * create a new entity and set it to current user model.
+     */
+	public function createUser($data = array())
+    {
+		return $this->save($data);
+	}
+
+	protected function _getDefaultRole()
+	{
+		$roleModel = new \erdiko\users\models\Role();
+		$roleAnonymous = $roleModel->findByName('anonymous');
+		if (empty($roleAnonymous)) {
+			throw  new \Exception('Default role not found.');
+		}
+
+		return $roleAnonymous->getId();
+	}
+
+	/**
+	 * Update or create a new user
 	 *
 	 * @param $data
-	 *
 	 * @return int
 	 * @throws \Exception
 	 */
 	public function save($data)
     {
+		if (empty($data)) {
+			throw new \Exception( "User data is missing" );
+		}
+
+		if (empty($data['email']) || empty($data['password'])) {
+			throw new \Exception( "email & password are required" );
+		}
+
 		$data = (object) $data;
 		$new  = false;
 		if (isset($data->id)) {
@@ -466,33 +444,51 @@ class User implements
 		if (isset($data->password)) {
 			$entity->setPassword($this->getSalted($data->password));
 		}
-		if (isset($data->role)) {
-			$entity->setRole($data->role);
+		if (empty($data->role)) {
+			$data->role = $this->_getDefaultRole();
 		}
+		$entity->setRole($data->role);
 		if (isset($data->gateway_customer_id)) {
 			$entity->setGatewayCustomerId($data->gateway_customer_id);
 		}
-		// checks authorization
-	    if(!$this->authorizer->can('USER_CAN_SAVE',$entity)){
-		    throw new \Exception("You are not allowed",111);
-	    }
 
 		if ($new) {
+			if(!CommonHelper::verifyHash()) {
+				// checks authorization
+				if ( ! $this->authorizer->can( 'USER_CAN_CREATE', $entity ) ) {
+					throw new \Exception( "You are not allowed", 112 );
+				}
+			}
 			$this->_em->persist($entity);
 		} else {
+			// checks authorization
+		    if(!$this->authorizer->can('USER_CAN_SAVE',$entity)){
+			    throw new \Exception("You are not allowed",111);
+		    }
 			$this->_em->merge($entity);
 		}
-		$eventType = $new ? Log::EVENT_CREATE : Log::EVENT_UPDATE;
-		if (isset($data->password)) {
-		    if ($eventType == Log::EVENT_UPDATE) {
-                $eventType = Log::EVENT_PASSWORD;
-            }
-		    unset($data->password);
-        }
-		$this->createUserEventLog($eventType, $data);
-		$this->_em->flush();
-		$this->setEntity($entity);
-		return $entity->getId();
+
+		// Save the entity
+		try {
+			$eventType = $new ? Log::EVENT_CREATE : Log::EVENT_UPDATE;
+			if (isset($data->password)) {
+			    if ($eventType == Log::EVENT_UPDATE) {
+	                $eventType = Log::EVENT_PASSWORD;
+	            }
+			    unset($data->password);
+	        }
+			$this->createUserEventLog($eventType, $data);
+			$this->_em->flush();
+			$this->setEntity($entity);
+
+			return $entity->getId();
+
+		} catch ( \Doctrine\DBAL\Exception\UniqueConstraintViolationException $e ) {
+			// \Erdiko::log(\Psr\Log\LogLevel::INFO, 'UniqueConstraintViolationException caught: '.$e->getMessage());
+			throw new \Exception( "Can not create user with duplicate email" );
+		}
+
+		return null;
 	}
 
     /**
