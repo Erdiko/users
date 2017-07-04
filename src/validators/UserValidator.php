@@ -69,7 +69,7 @@ class UserValidator implements \erdiko\authorize\ValidatorInterface
 				$result = in_array($role,array('admin','super_admin'));
 				break;
 			case 'USER_CAN_DELETE':
-				$result = $role=='super_admin';
+				$result = in_array($role,array('admin','super_admin'));
 				break;
 			case 'USER_CAN_SAVE':
 				$result = in_array($role,array('admin','super_admin')) || $ownData;
@@ -77,6 +77,8 @@ class UserValidator implements \erdiko\authorize\ValidatorInterface
 			default:
 				$result = false;
 		}
+		// error_log( "result: ".(int)$result );
+
 		return $result;
 	}
 }

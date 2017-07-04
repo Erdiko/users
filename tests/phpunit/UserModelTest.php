@@ -40,17 +40,21 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 	function setUp()
 	{
+		$pass = microtime();
+		$email = "test+{$pass}@arroyolabs.com";
+		$emailUpdate = "test+{$pass}+update@arroyolabs.com";
+
 		$this->entityManager = \erdiko\doctrine\EntityManager::getEntityManager();
 		$this->userArrayData = array(
-			"email"=>"leo@testlabs.com",
-			"password"=>"asdf1234",
+			"email" => $email,
+			"password" => $pass,
 			"role"=>1,
 			"name"=>"Test",
 		);
 		$this->userArrayUpdate = array(
 			"id"=>null,
-			"email"=>"leo@arroyolabs.com",
-			"password"=>"asdf1234",
+			"email" => $emailUpdate,
+			"password" => $pass,
 			"role"=>2,
 			"name"=>"Test 2",
 		);
@@ -208,15 +212,44 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
+	 * Case 1: no email and no password
 	 * @expectedException \Exception
 	 * @expectedExceptionMessage email & password are required
      *
      * test createUser is not working without required params.
 	 */
-	public function testCreateUserFail()
+	public function testCreateUserFail1()
 	{
 		$data = $this->userArrayData;
 		unset($data['email'], $data['password']);
+		$this->model->createUser($data);
+	}
+
+	/**
+	 * Case 2: no password
+	 * @expectedException \Exception
+	 * @expectedExceptionMessage email & password are required
+     *
+     * test createUser is not working without required params.
+	 */
+	public function testCreateUserFail2()
+	{
+		$data = $this->userArrayData;
+		unset($data['email']);
+		$this->model->createUser($data);
+	}
+
+	/**
+	 * Case 3: no email
+	 * @expectedException \Exception
+	 * @expectedExceptionMessage email & password are required
+     *
+     * test createUser is not working without required params.
+	 */
+	public function testCreateUserFail3()
+	{
+		$data = $this->userArrayData;
+		unset($data['password']);
 		$this->model->createUser($data);
 	}
 
@@ -228,11 +261,22 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$data = $this->userArrayData;
 		$result = $this->model->createUser($data);
 
-		$this->assertTrue($result);
+		$this->assertGreaterThan(0, $result);
 
-		$newEntity = $this->model->getEntity();
-		$this->userArrayUpdate['id'] = $newEntity->getId();
-		self::$lastID = $newEntity->getId();
+		$this->userArrayUpdate['id'] = $result;
+		self::$lastID = $result;
+	}
+
+	/**
+	 * Test that multiple users with same email fails
+	 * @expectedException \Exception
+	 * @expectedExceptionMessage Can not create user with duplicate email
+	 */
+	public function testCreateMultipleUsers()
+	{
+		$data = $this->userArrayData;
+		$result = $this->model->createUser($data);
+		$result = $this->model->createUser($data); // Duplicate user
 	}
 
 	public function testIsGeneral()
@@ -260,10 +304,7 @@ class UserModelTest extends \tests\ErdikoTestCase
     {
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
-        $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
-
+        self::$lastID  = $this->model->createUser($data);
 
         $email = $this->userArrayData['email'];
         $password = $this->userArrayData['password'];
@@ -287,9 +328,7 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
-
+        self::$lastID = $result;
 
         $email = $this->userArrayData['email'];
         $password = $this->userArrayData['password'];
@@ -298,7 +337,6 @@ class UserModelTest extends \tests\ErdikoTestCase
 
         $entity = $this->model->getEntity();
         $this->assertNotEmpty($entity->getLastLogin());
-
     }
 
 
@@ -311,11 +349,10 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
+        self::$lastID = $result;
 
         $results = $this->model->getUsers();
-        
+
         $adminCount = count($results->users);
         $this->assertGreaterThan(0, $adminCount, "some results have been returned");
         $this->assertTrue(($results->total == $adminCount), "expected count returned");
@@ -370,11 +407,11 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
+        self::$lastID = $result;
 
         $params['id'] = self::$lastID;
         $params['password'] = $this->model->getSalted($this->userArrayUpdate['password']);
+		$params['email'] = $this->userArrayUpdate['email'];
         $params['role'] = $this->adminId;
         $params['name'] = $this->userArrayUpdate['name'];
 
@@ -400,8 +437,7 @@ class UserModelTest extends \tests\ErdikoTestCase
         $data = $this->userArrayData;
         $data['role'] = $this->adminId;
         $result = $this->model->createUser($data);
-        $newEntity = $this->model->getEntity();
-        self::$lastID = $newEntity->getId();
+        self::$lastID = $result;
 
 		$result = $this->model->deleteUser(self::$lastID );
 
