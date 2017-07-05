@@ -17,17 +17,11 @@ class Role
     use \erdiko\doctrine\EntityTraits; // This adds some convenience methods like getRepository('entity_name')
 
     private $_em;
-	protected $authorizer;
 
     public function __construct()
     {
         $this->_em    =  $this->getEntityManager();
-	    // Authorize
-	    $provider = new UserProvider();
-	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
-	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
     }
-
 
     /**
      * @param $data
@@ -39,11 +33,6 @@ class Role
     public function create($data)
     {
     	try {
-    		if(!CommonHelper::verifyHash()) {
-			    if ( ! $this->authorizer->can( 'ROLE_CAN_CREATE' ) ) {
-				    throw new \Exception( 'You are not allowed' );
-			    }
-		    }
 		    $data = is_object( $data ) ? $data : (object) $data;
 		    $id   = 0;
 		    try {
@@ -251,9 +240,6 @@ class Role
 
     public function delete($id)
     {
-	    if(!$this->authorizer->can('ROLE_CAN_DELETE')){
-		    throw new \Exception('You are not allowed to delete this role');
-	    }
         if (empty($id)) {
             throw new \Exception('ID is required.');
         }

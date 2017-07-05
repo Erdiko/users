@@ -10,9 +10,11 @@
 namespace erdiko\users\controllers;
 
 use erdiko\authenticate\services\BasicAuthenticator;
+use erdiko\authorize\helpers\AuthorizerHelper;
 use erdiko\authorize\UserInterface;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\Role;
+use erdiko\users\validators\RoleValidator;
 
 class RoleAjax extends \erdiko\core\AjaxController
 {
@@ -151,6 +153,8 @@ class RoleAjax extends \erdiko\core\AjaxController
         );
 
         try {
+            AuthorizerHelper::can(RoleValidator::ROLE_CAN_RETRIEVE);
+
             $roleModel    = new \erdiko\users\models\Role();
             $roles = $roleModel->findByStatus(1);
             $responseRoles = array();
@@ -190,6 +194,8 @@ class RoleAjax extends \erdiko\core\AjaxController
 
         $data = (object) $_GET;
         try {
+            AuthorizerHelper::can(RoleValidator::ROLE_CAN_RETRIEVE);
+
             if (empty($data->id)) {
                 throw new \Exception('Role Id is required.');
             }
@@ -247,6 +253,8 @@ class RoleAjax extends \erdiko\core\AjaxController
         }
         $requiredParams = array('name', 'active');
         try {
+            AuthorizerHelper::can(RoleValidator::ROLE_CAN_CREATE);
+
             $data = (array) $data;
             foreach ($requiredParams as $param){
                 if (empty($data[$param])) {
@@ -298,6 +306,8 @@ class RoleAjax extends \erdiko\core\AjaxController
         }
         $requiredParams = array('id', 'name', 'active');
         try {
+            AuthorizerHelper::can(RoleValidator::ROLE_CAN_UPDATE);
+
             $data = (array) $data;
             foreach ($requiredParams as $param){
                 if (empty($data[$param])) {
@@ -348,6 +358,8 @@ class RoleAjax extends \erdiko\core\AjaxController
         }
         $requiredParams = array('id');
         try {
+            AuthorizerHelper::can(RoleValidator::ROLE_CAN_DELETE);
+
             $data = (array) $data;
             foreach ($requiredParams as $param){
                 if (empty($data[$param])) {

@@ -31,10 +31,6 @@ class Log
     public function __construct()
     {
         $this->_em    =  $this->getEntityManager();
-	    // Authorize
-	    $provider = new UserProvider();
-	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
-	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
     }
 
 

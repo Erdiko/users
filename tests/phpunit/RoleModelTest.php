@@ -58,9 +58,6 @@ class RoleModelTest extends \tests\ErdikoTestCase
 
     /**
      * test the Role is created.
-     *
-     * @expectedException \Exception
-     * @expectedExceptionMessage You are not allowed
      */
     function testCreateUnauthorized()
     {
@@ -78,7 +75,6 @@ class RoleModelTest extends \tests\ErdikoTestCase
 	    $this->id = $this->roleModel->create( $this->modelArray );
 	    $this->assertGreaterThan( 0, $this->id );
 	}
-
 
     /**
      * test the findById is working. The entity should exist.
