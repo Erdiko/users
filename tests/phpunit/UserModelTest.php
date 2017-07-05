@@ -226,9 +226,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
-	 * Case 2: no password
+	 * Case 2: no email
 	 * @expectedException \Exception
-	 * @expectedExceptionMessage email & password are required
+	 * @expectedExceptionMessage email is required
      *
      * test createUser is not working without required params.
 	 */
@@ -236,20 +236,6 @@ class UserModelTest extends \tests\ErdikoTestCase
 	{
 		$data = $this->userArrayData;
 		unset($data['email']);
-		$this->model->createUser($data);
-	}
-
-	/**
-	 * Case 3: no email
-	 * @expectedException \Exception
-	 * @expectedExceptionMessage email & password are required
-     *
-     * test createUser is not working without required params.
-	 */
-	public function testCreateUserFail3()
-	{
-		$data = $this->userArrayData;
-		unset($data['password']);
 		$this->model->createUser($data);
 	}
 

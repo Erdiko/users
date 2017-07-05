@@ -228,7 +228,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
             if ($authenticator->login(array('username'=>$data->email, 'password'=>$data->currentpass),'erdiko_user')) {
                 $usermodel = new \erdiko\users\models\User();
                 $currentUser = $authenticator->currentUser();
-                $currentUser->save(array('id' => $currentUser->getUserId(), 'password' => $data->newpass));
+                $currentUser->save(array('id' => $currentUser->getUserId(), 'new_password' => $data->newpass));
 
                 $response['success'] = true;
             } else{
