@@ -385,6 +385,13 @@ class User implements
      */
 	public function createUser($data = array())
     {
+	    if (empty($data)) {
+		    throw new \Exception( "User data is missing" );
+	    }
+
+	    if (empty($data['email']) && empty($data['password'])) {
+		    throw new \Exception( "email & password are required" );
+	    }
 		return $this->save($data);
 	}
 
@@ -406,7 +413,7 @@ class User implements
 	 * @return int
 	 * @throws \Exception
 	 */
-	public function save($data)
+	public function save($data=array())
     {
 
 		if (empty($data)) {
@@ -436,6 +443,8 @@ class User implements
 		}
 		if (isset($data->password)) {
 			$entity->setPassword($this->getSalted($data->password));
+		} elseif (isset($data->new_password)){
+			$entity->setPassword($this->getSalted($data->new_password));
 		}
 		if (empty($data->role)) {
 			$data->role = $this->_getDefaultRole();
@@ -454,12 +463,12 @@ class User implements
 		// Save the entity
 		try {
 			$eventType = $new ? Log::EVENT_CREATE : Log::EVENT_UPDATE;
-			if (isset($data->password)) {
-			    if ($eventType == Log::EVENT_UPDATE) {
-	                $eventType = Log::EVENT_PASSWORD;
-	            }
-			    unset($data->password);
-	        }
+			if(isset($data->new_password)){
+				$eventType = Log::EVENT_PASSWORD;
+				unset($data->new_password);
+			}
+			unset($data->password);
+
 			$this->createUserEventLog($eventType, $data);
 			$this->_em->flush();
 			$this->setEntity($entity);

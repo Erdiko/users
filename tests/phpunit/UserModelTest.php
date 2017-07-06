@@ -230,7 +230,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
-	 * Case 2: no password
+	 * Case 2: no email
 	 * @expectedException \Exception
 	 * @expectedExceptionMessage Email is required
      *
