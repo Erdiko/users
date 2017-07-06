@@ -20,6 +20,7 @@ class UserAjaxTest extends \tests\ErdikoTestCase
     protected $userModel;
     protected $logData;
     protected $user;
+    protected $token;
 
     public function setup()
     {
@@ -33,14 +34,31 @@ class UserAjaxTest extends \tests\ErdikoTestCase
 //        $this->loginAction(true);
         $client = new Client(['base_uri' => 'http://webserver']);
 
-//        $response = $client->post('/ajax/users/authentication/login', [
-//            'json' => [
-//                'email' => $this->validCredentials['username'],
-//                'password' => $this->validCredentials['password'],
-//            ]
-//        ]);
+        $response = $client->post('/ajax/users/authentication/login', [
+            'headers' => [
+                'Connection' => 'keep-alive'
+            ],
+            'json' => [
+                'email' => $this->validCredentials['username'],
+                'password' => $this->validCredentials['password'],
+            ]
+        ]);
+        $authResponse = json_decode($response->getBody());
+        $token = $authResponse->body->token;
 
-        $response = $client->get('ajax/erdiko/users/admin/list?pagesize=10&page=1&sort=id&direction=desc');
+//        $headers = $response->getHeaders();
+//        $setCookieRaw = explode('', $headers['Set-Cookie']);
+//
+//        var_dump($headers['Set-Cookie']);
+
+        $response = $client->get('/ajax/erdiko/users/admin/list',[
+            'headers' => [
+//                'Cookie' => $phpsessid,
+                'Connection' => 'keep-alive',
+                'Authorization' => 'Bearer '.$token,
+                'Content-Type' => 'application/json'
+            ]
+        ]);
 
         var_dump((string)$response->getBody());
     }
@@ -111,6 +129,7 @@ class UserAjaxTest extends \tests\ErdikoTestCase
         try {
             $result = $authenticator->login($authParams, 'jwt_auth');
             $this->user = $result->user->getEntity();
+            $this->token = $result->token;
             return true;
         } catch (\Exception $e) {
             // Mute Exception to continue with the process.
