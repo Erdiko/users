@@ -28,12 +28,12 @@ class UserModelTest extends \tests\ErdikoTestCase
 	protected $userArrayUpdate;
     protected $roleAdminArrayData;
     protected $roleUserArrayData;
-	protected $roleAnonymousData;
+	protected $roleGeneralData;
     protected $model;
     protected $roleModel;
     protected $userId;
     protected $adminId;
-    protected $anonymousId;
+    protected $generalId;
     protected $rolesCreated;
 
 	protected static $lastID;
@@ -71,8 +71,8 @@ class UserModelTest extends \tests\ErdikoTestCase
             "active" => 1
         );
 
-        $this->roleAnonymousArrayData = array(
-            "name" => 'anonymous',
+        $this->roleGeneralArrayData = array(
+            "name" => 'general',
             "active" => 1
         );
 
@@ -100,13 +100,13 @@ class UserModelTest extends \tests\ErdikoTestCase
             $this->userId = $roleEntity->getId();
         }
 
-        $roleEntity = $this->roleModel->findByName('anonymous');
+        $roleEntity = $this->roleModel->findByName('general');
         if (empty($roleEntity)) {
-            $id = $this->roleModel->create($this->roleAnonymousData);
+            $id = $this->roleModel->create($this->roleGeneralData);
             $this->rolesCreated[] = $id;
-            $this->anonymousId = $id;
+            $this->generalId = $id;
         } else{
-            $this->anonymousId = $roleEntity->getId();
+            $this->generalId = $roleEntity->getId();
         }
 
         $this->model = new \erdiko\users\models\User();
@@ -130,8 +130,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$entity = new \erdiko\users\entities\User();
 		$entity->setId( 0 );
 		$entity->setRole( $this->userId);
-		$entity->setName( 'anonymous' );
-		$entity->setEmail( 'anonymous' );
+		$entity->setName( 'general' );
+		$entity->setEmail( 'general' );
 		$this->model->setEntity($entity);
         $this->assertTrue(true);
 	}
@@ -145,7 +145,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 		$this->assertInstanceOf('\erdiko\users\entities\User', $entity);
 		$this->assertEquals('user', $entity->getName());
-		$this->assertEquals($this->anonymousId, $entity->getRole());
+		$this->assertEquals($this->generalId, $entity->getRole());
 		$this->assertEquals('user', $entity->getEmail());
 	}
 
@@ -160,7 +160,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$out = (object)array(
 			"id" => 0,
 			"name" => 'user',
-			"role" => $this->anonymousId,
+			"role" => $this->generalId,
 			"email" => 'user',
 			'gateway_customer_id' => null,
 			'last_login' => null
@@ -176,9 +176,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 	{
 		$object = (object)array(
 			"id" => 0,
-			"name" => 'anonymous',
-			"role" => $this->anonymousId,
-			"email" => 'anonymous',
+			"name" => 'general',
+			"role" => $this->generalId,
+			"email" => 'general',
 			'gateway_customer_id' => null,
 			'last_login' => null
 		);
@@ -265,9 +265,9 @@ class UserModelTest extends \tests\ErdikoTestCase
 		$result = $this->model->createUser($data); // Duplicate user
 	}
 
-	public function testIsAnonymous()
+	public function testIsGeneral()
 	{
-		$result = $this->model->isAnonymous();
+		$result = $this->model->isGeneral();
 		$this->assertTrue($result);
 	}
 
@@ -479,7 +479,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 				),
 				'user.bar@arroyolabs.com' => array(
 					'password' => '9fc9499787385f63da57293c71bb6aef',
-					'roles'    => array('anonymous'),
+					'roles'    => array('general'),
 				),
 			)
 		);

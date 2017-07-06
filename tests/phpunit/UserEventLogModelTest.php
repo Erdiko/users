@@ -190,7 +190,7 @@ class UserEventLogModelTest extends \tests\ErdikoTestCase
 				),
 				'user.bar@arroyolabs.com' => array(
 					'password' => '9fc9499787385f63da57293c71bb6aef',
-					'roles'    => array('anonymous'),
+					'roles'    => array('general'),
 				),
 			)
 		);
