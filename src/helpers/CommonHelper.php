@@ -71,6 +71,16 @@ class CommonHelper
 		}
 		return $result;
 	}
+//
+//	public static function checkCli()
+//    {
+//        if(!CommonHelper::verifyHash()) {
+//            // checks authorization
+//            if ( ! $this->authorizer->can( 'USER_CAN_CREATE', $entity ) ) {
+//                throw new \Exception( "You are not allowed", 112 );
+//            }
+//        }
+//    }
 
 	public static function startSession()
 	{

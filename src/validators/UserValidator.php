@@ -6,12 +6,20 @@ use erdiko\users\helpers\CommonHelper;
 
 class UserValidator implements \erdiko\authorize\ValidatorInterface
 {
-	private static $_attributes = [
-		'USER_CAN_CREATE',
-		'USER_CAN_DELETE',
-		'USER_CAN_SAVE',
-	];
 
+    const USER_CAN_LIST = 'USER_CAN_LIST';
+    const USER_CAN_RETRIEVE = 'USER_CAN_RETRIEVE';
+    const USER_CAN_CREATE = 'USER_CAN_CREATE';
+    const USER_CAN_DELETE = 'USER_CAN_DELETE';
+    const USER_CAN_SAVE = 'USER_CAN_SAVE';
+
+	private static $_attributes = [
+		self::USER_CAN_LIST,
+		self::USER_CAN_RETRIEVE,
+		self::USER_CAN_CREATE,
+		self::USER_CAN_DELETE,
+		self::USER_CAN_SAVE,
+	];
 
 	/**
 	 * Should return array of supported attributes as uppercase strings
@@ -65,6 +73,12 @@ class UserValidator implements \erdiko\authorize\ValidatorInterface
 		}
 
 		switch ($attribute) {
+			case 'USER_CAN_LIST':
+				$result = in_array($role,array('general','admin','super_admin'));
+				break;
+			case 'USER_CAN_RETRIEVE':
+				$result = in_array($role,array('general','admin','super_admin'));
+				break;
 			case 'USER_CAN_CREATE':
 				$result = in_array($role,array('admin','super_admin'));
 				break;

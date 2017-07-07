@@ -6,11 +6,17 @@ use erdiko\users\helpers\CommonHelper;
 
 class RoleValidator implements \erdiko\authorize\ValidatorInterface
 {
-	private static $_attributes = [
-		'ROLE_CAN_CREATE',
-		'ROLE_CAN_DELETE'
-	];
+    const ROLE_CAN_RETRIEVE = 'ROLE_CAN_RETRIEVE';
+    const ROLE_CAN_CREATE = 'ROLE_CAN_CREATE';
+    const ROLE_CAN_UPDATE = 'ROLE_CAN_UPDATE';
+    const ROLE_CAN_DELETE = 'ROLE_CAN_DELETE';
 
+	private static $_attributes = [
+		self::ROLE_CAN_RETRIEVE,
+		self::ROLE_CAN_CREATE,
+		self::ROLE_CAN_UPDATE,
+		self::ROLE_CAN_DELETE
+	];
 
 	/**
 	 * Should return array of supported attributes as uppercase strings
@@ -60,10 +66,10 @@ class RoleValidator implements \erdiko\authorize\ValidatorInterface
 		}
 
 		switch ($attribute) {
-			case 'ROLE_CAN_CREATE':
-				$result = $role=='super_admin';
-				break;
-			case 'ROLE_CAN_DELETE':
+            case self::ROLE_CAN_RETRIEVE:
+            case self::ROLE_CAN_CREATE:
+            case self::ROLE_CAN_UPDATE:
+            case self::ROLE_CAN_DELETE:
 				$result = $role=='super_admin';
 				break;
 			default:

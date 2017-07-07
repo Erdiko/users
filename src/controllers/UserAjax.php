@@ -319,7 +319,6 @@ class UserAjax extends \erdiko\core\AjaxController
                 $params = (object) $_POST;
             }
             $userModel = new User();
-            throw new \Exception(var_export($params,1),666);
             // Check Dupe email [ER-155]
             if(!empty($params->email)){
                 if(false === $userModel->isEmailUnique($params->email)){

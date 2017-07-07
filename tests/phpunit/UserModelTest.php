@@ -29,6 +29,9 @@ class UserModelTest extends \tests\ErdikoTestCase
     protected $roleAdminArrayData;
     protected $roleUserArrayData;
 	protected $roleGeneralData;
+    /**
+     * @var \erdiko\users\models\User
+     */
     protected $model;
     protected $roleModel;
     protected $userId;
@@ -214,7 +217,8 @@ class UserModelTest extends \tests\ErdikoTestCase
 	/**
 	 * Case 1: no email and no password
 	 * @expectedException \Exception
-	 * @expectedExceptionMessage email & password are required
+	 * @expectedExceptionMessage Email is required
+	 * @expectedExceptionMessage Password is required
      *
      * test createUser is not working without required params.
 	 */
@@ -228,7 +232,7 @@ class UserModelTest extends \tests\ErdikoTestCase
 	/**
 	 * Case 2: no email
 	 * @expectedException \Exception
-	 * @expectedExceptionMessage email is required
+	 * @expectedExceptionMessage Email is required
      *
      * test createUser is not working without required params.
 	 */
@@ -240,7 +244,23 @@ class UserModelTest extends \tests\ErdikoTestCase
 	}
 
 	/**
+	 * Case 3: no email
+	 * @expectedException \Exception
+     * @expectedExceptionMessage Password is required
+     *
+     * test createUser is not working without required params.
+	 */
+	public function testCreateUserFail3()
+	{
+		$data = $this->userArrayData;
+		unset($data['password']);
+		$this->model->createUser($data);
+	}
+
+	/**
 	 * test createUser works with params required.
+     *
+     * @expectedException
 	 */
 	public function testCreateUser()
 	{
@@ -305,7 +325,6 @@ class UserModelTest extends \tests\ErdikoTestCase
         $this->assertTrue($logged);
     }
 
-
     /**
      * test lastLogin attribute is set after login.
      */
@@ -324,8 +343,6 @@ class UserModelTest extends \tests\ErdikoTestCase
         $entity = $this->model->getEntity();
         $this->assertNotEmpty($entity->getLastLogin());
     }
-
-
 
     /**
      * test getUsers method is working
@@ -384,7 +401,6 @@ class UserModelTest extends \tests\ErdikoTestCase
 		self::$lastID = $newEntity->getId();
 	}
 
-
     /**
      * same goal the prior test, but with an existent user.
      */
@@ -429,7 +445,6 @@ class UserModelTest extends \tests\ErdikoTestCase
 
 		$this->assertTrue($result);
 	}
-
 
     /**
      * test delete is not working when a null id is given.

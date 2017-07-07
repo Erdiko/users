@@ -17,9 +17,11 @@ use erdiko\authenticate\iErdikoUser;
 use erdiko\authenticate\services\BasicAuthenticator;
 
 use erdiko\authorize\Authorizer;
+use erdiko\authorize\helpers\AuthorizerHelper;
 use erdiko\authorize\UserInterface;
 use erdiko\users\models\User;
 use erdiko\users\models\user\event\Log;
+use erdiko\users\validators\UserValidator;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
@@ -190,6 +192,8 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
+		    AuthorizerHelper::can(UserValidator::USER_CAN_SAVE);
+
             $data = json_decode(file_get_contents("php://input"));
             if (empty($data)) {
                 $data = (object) $_POST;
@@ -268,6 +272,8 @@ class UserAjax extends \erdiko\core\AjaxController
         $data->direction    = 'desc';
 
         try {
+            AuthorizerHelper::can(UserValidator::USER_CAN_LIST);
+
             if (array_key_exists("sort", $_GET)) {
                 $sort = strtolower($_GET["sort"]);
                 $data->sort = $sort;
@@ -326,6 +332,8 @@ class UserAjax extends \erdiko\core\AjaxController
         );
 
         try {
+            AuthorizerHelper::can(UserValidator::USER_CAN_RETRIEVE);
+
             $params = (object) $_GET;
             // Check required fields
             if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
@@ -372,6 +380,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
         try {
+            AuthorizerHelper::can(UserValidator::USER_CAN_SAVE);
 
             $params = json_decode(file_get_contents("php://input"));
             if (empty($params)) {
@@ -426,6 +435,8 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
+            AuthorizerHelper::can(UserValidator::USER_CAN_DELETE);
+
             $data = json_decode(file_get_contents("php://input"));
             if (empty($data)) {
                 $data = (object) $_POST;
@@ -499,6 +510,8 @@ class UserAjax extends \erdiko\core\AjaxController
 
         $validDirection = array('asc', 'desc');
         try {
+            AuthorizerHelper::can(UserValidator::USER_CAN_LIST);
+
             if (array_key_exists("sort", $_GET)) {
                 $sort = strtolower($_GET["sort"]);
                 $data->sort = $sort;
@@ -576,6 +589,7 @@ class UserAjax extends \erdiko\core\AjaxController
 
         $validDirection = array('asc', 'desc');
         try {
+            AuthorizerHelper::can(UserValidator::USER_CAN_LIST);
 
             $user_id = null;
             if (array_key_exists("user_id", $_GET)) {
@@ -643,6 +657,8 @@ class UserAjax extends \erdiko\core\AjaxController
         );
 
         try {
+            AuthorizerHelper::can(UserValidator::USER_CAN_SAVE);
+
             $params = json_decode(file_get_contents("php://input"));
             if (empty($params)) {
                 $params = (object) $_POST;

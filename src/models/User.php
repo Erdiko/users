@@ -28,7 +28,6 @@ class User implements
 	const PASSWORDSALT = "FOO"; // @todo add salt to config instead
 	protected $_user;
 	private $_em;
-	protected $authorizer;
 
     /**
      *
@@ -39,11 +38,6 @@ class User implements
 		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
-	    // Authorize
-	    $provider = new UserProvider();
-	    $authManager = new \erdiko\authenticate\AuthenticationManager($provider);
-	    $this->authorizer = new \erdiko\authorize\Authorizer($authManager);
-
 		$this->_user = self::createGeneral();
 	}
 
@@ -343,11 +337,6 @@ class User implements
 		try {
 			$_user = $this->_em->getRepository( 'erdiko\users\entities\User' )->findOneBy(array('id'=>$id));
 
-			// checks authorization
-			if(!$this->authorizer->can('USER_CAN_DELETE',$_user)){
-				throw new \Exception("You are not allowed to delete this user",113);
-			}
-
 			if (! is_null($_user)) {
 				$this->_em->remove($_user);
 				$this->_em->flush();
@@ -409,12 +398,12 @@ class User implements
 	protected function _getDefaultRole()
 	{
 		$roleModel = new \erdiko\users\models\Role();
-		$roleAnonymous = $roleModel->findByName('anonymous');
-		if (empty($roleAnonymous)) {
+		$roleGeneral = $roleModel->findByName('general');
+		if (empty($roleGeneral)) {
 			throw  new \Exception('Default role not found.');
 		}
 
-		return $roleAnonymous->getId();
+		return $roleGeneral->getId();
 	}
 
 	/**
@@ -430,13 +419,13 @@ class User implements
 		if (empty($data)) {
 			throw new \Exception( "User data is missing" );
 		}
+        $data = (object) $data;
 
-		$data = is_object($data)
-			? $data
-			: (object) $data;
-
-		if (empty($data->email)) {
-			throw new \Exception( "email is required" );
+		if ((!isset($data->email) || empty($data->email)) && !isset($data->password)) {
+			throw new \Exception( "Email is required" );
+		}
+		if (isset($data->password) && empty($data->password)) {
+			throw new \Exception( "Password is required" );
 		}
 
 		$new  = false;
@@ -466,18 +455,8 @@ class User implements
 		}
 
 		if ($new) {
-			if(!CommonHelper::verifyHash()) {
-				// checks authorization
-				if ( ! $this->authorizer->can( 'USER_CAN_CREATE', $entity ) ) {
-					throw new \Exception( "You are not allowed", 112 );
-				}
-			}
 			$this->_em->persist($entity);
 		} else {
-			// checks authorization
-		    if(!$this->authorizer->can('USER_CAN_SAVE',$entity)){
-			    throw new \Exception("You are not allowed",111);
-		    }
 			$this->_em->merge($entity);
 		}
 
