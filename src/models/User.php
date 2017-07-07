@@ -421,10 +421,10 @@ class User implements
 		}
         $data = (object) $data;
 
-		if (!isset($data->email) || empty($data->email)) {
+		if ((!isset($data->email) || empty($data->email)) && !isset($data->password)) {
 			throw new \Exception( "Email is required" );
 		}
-		if (!isset($data->password) || empty($data->password)) {
+		if (isset($data->password) && empty($data->password)) {
 			throw new \Exception( "Password is required" );
 		}
 

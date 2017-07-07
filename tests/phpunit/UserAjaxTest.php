@@ -11,138 +11,281 @@ require_once dirname(__DIR__) . '/ErdikoTestCase.php';
 
 class UserAjaxTest extends \tests\ErdikoTestCase
 {
+    /**
+     * @var Client
+     */
+    protected $client;
 
-    protected $loginData;
-    protected $validCredentials = [
-        'username' => 'erdiko.super@arroyolabs.com',
+    protected $credentialsAsSuper = [
+        'email' => 'erdiko.super@arroyolabs.com',
         'password' => 'master_password'
     ];
-    protected $userModel;
-    protected $logData;
-    protected $user;
-    protected $token;
+
+    protected $credentialsAsUser = [
+        'email' => 'user.bar@arroyolabs.com',
+        'password' => 'barpassword'
+    ];
+
+    protected $requestOptions = [];
 
     public function setup()
     {
-        $this->initDummySession();
-//        $this->initModels();
-        $this->initBasicLoginData();
+        $this->client = new Client(['base_uri' => 'http://webserver']);
     }
 
-    public function testPostCreate()
+    protected function login($credentials)
     {
-//        $this->loginAction(true);
-        $client = new Client(['base_uri' => 'http://webserver']);
+        $response = $this->client->post('/ajax/users/authentication/login', ['json' => $credentials]);
+        $phpsessid = $this->getPhpsessid($response->getHeader('Set-Cookie'));
 
-        $response = $client->post('/ajax/users/authentication/login', [
-            'headers' => [
-                'Connection' => 'keep-alive'
-            ],
-            'json' => [
-                'email' => $this->validCredentials['username'],
-                'password' => $this->validCredentials['password'],
-            ]
-        ]);
-        $authResponse = json_decode($response->getBody());
-        $token = $authResponse->body->token;
+        $jsonResponse = $this->getJsonResponse($response);
+        $token = $jsonResponse->body->token;
 
-//        $headers = $response->getHeaders();
-//        $setCookieRaw = explode('', $headers['Set-Cookie']);
-//
-//        var_dump($headers['Set-Cookie']);
-
-        $response = $client->get('/ajax/erdiko/users/admin/list',[
-            'headers' => [
-//                'Cookie' => $phpsessid,
-                'Connection' => 'keep-alive',
-                'Authorization' => 'Bearer '.$token,
-                'Content-Type' => 'application/json'
-            ]
-        ]);
-
-        var_dump((string)$response->getBody());
+        $this->requestOptions = ['headers' => [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer '.$token,
+            'Cookie' => $phpsessid
+        ]];
     }
 
-    /**
-     * Initialize $_SESSION for login process
-     */
-    private function initDummySession()
+    protected function loginAsUser()
     {
-        if (!isset($_SESSION)) {
-            $_SESSION = [];
-        }
+        $this->login($this->credentialsAsUser);
     }
 
-    /**
-     *  Initialize Basic Login Data
-     */
-    private function initBasicLoginData()
+    protected function loginAsSuper()
     {
-        $config     = \Erdiko::getConfig();
-        $this->loginData = [
-            'secret_key' => $config["site"]["secret_key"]
+        $this->login($this->credentialsAsSuper);
+    }
+
+    protected function getPhpsessid($setCookie)
+    {
+        $setCookieRaw = explode(';', $setCookie[0]);
+        return $setCookieRaw[0];
+    }
+
+    protected function getJsonResponse($response)
+    {
+        return json_decode($response->getBody());
+    }
+
+    protected function setJsonDataRequest($data)
+    {
+        $this->requestOptions['json'] = $data;
+    }
+
+    public function testPostCreateSuccess()
+    {
+        $this->loginAsSuper();
+        $response = $this->postCreate();
+        $this->assertSuccessCall($response);
+
+        return $response->body->user;
+    }
+
+    public function testPostCreateFail()
+    {
+        $this->loginAsUser();
+        $response = $this->postCreate();
+        $this->assertFailCall($response);
+    }
+
+    protected function postCreate()
+    {
+        $createUserData = [
+            "email" => "user.create+".rand(0,9999)."@email.com",
+            "name" => "Customer Name",
+            "password" => "123456",
+            "role" => "1"
         ];
+        $this->setJsonDataRequest($createUserData);
+        return $this->makeCall('POST', '/ajax/erdiko/users/admin/create');
     }
 
     /**
-     * Retrieve Valid Credentials
-     *
-     * @return array
+     * @depends testPostCreateSuccess
      */
-    private function getValidCredentials()
+    public function testUpdateSuccess($user)
     {
-        return array_merge($this->loginData, $this->validCredentials);
+        $this->loginAsSuper();
+        $response = $this->postUpdate($user);
+        $this->assertSuccessCall($response);
     }
 
     /**
-     * Retrieve Invalid Credentials
-     *
-     * @return array
+     * @depends testPostCreateSuccess
      */
-    private function getInvalidCredentials($user)
+    public function testUpdateFail($user)
     {
-        $invalidCredentials = $this->validCredentials;
-        $invalidCredentials['password'] = rand(0, 99999);
-        if (!$user) {
-            $invalidCredentials['username'] = $invalidCredentials['username'].rand(0, 99999);
-        }
-
-        return array_merge($this->loginData, $invalidCredentials);
+        $this->loginAsUser();
+        $response = $this->postUpdate($user);
+        $this->assertFailCall($response);
     }
 
     /**
-     * Login Action
+     * @depends testPostCreateSuccess
      *
-     * @param bool $valid
-     * @return bool
+     * @return mixed
      */
-    protected function loginAction($valid=true, $user=true)
+    protected function postUpdate($user)
     {
-        $authenticator = new JWTAuthenticator(new User());
-        $config     = \Erdiko::getConfig();
-        $secretKey  = $config["site"]["secret_key"];
-        $credentials = $valid ? $this->getValidCredentials() : $this->getInvalidCredentials($user);
-        $this->logData = ['email' => $credentials['username']];
-        $authParams = $credentials;
-        $authParams['secret_key'] = $secretKey;
+        $updateUserData = [
+            "id" => $user->id,
+            "email" => $user->email,
+            "name" => $user->name . ' Update',
+            "role" => "1"
+        ];
+        $this->setJsonDataRequest($updateUserData);
+        return $this->makeCall('POST', '/ajax/erdiko/users/admin/update');
+    }
 
-        try {
-            $result = $authenticator->login($authParams, 'jwt_auth');
-            $this->user = $result->user->getEntity();
-            $this->token = $result->token;
-            return true;
-        } catch (\Exception $e) {
-            // Mute Exception to continue with the process.
-        }
+    /**
+     * @depends testPostCreateSuccess
+     */
+    public function testChangePassSuccess($user)
+    {
+        $this->loginAsSuper();
+        $response = $this->postUpdate($user);
+        $this->assertSuccessCall($response);
+    }
 
-        $this->user = $this->userModel->getGeneral()->getEntity();
-        $this->logData['message'] = "User {$credentials['username']} not found.";
-        $users = $this->userModel->getByParams(['email'=>$credentials['username']]);
-        if (count($users)>0) {
-            $this->user = $users[0];
-            $this->logData['message'] = "Invalid Password";
-        }
-        return false;
+    /**
+     * @depends testPostCreateSuccess
+     */
+    public function testChangePassFail($user)
+    {
+        $this->loginAsUser();
+        $response = $this->postChangePass($user);
+        $this->assertFailCall($response);
+    }
+
+    protected function postChangePass($user)
+    {
+        $updatePassData = [
+            'id' => $user->id,
+            'password' => 'newpass'
+        ];
+        $this->setJsonDataRequest($updatePassData);
+        return $this->makeCall('POST', '/ajax/erdiko/users/admin/changepass');
+    }
+
+    public function testListSuccess()
+    {
+        $this->loginAsSuper();
+        $response = $this->getList();
+        $this->assertSuccessCall($response);
+    }
+
+    public function testListFail()
+    {
+        $response = $this->getList();
+        $this->assertFailCall($response);
+    }
+
+    protected function getList()
+    {
+        return $this->makeCall('GET', '/ajax/erdiko/users/admin/list');
+    }
+
+    /**
+     * @depends testPostCreateSuccess
+     */
+    public function testRetrieveSuccess($user)
+    {
+        $this->loginAsSuper();
+        $response = $this->getRetrieve($user);
+        $this->assertSuccessCall($response);
+    }
+
+    /**
+     * @depends testPostCreateSuccess
+     */
+    public function testRetrieveFail($user)
+    {
+        $response = $this->getRetrieve($user);
+        $this->assertFailCall($response);
+    }
+
+    protected function getRetrieve($user)
+    {
+        return $this->makeCall('GET', '/ajax/erdiko/users/admin/retrieve?id='.$user->id);
+    }
+
+    /**
+     * @depends testPostCreateSuccess
+     */
+    public function testDeleteSuccess($user)
+    {
+        $this->loginAsSuper();
+        $response = $this->postDelete($user);
+        $this->assertSuccessCall($response);
+    }
+
+    /**
+     * @depends testPostCreateSuccess
+     */
+    public function testDeleteFail($user)
+    {
+        $this->loginAsUser();
+        $response = $this->postDelete($user);
+        $this->assertFailCall($response);
+    }
+
+    protected function postDelete($user)
+    {
+        $deleteUserData = [
+            'id' => $user->id,
+        ];
+        $this->setJsonDataRequest($deleteUserData);
+        return $this->makeCall('POST', '/ajax/erdiko/users/admin/delete');
+    }
+
+    protected function makeCall($method, $uri)
+    {
+        $response = $this->client->request($method, $uri, $this->requestOptions);
+        return $this->getJsonResponse($response);
+    }
+
+    protected function assertSuccessCall($response)
+    {
+        $this->assertSuccessResponse($response);
+        $this->assertSuccessBody($response);
+    }
+
+    protected function assertFailCall($response)
+    {
+        $this->assertErrorResponse($response);
+        $this->assertErrorBody($response);
+    }
+
+    protected function assertSuccessResponse($response)
+    {
+        $this->assertEquals($response->status, 200);
+        $this->assertFalse($response->errors);
+        $this->assertNotEmpty($response->body);
+    }
+
+    protected function assertErrorResponse($response)
+    {
+        $this->assertEquals($response->status, 200);
+        $this->assertFalse($response->errors);
+        $this->assertNotEmpty($response->body);
+    }
+
+    protected function assertSuccessBody($response)
+    {
+        $this->assertNotEmpty($response->body->method);
+        $this->assertTrue($response->body->success);
+        $this->assertEquals($response->body->error_code, 0);
+        $this->assertEmpty($response->body->error_message);
+    }
+
+    protected function assertErrorBody($response)
+    {
+        $this->assertNotEmpty($response->body->method);
+        $this->assertFalse($response->body->success);
+        $this->assertNotEquals($response->body->error_code, 0);
+        $this->assertNotEmpty($response->body->error_message);
     }
 
 }
