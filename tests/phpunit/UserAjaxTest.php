@@ -145,7 +145,7 @@ class UserAjaxTest extends \tests\ErdikoTestCase
     public function testChangePassSuccess($user)
     {
         $this->loginAsSuper();
-        $response = $this->postUpdate($user);
+        $response = $this->postChangePass($user);
         $this->assertSuccessCall($response);
     }
 
@@ -163,7 +163,9 @@ class UserAjaxTest extends \tests\ErdikoTestCase
     {
         $updatePassData = [
             'id' => $user->id,
-            'password' => 'newpass'
+            'email' => $user->email,
+            'password' => 'password',
+            'newpass' => 'newpass'
         ];
         $this->setJsonDataRequest($updatePassData);
         return $this->makeCall('POST', '/ajax/erdiko/users/admin/changepass');
