@@ -73,10 +73,15 @@ class UserAjaxTest extends \tests\ErdikoTestCase
     {
         $this->client = new Client(['base_uri' => $host]);
 
-        $response = $this->client->post('/ajax/users/authentication/login', ['json' => $this->credentialsAsSuper]);
-        $jsonResponse = $this->getJsonResponse($response);
+        try {
+            $response = $this->client->post('/ajax/users/authentication/login', ['json' => $this->credentialsAsSuper]);
+            $jsonResponse = $this->getJsonResponse($response);
 
-        var_dump($jsonResponse);
+            var_dump($jsonResponse);
+        } catch (\Exception $e) {
+            var_dump( $e->getMessage() );
+        }
+
     }
 
 //    public function setup()
@@ -115,10 +120,10 @@ class UserAjaxTest extends \tests\ErdikoTestCase
 //        return $setCookieRaw[0];
 //    }
 //
-//    protected function getJsonResponse($response)
-//    {
-//        return json_decode($response->getBody());
-//    }
+    protected function getJsonResponse($response)
+    {
+        return json_decode($response->getBody());
+    }
 //
 //    protected function setJsonDataRequest($data)
 //    {
