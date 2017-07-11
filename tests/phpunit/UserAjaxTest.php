@@ -37,19 +37,19 @@ class UserAjaxTest extends \tests\ErdikoTestCase
         'http://0.0.0.0',
     ];
 
-    public function testCurl()
-    {
-        foreach ($this->hosts as $host) {
-            $this->callWithCurl($host);
-        }
-    }
-
-    public function testGuzzle()
-    {
-        foreach ($this->hosts as $host) {
-            $this->callWithGuzzle($host);
-        }
-    }
+//    public function testCurl()
+//    {
+//        foreach ($this->hosts as $host) {
+//            $this->callWithCurl($host);
+//        }
+//    }
+//
+//    public function testGuzzle()
+//    {
+//        foreach ($this->hosts as $host) {
+//            $this->callWithGuzzle($host);
+//        }
+//    }
 
     protected function callWithCurl($host)
     {
@@ -65,6 +65,10 @@ class UserAjaxTest extends \tests\ErdikoTestCase
         );
 
         $result = curl_exec($ch);
+
+        if ($result === FALSE) {
+            var_dump(curl_errno($ch));
+        }
 
         var_dump($result);
     }
@@ -84,80 +88,80 @@ class UserAjaxTest extends \tests\ErdikoTestCase
 
     }
 
-//    public function setup()
-//    {
-//        $this->client = new Client(['base_uri' => 'http://erdiko.local/']);
-//    }
-//
-//    protected function login($credentials)
-//    {
-//        $response = $this->client->post('/ajax/users/authentication/login', ['json' => $credentials]);
-//        $phpsessid = $this->getPhpsessid($response->getHeader('Set-Cookie'));
-//
-//        $jsonResponse = $this->getJsonResponse($response);
-//        $token = $jsonResponse->body->token;
-//
-//        $this->requestOptions = ['headers' => [
-//            'Content-Type' => 'application/json',
-//            'Authorization' => 'Bearer '.$token,
-//            'Cookie' => $phpsessid
-//        ]];
-//    }
-//
-//    protected function loginAsUser()
-//    {
-//        $this->login($this->credentialsAsUser);
-//    }
-//
-//    protected function loginAsSuper()
-//    {
-//        $this->login($this->credentialsAsSuper);
-//    }
-//
-//    protected function getPhpsessid($setCookie)
-//    {
-//        $setCookieRaw = explode(';', $setCookie[0]);
-//        return $setCookieRaw[0];
-//    }
-//
+    public function setup()
+    {
+        $this->client = new Client(['base_uri' => 'http://webserver/']);
+    }
+
+    protected function login($credentials)
+    {
+        $response = $this->client->post('/ajax/users/authentication/login', ['json' => $credentials]);
+        $phpsessid = $this->getPhpsessid($response->getHeader('Set-Cookie'));
+
+        $jsonResponse = $this->getJsonResponse($response);
+        $token = $jsonResponse->body->token;
+
+        $this->requestOptions = ['headers' => [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer '.$token,
+            'Cookie' => $phpsessid
+        ]];
+    }
+
+    protected function loginAsUser()
+    {
+        $this->login($this->credentialsAsUser);
+    }
+
+    protected function loginAsSuper()
+    {
+        $this->login($this->credentialsAsSuper);
+    }
+
+    protected function getPhpsessid($setCookie)
+    {
+        $setCookieRaw = explode(';', $setCookie[0]);
+        return $setCookieRaw[0];
+    }
+
     protected function getJsonResponse($response)
     {
         return json_decode($response->getBody());
     }
-//
-//    protected function setJsonDataRequest($data)
-//    {
-//        $this->requestOptions['json'] = $data;
-//    }
-//
-//    public function testPostCreateSuccess()
-//    {
-//        $this->loginAsSuper();
-//        $response = $this->postCreate();
-//        $this->assertSuccessCall($response);
-//
-//        return $response->body->user;
-//    }
-//
-//    public function testPostCreateFail()
-//    {
-//        $this->loginAsUser();
-//        $response = $this->postCreate();
-//        $this->assertFailCall($response);
-//    }
-//
-//    protected function postCreate()
-//    {
-//        $createUserData = [
-//            "email" => "user.create+".rand(0,9999)."@email.com",
-//            "name" => "Customer Name",
-//            "password" => "123456",
-//            "role" => "1"
-//        ];
-//        $this->setJsonDataRequest($createUserData);
-//        return $this->makeCall('POST', '/ajax/erdiko/users/admin/create');
-//    }
-//
+
+    protected function setJsonDataRequest($data)
+    {
+        $this->requestOptions['json'] = $data;
+    }
+
+    public function testPostCreateSuccess()
+    {
+        $this->loginAsSuper();
+        $response = $this->postCreate();
+        $this->assertSuccessCall($response);
+
+        return $response->body->user;
+    }
+
+    public function testPostCreateFail()
+    {
+        $this->loginAsUser();
+        $response = $this->postCreate();
+        $this->assertFailCall($response);
+    }
+
+    protected function postCreate()
+    {
+        $createUserData = [
+            "email" => "user.create+".rand(0,9999)."@email.com",
+            "name" => "Customer Name",
+            "password" => "123456",
+            "role" => "1"
+        ];
+        $this->setJsonDataRequest($createUserData);
+        return $this->makeCall('POST', '/ajax/erdiko/users/admin/create');
+    }
+
 //    /**
 //     * @depends testPostCreateSuccess
 //     */
@@ -297,53 +301,53 @@ class UserAjaxTest extends \tests\ErdikoTestCase
 //        $this->setJsonDataRequest($deleteUserData);
 //        return $this->makeCall('POST', '/ajax/erdiko/users/admin/delete');
 //    }
-//
-//    protected function makeCall($method, $uri)
-//    {
-//        $response = $this->client->request($method, $uri, $this->requestOptions);
-//        return $this->getJsonResponse($response);
-//    }
-//
-//    protected function assertSuccessCall($response)
-//    {
-//        $this->assertSuccessResponse($response);
-//        $this->assertSuccessBody($response);
-//    }
-//
-//    protected function assertFailCall($response)
-//    {
-//        $this->assertErrorResponse($response);
-//        $this->assertErrorBody($response);
-//    }
-//
-//    protected function assertSuccessResponse($response)
-//    {
-//        $this->assertEquals($response->status, 200);
-//        $this->assertFalse($response->errors);
-//        $this->assertNotEmpty($response->body);
-//    }
-//
-//    protected function assertErrorResponse($response)
-//    {
-//        $this->assertEquals($response->status, 200);
-//        $this->assertFalse($response->errors);
-//        $this->assertNotEmpty($response->body);
-//    }
-//
-//    protected function assertSuccessBody($response)
-//    {
-//        $this->assertNotEmpty($response->body->method);
-//        $this->assertTrue($response->body->success);
-//        $this->assertEquals($response->body->error_code, 0);
-//        $this->assertEmpty($response->body->error_message);
-//    }
-//
-//    protected function assertErrorBody($response)
-//    {
-//        $this->assertNotEmpty($response->body->method);
-//        $this->assertFalse($response->body->success);
-//        $this->assertNotEquals($response->body->error_code, 0);
-//        $this->assertNotEmpty($response->body->error_message);
-//    }
+
+    protected function makeCall($method, $uri)
+    {
+        $response = $this->client->request($method, $uri, $this->requestOptions);
+        return $this->getJsonResponse($response);
+    }
+
+    protected function assertSuccessCall($response)
+    {
+        $this->assertSuccessResponse($response);
+        $this->assertSuccessBody($response);
+    }
+
+    protected function assertFailCall($response)
+    {
+        $this->assertErrorResponse($response);
+        $this->assertErrorBody($response);
+    }
+
+    protected function assertSuccessResponse($response)
+    {
+        $this->assertEquals($response->status, 200);
+        $this->assertFalse($response->errors);
+        $this->assertNotEmpty($response->body);
+    }
+
+    protected function assertErrorResponse($response)
+    {
+        $this->assertEquals($response->status, 200);
+        $this->assertFalse($response->errors);
+        $this->assertNotEmpty($response->body);
+    }
+
+    protected function assertSuccessBody($response)
+    {
+        $this->assertNotEmpty($response->body->method);
+        $this->assertTrue($response->body->success);
+        $this->assertEquals($response->body->error_code, 0);
+        $this->assertEmpty($response->body->error_message);
+    }
+
+    protected function assertErrorBody($response)
+    {
+        $this->assertNotEmpty($response->body->method);
+        $this->assertFalse($response->body->success);
+        $this->assertNotEquals($response->body->error_code, 0);
+        $this->assertNotEmpty($response->body->error_message);
+    }
 
 }
