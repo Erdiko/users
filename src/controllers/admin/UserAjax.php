@@ -688,7 +688,11 @@ class UserAjax extends \erdiko\core\AjaxController
 
             $userToChange = $userResult[0];
 
-            $res = $user->save(array('id' => $userToChange->getId(), 'password' => $params->newpass));
+            $res = $user->save(array(
+                'id' => $userToChange->getId(),
+                'email' => $userToChange->getEmail(),
+                'password' => $params->newpass
+            ));
 
             $response['success'] = true;
 
