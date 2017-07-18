@@ -175,7 +175,7 @@ class User implements
 		$pwd = md5( $pass );
 		// @todo: repository could change...
 		$repo   = $this->getRepository( '\erdiko\users\entities\User' );
-		$result = $repo->findOnqeBy( array( 'email' => $email, 'password' => $pwd ) );
+		$result = $repo->findOneBy( array( 'email' => $email, 'password' => $pwd ) );
 
 		if (!empty($result)) {
 		    //update last_login
