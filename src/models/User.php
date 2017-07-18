@@ -38,7 +38,11 @@ class User implements
 		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
-		$this->_user = self::createGeneral();
+		try {
+            $this->_user = self::createGeneral();
+        } catch (\Exception $e) {
+            throw new \Exception('Parameter must be an entity User');
+        }
 	}
 
     /**
@@ -171,7 +175,7 @@ class User implements
 		$pwd = md5( $pass );
 		// @todo: repository could change...
 		$repo   = $this->getRepository( '\erdiko\users\entities\User' );
-		$result = $repo->findOneBy( array( 'email' => $email, 'password' => $pwd ) );
+		$result = $repo->findOnqeBy( array( 'email' => $email, 'password' => $pwd ) );
 
 		if (!empty($result)) {
 		    //update last_login
