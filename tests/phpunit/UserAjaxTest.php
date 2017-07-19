@@ -286,7 +286,7 @@ class UserAjaxTest extends \tests\ErdikoTestCase
     {
         $this->assertNotEmpty($response->body->method);
         $this->assertFalse($response->body->success);
-        $this->assertNotEquals($response->body->error_code, 0);
+        $this->assertEquals((int)$response->body->error_code, 0);
         $this->assertNotEmpty($response->body->error_message);
     }
 
