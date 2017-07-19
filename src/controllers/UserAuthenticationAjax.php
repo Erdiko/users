@@ -65,7 +65,7 @@ class UserAuthenticationAjax extends \erdiko\core\AjaxController
             }
 
             // load action based off of naming conventions
-//            header('Content-Type: application/json');
+            header('Content-Type: application/json');
             return $this->_autoaction($var, 'post');
         } else {
             return $this->getNoop();
