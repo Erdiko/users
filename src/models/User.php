@@ -38,7 +38,11 @@ class User implements
 		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
-		$this->_user = self::createGeneral();
+		try {
+            $this->_user = self::createGeneral();
+        } catch (\Exception $e) {
+            throw new \Exception('Parameter must be an entity User');
+        }
 	}
 
     /**
