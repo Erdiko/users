@@ -85,7 +85,7 @@ class ErdikoUsersInstall {
             $user["role"] = $this->_getRole($user["role"])->getId();
 
             // create the user
-            $createResult = $this->_userService->createUser($user);
+            $createResult = (boolean)$this->_userService->createUser($user);
 
             unset($user["password"]);
 
