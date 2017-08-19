@@ -113,6 +113,10 @@ class User implements
 		return $entity;
 	}
 
+	public static function getAnonymous()
+	{
+		return self::createGeneral();
+	}
 
     /**
      * @return User
