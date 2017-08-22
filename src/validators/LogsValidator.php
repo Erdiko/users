@@ -6,10 +6,14 @@ use erdiko\users\helpers\CommonHelper;
 
 class LogsValidator implements \erdiko\authorize\ValidatorInterface
 {
+	const LOGS_CAN_LIST = 'LOGS_CAN_LIST';
+	const LOGS_CAN_CREATE = 'LOGS_CAN_CREATE';
+	const LOGS_CAN_FILTER = 'LOGS_CAN_FILTER';
+
 	private static $_attributes = [
-		'LOGS_CAN_LIST',
-		'LOGS_CAN_CREATE',
-		'LOGS_CAN_FILTER'
+		self::LOGS_CAN_LIST,
+		self::LOGS_CAN_CREATE,
+		self::LOGS_CAN_FILTER
 	];
 
 

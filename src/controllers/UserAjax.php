@@ -10,38 +10,54 @@
 namespace erdiko\users\controllers;
 
 use erdiko\authenticate\services\BasicAuthenticator;
+use erdiko\authenticate\services\JWTAuthenticator;
+use erdiko\authorize\helpers\AuthorizerHelper;
 use erdiko\authorize\UserInterface;
 use erdiko\authorize\Authorizer;
 use erdiko\users\models\User;
 use erdiko\users\models\user\event\Log;
+use erdiko\users\validators\LogsValidator;
+use erdiko\users\validators\UserValidator;
 
 class UserAjax extends \erdiko\core\AjaxController
 {
     private $id = null;
 
 	/**
-	 * @param $action
-	 * @param $resource
+	 * It always returns true because login is not a must in this section, but we still want to create authenticator
+	 * instance if there's a logged in user to restrict some actions.
 	 *
 	 * @return bool
 	 */
-	protected function checkAuth($action,$resource)
+	protected function checkAuth()
 	{
 		try {
-			$userModel  = new User();
-			$auth       = new BasicAuthenticator($userModel);
-			$user       = $auth->currentUser();
-			if($user instanceof UserInterface){
-				$authorizer = new Authorizer( $user );
-				$result     = $authorizer->can( $action, $resource );
-			} else {
-				$result = false;
-			}
+
+			// get the JWT from the headers
+			list($jwt) = sscanf($_SERVER["HTTP_AUTHORIZATION"], 'Bearer %s');
+
+			// init the jwt auth class
+			$authenticator = new JWTAuthenticator(new User());
+
+			// get the application secret key
+			$config     = \Erdiko::getConfig();
+			$secretKey  = $config["site"]["secret_key"];
+
+			// collect login params
+			$params = array(
+				'secret_key'    =>  $secretKey,
+				'jwt'           =>  $jwt
+			);
+
+			$user = $authenticator->verify($params, 'jwt_auth');
+
+			//TODO check the user's permissions via Resource & Authorization
+
+			// no exceptions? welp, this is a valid request
+			return true;
 		} catch (\Exception $e) {
-			\error_log($e->getMessage());
-			$result = false;
+			return true;
 		}
-		return $result;
 	}
 
 	/**
@@ -54,7 +70,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		$this->id = 0;
 		if (!empty($var)) {
 			$routing = explode('/', $var);
-			if (is_array($routing)) {
+			if(is_array($routing)) {
 				$var = array_shift($routing);
 				$this->id = empty($routing)
 					? 0
@@ -63,11 +79,9 @@ class UserAjax extends \erdiko\core\AjaxController
 				$var = $routing;
 			}
 
-			if ($this->checkAuth("read",$var)) {
-                // load action based off of naming conventions
-
-                header('Content-Type: application/json');
-
+			if ($this->checkAuth()) {
+				// load action based off of naming conventions
+				header('Content-Type: application/json');
 				return $this->_autoaction($var, 'get');
 			} else {
 				return $this->getForbbiden($var);
@@ -76,6 +90,7 @@ class UserAjax extends \erdiko\core\AjaxController
 			return $this->getNoop();
 		}
 	}
+
 
 	/**
 	 * @param null $var
@@ -96,9 +111,9 @@ class UserAjax extends \erdiko\core\AjaxController
 				$var = $routing;
 			}
 
-			if ($this->checkAuth("write", $var)) {
+			if ($this->checkAuth()) {
 				// load action based off of naming conventions
-                header('Content-Type: application/json');
+				header('Content-Type: application/json');
 				return $this->_autoaction($var, 'post');
 			} else {
 				return $this->getForbbiden($var);
@@ -106,6 +121,25 @@ class UserAjax extends \erdiko\core\AjaxController
 		} else {
 			return $this->getNoop();
 		}
+	}
+
+	/**
+	 * Return TRUE to allow CORS requests
+	 *
+	 * NOTE - this method facilitates local env testing with the node server.
+	 *  we *could* get rid of this but I do not think its a bad idea to leave it.
+	 *
+	 * @param null $var
+	 *
+	 * @return boolean
+	 */
+	public function options($var = null)
+	{
+		header('Access-Control-Allow-Credentials: true');
+		header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+		header("Access-Control-Allow-Headers: Accept, Accept-CH, Accept-Charset, Accept-Datetime, Accept-Encoding, Accept-Ext, Accept-Features, Accept-Language, Accept-Params, Accept-Ranges, Access-Control-Allow-Credentials, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin, Access-Control-Expose-Headers, Access-Control-Max-Age, Access-Control-Request-Headers, Access-Control-Request-Method, Age, Allow, Alternates, Authentication-Info, Authorization, C-Ext, C-Man, C-Opt, C-PEP, C-PEP-Info, CONNECT, Cache-Control, Compliance, Connection, Content-Base, Content-Disposition, Content-Encoding, Content-ID, Content-Language, Content-Length, Content-Location, Content-MD5, Content-Range, Content-Script-Type, Content-Security-Policy, Content-Style-Type, Content-Transfer-Encoding, Content-Type, Content-Version, Cookie, Cost, DAV, DELETE, DNT, DPR, Date, Default-Style, Delta-Base, Depth, Derived-From, Destination, Differential-ID, Digest, ETag, Expect, Expires, Ext, From, GET, GetProfile, HEAD, HTTP-date, Host, IM, If, If-Match, If-Modified-Since, If-None-Match, If-Range, If-Unmodified-Since, Keep-Alive, Label, Last-Event-ID, Last-Modified, Link, Location, Lock-Token, MIME-Version, Man, Max-Forwards, Media-Range, Message-ID, Meter, Negotiate, Non-Compliance, OPTION, OPTIONS, OWS, Opt, Optional, Ordering-Type, Origin, Overwrite, P3P, PEP, PICS-Label, POST, PUT, Pep-Info, Permanent, Position, Pragma, ProfileObject, Protocol, Protocol-Query, Protocol-Request, Proxy-Authenticate, Proxy-Authentication-Info, Proxy-Authorization, Proxy-Features, Proxy-Instruction, Public, RWS, Range, Referer, Refresh, Resolution-Hint, Resolver-Location, Retry-After, Safe, Sec-Websocket-Extensions, Sec-Websocket-Key, Sec-Websocket-Origin, Sec-Websocket-Protocol, Sec-Websocket-Version, Security-Scheme, Server, Set-Cookie, Set-Cookie2, SetProfile, SoapAction, Status, Status-URI, Strict-Transport-Security, SubOK, Subst, Surrogate-Capability, Surrogate-Control, TCN, TE, TRACE, Timeout, Title, Trailer, Transfer-Encoding, UA-Color, UA-Media, UA-Pixels, UA-Resolution, UA-Windowpixels, URI, Upgrade, User-Agent, Variant-Vary, Vary, Version, Via, Viewport-Width, WWW-Authenticate, Want-Digest, Warning, Width, X-Content-Duration, X-Content-Security-Policy, X-Content-Type-Options, X-CustomHeader, X-DNSPrefetch-Control, X-Forwarded-For, X-Forwarded-Port, X-Forwarded-Proto, X-Frame-Options, X-Modified, X-OTHER, X-PING, X-PINGOTHER, X-Powered-By, X-Requested-With");
+
+		exit;
 	}
 
 	/**
@@ -155,6 +189,8 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
+			AuthorizerHelper::can(UserValidator::USER_CAN_CREATE);
+
             $data = json_decode(file_get_contents("php://input"));
             if (empty($data)) {
                 $data = (object) $_POST;
@@ -211,7 +247,6 @@ class UserAjax extends \erdiko\core\AjaxController
             "error_message" => ""
         );
 
-
         // decode
         $data =  ( object) array();
 
@@ -241,12 +276,13 @@ class UserAjax extends \erdiko\core\AjaxController
             $users = $userModel->getUsers($data->page, $data->pagesize, $data->sort);
             $output = array();
             foreach ($users->users as $user){
-                $output[] = array('id'       => $user->getId(),
+                $output['users'][] = array('id'       => $user->getId(),
                                   'email'    => $user->getEmail(),
                                   'role'     => $this->getRoleInfo($user),
                                   'name'     => $user->getName(),
                                   'last_login' => $user->getLastLogin(),
-                                  'gateway_customer_id'=> $user->getGatewayCustomerId()
+                                  'joined'      => $user->getCreatedAt(),
+                                  //'gateway_customer_id'=> $user->getGatewayCustomerId()
                 );
             }
             $response['success'] = true;
@@ -272,6 +308,7 @@ class UserAjax extends \erdiko\core\AjaxController
         );
 
         try {
+	        AuthorizerHelper::can(UserValidator::USER_CAN_RETRIEVE);
             $params = (object) $_GET;
             // Check required fields
             if ((empty($this->id) || ($this->id < 1)) && (empty($params->id) || ($params->id < 1))) {
@@ -314,6 +351,7 @@ class UserAjax extends \erdiko\core\AjaxController
 		);
 
 		try {
+			AuthorizerHelper::can(UserValidator::USER_CAN_SAVE);
             $params = json_decode(file_get_contents("php://input"));
             if (empty($params)) {
                 $params = (object) $_POST;
@@ -414,6 +452,7 @@ class UserAjax extends \erdiko\core\AjaxController
         );
 
         try {
+	        AuthorizerHelper::can(LogsValidator::LOGS_CAN_CREATE);
             $data = json_decode(file_get_contents("php://input"));
             if (empty($data)) {
                 $data = (object) $_POST;
