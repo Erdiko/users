@@ -9,6 +9,8 @@
 
 namespace erdiko\users\models;
 
+use Doctrine\Common\Persistence\Mapping\MappingException;
+use Doctrine\ORM\ORMException;
 use erdiko\users\helpers\CommonHelper;
 use \erdiko\users\models\user\UserProvider;
 
@@ -89,15 +91,9 @@ class Role
         if (is_null($name)) {
             throw new \Exception('name is required');
         }
+        $role = $this->getRepository('\erdiko\users\entities\Role');
 
-        $result = null;
-        try {
-            $role = $this->getRepository('\erdiko\users\entities\Role');
-            $result = $role->findOneBy(array('name' => $name));
-        } catch (\Exception $e) {
-            \error_log($e->getMessage());
-        }
-        return $result;
+        return $role->findOneBy(array('name' => $name));
     }
 
     /**

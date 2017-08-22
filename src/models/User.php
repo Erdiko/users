@@ -38,11 +38,7 @@ class User implements
 		if (empty( $em )) {
 			$this->_em = $this->getEntityManager();
 		}
-		try {
-            $this->_user = self::createGeneral();
-        } catch (\Exception $e) {
-            throw new \Exception('Parameter must be an entity User');
-        }
+        $this->_user = self::createGeneral();
 	}
 
     /**
@@ -102,7 +98,7 @@ class User implements
 	    $roleModel = new \erdiko\users\models\Role;
         $roleGeneral = $roleModel->findByName('general');
         if (empty($roleGeneral)) {
-            throw  new \Exception('Role general not found.');
+            throw new \Exception('Role general not found.');
         }
 
 		$entity = new entity();
